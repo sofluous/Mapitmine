@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Minecraft Map Viewer</title>
+  <style>
+    html, body {
+      margin: 0;
+      overflow: hidden;
+      background: #1e1e1e;
+      color: white;
+      font-family: sans-serif;
+    }
+    #ui {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.5);
+      padding: 10px;
+      border-radius: 8px;
+      z-index: 10;
+    }
+    canvas {
+      display: block;
+    }
+    label {
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+<div id="ui">
+  <label>Zoom: <input type="range" id="zoom" min="0.25" max="5" step="0.01" value="1"></label><br>
+  <label>Text Scale: <input type="range" id="textScale" min="0.5" max="5" step="0.1" value="1"></label><br>
+  <label><input type="checkbox" id="showGrid" checked> Show Grid</label>
+</div>
+<canvas id="mapCanvas"></canvas>
+
+<script>
+const canvas = document.getElementById("mapCanvas");
+const ctx = canvas.getContext("2d");
+
+let width, height;
+function resizeCanvas() {
+  width = window.innerWidth;
+  height = window.innerHeight;
+  canvas.width = width;
+  canvas.height = height;
+}
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+
+// Map state
+let zoom = 1;
+let textScale = 1;
+let offsetX = width / 2;
+let offsetY = height / 2;
+let isPanning = false;
+let panStart = { x: 0, y: 0 };
+
+// Example markers
+const markers = [
+  { x: 0, y: 0, id: "spawn", label: "Spawn Point" },
+  { x: 1000, y: 800, id: "village", label: "Village" },
+  { x: -1200, y: 400, id: "base", label: "My Base" }
+];
+
+// UI Elements
+document.getElementById("zoom").addEventListener("input", (e) => {
+  zoom = parseFloat(e.target.value);
+  draw();
+});
+document.getElementById("textScale").addEventListener("input", (e) => {
+  textScale = parseFloat(e.target.value);
+  draw();
+});
+document.getElementById("showGrid").addEventListener("change", draw);
+
+// Pan handling
+canvas.addEventListener("mousedown", (e) => {
+  isPanning = true;
+  panStart = { x: e.clientX, y: e.clientY };
+});
+canvas.addEventListener("mouseup", () => isPanning = false);
+canvas.addEventListener("mouseleave", () => isPanning = false);
+canvas.addEventListener("mousemove", (e) => {
+  if (!isPanning) return;
+  offsetX += e.clientX - panStart.x;
+  offsetY += e.clientY - panStart.y;
+  panStart = { x: e.clientX, y: e.clientY };
+  draw();
+});
+
+// Zoom with wheel
+canvas.addEventListener("wheel", (e) => {
+  e.preventDefault();
+  const scaleAmount = e.deltaY < 0 ? 1.1 : 0.9;
+  const mouseX = e.clientX;
+  const mouseY = e.clientY;
+
+  const worldX = (mouseX - offsetX) / zoom;
+  const worldY = (mouseY - offsetY) / zoom;
+
+  zoom *= scaleAmount;
+  zoom = Math.min(5, Math.max(0.25, zoom));
+  document.getElementById("zoom").value = zoom;
+
+  offsetX = mouseX - worldX * zoom;
+  offsetY = mouseY - worldY * zoom;
+
+  draw();
+}, { passive: false });
+
+function draw() {
+  ctx.clearRect(0, 0, width, height);
+
+  // Background
+  ctx.fillStyle = "#2c2c2c";
+  ctx.fillRect(0, 0, width, height);
+
+  const showGrid = document.getElementById("showGrid").checked;
+
+  // Grid
+  if (showGrid) {
+    const gridSize = 100;
+    ctx.strokeStyle = "#444";
+    ctx.lineWidth = 1;
+    for (let x = -10000; x < 10000; x += gridSize) {
+      const screenX = offsetX + x * zoom;
+      ctx.beginPath();
+      ctx.moveTo(screenX, 0);
+      ctx.lineTo(screenX, height);
+      ctx.stroke();
+    }
+    for (let y = -10000; y < 10000; y += gridSize) {
+      const screenY = offsetY + y * zoom;
+      ctx.beginPath();
+      ctx.moveTo(0, screenY);
+      ctx.lineTo(width, screenY);
+      ctx.stroke();
+    }
+  }
+
+  // Markers
+  for (const m of markers) {
+    const screenX = offsetX + m.x * zoom;
+    const screenY = offsetY + m.y * zoom;
+
+    // Dot
+    ctx.fillStyle = "#ffcc00";
+    ctx.beginPath();
+    ctx.arc(screenX, screenY, 5 * zoom, 0, 2 * Math.PI);
+    ctx.fill();
+
+    // Label
+    ctx.fillStyle = "white";
+    ctx.font = `${12 * textScale}px sans-serif`;
+    ctx.textAlign = "center";
+    ctx.fillText(m.label, screenX, screenY - 10 * zoom);
+  }
+}
+
+draw();
+</script>
+</body>
+</html>
