@@ -139,6 +139,48 @@
             color: var(--color-primary);
         }
 
+        #floatingPinPanel {
+            position: absolute;
+            background: var(--color-panel);
+            border: 1px solid var(--color-border);
+            border-radius: var(--input-radius);
+            padding: var(--space-md);
+            display: none;
+            z-index: 20;
+            width: 240px;
+            font-size: var(--font-base);
+        }
+
+        #floatingPinPanel .grid-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-sm);
+            align-items: center;
+        }
+
+        #floatingPinPanel input,
+        #floatingPinPanel select,
+        #floatingPinPanel textarea {
+            width: 100%;
+            margin-bottom: var(--space-sm);
+            padding: var(--input-padding);
+            background-color: var(--color-input);
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+            border-radius: var(--input-radius);
+            box-sizing: border-box;
+        }
+
+        #floatingPinPanel button {
+            margin-top: var(--space-sm);
+            padding: var(--space-sm) var(--space-md);
+            font-size: var(--font-sm);
+            border-radius: var(--input-radius);
+            background: var(--color-primary);
+            border: none;
+            cursor: pointer;
+        }
+
         canvas {
             display: block;
         }
@@ -256,10 +298,11 @@
             <div class="grid-form">
                 <label for="zoom">Zoom</label>
                 <input type="range" id="zoom" min="0.25" max="5" step="0.01" value="1">
-                <label for="textScale">Text Scale</label>
-                <input type="range" id="textScale" min="0.5" max="5" step="0.1" value="1">
-                <label for="useTextScale">Use Text Scale</label>
-                <input type="checkbox" id="useTextScale">
+                <label for="textScale">Scale Text</label>
+                <div class="input-group">
+                    <input type="checkbox" id="useTextScale">
+                    <input type="range" id="textScale" min="0.5" max="5" step="0.1" value="1">
+                </div>
                 <label for="minX">X Range</label>
                 <div class="input-group">
                     <input type="number" id="minX" placeholder="Min">
@@ -310,24 +353,24 @@
     </div>
     <div id="pinListPanel">
         <h3>Pins</h3>
-        <fieldset>
-            <legend>Pin</legend>
-            <div class="grid-form">
-                <input type="text" id="pinLabel" placeholder="Enter a label" style="grid-column: span 2;">
-                <div class="input-group" style="grid-column: span 2;">
-                    <input type="number" id="pinX" placeholder="X">
-                    <input type="number" id="pinY" placeholder="Y">
-                    <input type="number" id="pinZ" placeholder="Z">
-                </div>
-                <div class="input-group" style="grid-column: span 2;">
-                    <input type="text" id="pinType" placeholder="Type/ID">
-                    <input type="text" id="pinIcon" placeholder="Icon">
-                </div>
-                <textarea id="pinDesc" placeholder="Enter details or notes" style="grid-column: span 2;"></textarea>
-            </div>
-            <button onclick="addPin()">+ Add Pin</button>
-        </fieldset>
         <div id="pinList"></div>
+    </div>
+    <div id="floatingPinPanel">
+        <div class="grid-form">
+            <div class="input-group" style="grid-column: span 2;">
+                <input type="number" id="popupPinX" placeholder="X">
+                <input type="number" id="popupPinY" placeholder="Y">
+                <input type="number" id="popupPinZ" placeholder="Z">
+            </div>
+            <input type="text" id="popupPinLabel" placeholder="Enter a label" style="grid-column: span 2;">
+            <div class="input-group" style="grid-column: span 2;">
+                <input type="text" id="popupPinID" placeholder="Type/ID">
+                <input type="text" id="popupPinIcon" placeholder="Icon">
+            </div>
+            <textarea id="popupPinDesc" placeholder="Enter details or notes" style="grid-column: span 2;"></textarea>
+        </div>
+        <button onclick="confirmPinPlacement()">+ Add Pin</button>
+        <button onclick="cancelPinPlacement()">Cancel</button>
     </div>
     <canvas id="mapCanvas"></canvas>
     <script>
@@ -352,6 +395,113 @@
         let pins = [
             { x: 0, z: 0, y: 64, id: "spawn", label: "Spawn Point", description: "Where you begin.", icon: "" },
         ];
+        let currentEditIndex = null;
+        let isPlacingPin = false;
+        let tempPin = null;
+        let tempPinScreenX = 0;
+        let tempPinScreenY = 0;
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'p') {
+                isPlacingPin = true;
+                document.body.style.cursor = 'crosshair';
+            }
+        });
+
+        canvas.addEventListener('click', (e) => {
+            if (!isPlacingPin) return;
+            const rect = canvas.getBoundingClientRect();
+            const screenX = e.clientX - rect.left;
+            const screenY = e.clientY - rect.top;
+
+            const worldX = Math.round((screenX - offsetX) / zoom);
+            const worldZ = Math.round((screenY - offsetY) / zoom);
+
+            showPinPopup(screenX, screenY, worldX, worldZ);
+        });
+
+        function showPinPopup(screenX, screenY, worldX, worldZ) {
+            const panel = document.getElementById('floatingPinPanel');
+            panel.style.left = `${screenX}px`;
+            panel.style.top = `${screenY}px`;
+            panel.style.display = 'block';
+
+            // Save for drawing
+            tempPin = { x: worldX, z: worldZ };
+            tempPinScreenX = screenX;
+            tempPinScreenY = screenY;
+
+            document.getElementById('popupPinX').value = worldX;
+            document.getElementById('popupPinY').value = '';
+            document.getElementById('popupPinZ').value = worldZ;
+            document.getElementById('popupPinID').value = '';
+            document.getElementById('popupPinLabel').value = '';
+            document.getElementById('popupPinDesc').value = '';
+            document.getElementById('popupPinIcon').value = '';
+
+            const fields = document.querySelectorAll('#floatingPinPanel input, #floatingPinPanel textarea');
+            fields.forEach(field => {
+                field.onkeydown = (e) => {
+                    if (e.key === 'Enter') {
+                        if (e.ctrlKey || e.metaKey) {
+                            e.preventDefault();
+                            confirmPinPlacement();
+                        } else {
+                            e.preventDefault();
+                            focusNextInput(e.target);
+                        }
+                    }
+                };
+            });
+
+
+
+            draw();
+            setTimeout(() => {
+                document.getElementById('popupPinLabel').focus();
+            }, 0);
+
+        }
+
+        function confirmPinPlacement() {
+            const x = parseInt(document.getElementById('popupPinX').value);
+            const y = parseInt(document.getElementById('popupPinY').value);
+            const z = parseInt(document.getElementById('popupPinZ').value);
+            const id = document.getElementById('popupPinID').value;
+            const label = document.getElementById('popupPinLabel').value;
+            const desc = document.getElementById('popupPinDesc').value;
+            const icon = document.getElementById('popupPinIcon').value;
+
+            const pinData = { x, y, z, id, label, desc, icon };
+
+            if (currentEditIndex !== null) {
+                pins[currentEditIndex] = pinData;
+            } else {
+                pins.push(pinData);
+            }
+            renderPinList();
+            cancelPinPlacement();
+            currentEditIndex = null;
+            tempPin = null;
+            draw();
+        }
+
+        function cancelPinPlacement() {
+            isPlacingPin = false;
+            document.getElementById('floatingPinPanel').style.display = 'none';
+            document.body.style.cursor = 'default';
+            tempPin = null;
+            draw();
+        }
+        function focusNextInput(current) {
+            const inputs = Array.from(
+                document.querySelectorAll('#floatingPinPanel input, #floatingPinPanel textarea')
+            );
+            const index = inputs.indexOf(current);
+            if (index >= 0 && index < inputs.length - 1) {
+                inputs[index + 1].focus();
+            }
+        }
 
         function draw() {
             const bgColor = document.getElementById("bgColor").value;
@@ -447,6 +597,24 @@
                     if (showTags && p.id) ctx.fillText(`[${p.id}]`, sx + labelOffsetX, sy + fontSize * 3.6);
                 }
 
+                if (tempPin) {
+                    const px = tempPin.x * zoom + offsetX;
+                    const pz = tempPin.z * zoom + offsetY;
+
+                    // Draw placeholder pin
+                    ctx.beginPath();
+                    ctx.arc(px, pz, 5, 0, Math.PI * 2);
+                    ctx.fillStyle = 'lime';
+                    ctx.fill();
+
+                    // Draw line from panel to placeholder
+                    ctx.beginPath();
+                    ctx.moveTo(tempPinScreenX, tempPinScreenY);
+                    ctx.lineTo(px, pz);
+                    ctx.strokeStyle = 'lime';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
             }
         }
         function togglePinList() {
@@ -481,14 +649,9 @@
                 editBtn.textContent = '🖉';
                 editBtn.onclick = (e) => {
                     e.stopPropagation();
-                    document.getElementById('pinX').value = pin.x;
-                    document.getElementById('pinY').value = pin.y ?? '';
-                    document.getElementById('pinZ').value = pin.z;
-                    document.getElementById('pinType').value = pin.type ?? '';
-                    document.getElementById('pinLabel').value = pin.label ?? '';
-                    document.getElementById('pinDesc').value = pin.desc ?? '';
-                    document.getElementById('pinIcon').value = pin.icon ?? '';
+                    editPin(index);
                 };
+
 
                 const deleteBtn = document.createElement('button');
                 deleteBtn.textContent = 'X';
@@ -505,6 +668,24 @@
 
                 container.appendChild(item);
             });
+        }
+        function editPin(index) {
+            const pin = pins[index];
+            currentEditIndex = index;
+            centerOnPin(pin);
+
+            const screenX = canvas.width / 2;
+            const screenY = canvas.height / 2;
+
+            showPinPopup(screenX, screenY, pin.x, pin.z);
+
+            document.getElementById('popupPinX').value = pin.x;
+            document.getElementById('popupPinY').value = pin.y ?? '';
+            document.getElementById('popupPinZ').value = pin.z;
+            document.getElementById('popupPinID').value = pin.id ?? '';
+            document.getElementById('popupPinLabel').value = pin.label ?? '';
+            document.getElementById('popupPinDesc').value = pin.desc ?? '';
+            document.getElementById('popupPinIcon').value = pin.icon ?? '';
         }
 
         function centerOnPin(pin) {
