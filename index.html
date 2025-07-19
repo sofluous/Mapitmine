@@ -12,14 +12,15 @@
 
             --color-bg: #1e1e1e;
             --color-panel: rgba(0, 0, 0, 0.6);
-            --color-input: rgba(127, 125, 125, 0.583);
+            --color-input: rgba(44, 72, 9, 0.47);
             --color-control-bg: rgba(255, 255, 255, 0.06);
-            --color-text-heading: #2b5a07;
-            --color-text: #d4d4d4;
+
+            --color-text-heading: var(--color-primary);
+            --color-text: var(--color-primary);
             --color-grid: #444444;
             --color-axis: #ffffff88;
             --color-pin: var(--color-tertiary);
-            --color-border: rgba(255, 255, 255, 0.25);
+            --color-border: var(--color-primary);
 
             --space-xs: 4px;
             --space-sm: 6px;
@@ -65,6 +66,22 @@
             width: 260px;
         }
 
+        #hud {
+            position: fixed;
+            top: var(--space-sm);
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--color-panel);
+            color: var(--color-text);
+            border-radius: 8px;
+            padding: var(--space-sm) var(--space-md);
+            z-index: 20;
+            display: flex;
+            gap: var(--space-md);
+            align-items: center;
+            font-size: var(--font-md);
+        }
+
         #pinListPanel {
             position: absolute;
             top: var(--space-md);
@@ -93,13 +110,12 @@
             background-color: var(--color-control-bg);
             border: 1px solid var(--color-border);
             border-radius: var(--input-radius);
-            font-size: var(--font-sm);
+            font-size: var(--font-md);
         }
 
         .pin-item:hover {
-            background-color: var(--color-primary);
-            color: black;
-            cursor: pointer;
+            border: 1px solid var(--color-primary);
+
         }
 
         .pin-controls {
@@ -111,11 +127,16 @@
 
         .pin-controls button {
             background: none;
-            border: none;
+            border: 1px solid var(--color-primary);
+            border border-radius: 50%;
             color: inherit;
             cursor: pointer;
             font-weight: bold;
             font-size: var(--font-sm);
+        }
+
+        .pin-controls button:hover {
+            color: var(--color-primary);
         }
 
         canvas {
@@ -132,6 +153,21 @@
             font-weight: bold;
             color: var(--color-text-heading);
             font-size: var(--space-lg);
+        }
+
+        button {
+            font-size: var(--font-md);
+            background: none;
+            border: 1px solid var(--color-primary);
+            border-radius: 8px;
+            padding: var(--space-sm);
+            color: var(--color-primary);
+        }
+
+        button:hover {
+            cursor: pointer;
+            background-color: var(--color-primary);
+            color: black;
         }
 
         .grid-form {
@@ -159,8 +195,17 @@
             box-sizing: border-box;
         }
 
+        .grid-form select {
+            appearance: none;
+        }
+
+
         .grid-form input[type="checkbox"] {
             width: auto;
+        }
+
+        .grid-form input[type="range"] {
+            background-color: var(--color-input);
         }
 
         .input-group {
@@ -182,12 +227,13 @@
 
         ::-webkit-scrollbar-thumb {
             background-color: transparent;
-            border: 1px var(--color-text-heading);
+            border: 1px solid var(--color-text-heading);
             border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
             background-color: var(--color-text-heading);
+            cursor: grab;
         }
     </style>
 </head>
@@ -255,6 +301,15 @@
                 <input type="checkbox" id="showTags" checked>
             </div>
         </fieldset>
+    </div>
+    <div id="hud">
+        <span id="cursorPos">X: –, Z: –</span>
+        <button onclick="toggleUI()">⚙️</button>
+        <button onclick="togglePinList()">📌</button>
+        <button onclick="toggleMiniMap()">🗺</button>
+    </div>
+    <div id="pinListPanel">
+        <h3>Pins</h3>
         <fieldset>
             <legend>Pin</legend>
             <div class="grid-form">
@@ -272,10 +327,6 @@
             </div>
             <button onclick="addPin()">+ Add Pin</button>
         </fieldset>
-    </div>
-    <button id="togglePinListBtn" onclick="togglePinList()">📌 Show Pins</button>
-    <div id="pinListPanel">
-        <h3>Pins</h3>
         <div id="pinList"></div>
     </div>
     <canvas id="mapCanvas"></canvas>
