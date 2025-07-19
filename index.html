@@ -18,7 +18,7 @@
             --color-text: #d4d4d4;
             --color-grid: #444444;
             --color-axis: #ffffff88;
-            --color-marker: var(--color-tertiary);
+            --color-pin: var(--color-tertiary);
             --color-border: rgba(255, 255, 255, 0.25);
 
             --space-xs: 4px;
@@ -65,6 +65,59 @@
             width: 260px;
         }
 
+        #pinListPanel {
+            position: absolute;
+            top: var(--space-md);
+            right: var(--space-md);
+            background: var(--color-panel);
+            color: var(--color-text);
+            border-radius: 8px;
+            padding: var(--space-md);
+            width: 260px;
+            max-height: 95vh;
+            overflow-y: auto;
+            display: none;
+            z-index: 10;
+        }
+
+        #togglePinListBtn {
+            position: absolute;
+            top: var(--space-md);
+            right: calc(260px + var(--space-lg));
+            z-index: 11;
+        }
+
+        .pin-item {
+            padding: var(--space-sm);
+            margin-bottom: var(--space-xs);
+            background-color: var(--color-control-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--input-radius);
+            font-size: var(--font-sm);
+        }
+
+        .pin-item:hover {
+            background-color: var(--color-primary);
+            color: black;
+            cursor: pointer;
+        }
+
+        .pin-controls {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--space-xs);
+            margin-top: var(--space-xs);
+        }
+
+        .pin-controls button {
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: var(--font-sm);
+        }
+
         canvas {
             display: block;
         }
@@ -83,7 +136,7 @@
 
         .grid-form {
             display: grid;
-            grid-template-columns: 60% 1fr;
+            grid-template-columns: 50% 1fr;
             gap: var(--space-md) var(--space-sm);
             align-items: center;
             margin-bottom: var(--space-sm);
@@ -110,6 +163,15 @@
             width: auto;
         }
 
+        .input-group {
+            display: flex;
+            gap: var(--space-sm);
+        }
+
+        .input-group input {
+            flex: 1;
+        }
+
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -119,12 +181,13 @@
         }
 
         ::-webkit-scrollbar-thumb {
-            background-color: rgb(113, 113, 113);
+            background-color: transparent;
+            border: 1px var(--color-text-heading);
             border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background-color: rgb(173, 173, 173);
+            background-color: var(--color-text-heading);
         }
     </style>
 </head>
@@ -151,14 +214,16 @@
                 <input type="range" id="textScale" min="0.5" max="5" step="0.1" value="1">
                 <label for="useTextScale">Use Text Scale</label>
                 <input type="checkbox" id="useTextScale">
-                <label for="minX">X Min</label>
-                <input type="number" id="minX" value="-8000">
-                <label for="maxX">X Max</label>
-                <input type="number" id="maxX" value="8000">
-                <label for="minZ">Z Min</label>
-                <input type="number" id="minZ" value="-8000">
-                <label for="maxZ">Z Max</label>
-                <input type="number" id="maxZ" value="8000">
+                <label for="minX">X Range</label>
+                <div class="input-group">
+                    <input type="number" id="minX" placeholder="Min">
+                    <input type="number" id="maxX" placeholder="Max">
+                </div>
+                <label for="minZ">Z Range</label>
+                <div class="input-group">
+                    <input type="number" id="minZ" placeholder="Min">
+                    <input type="number" id="maxZ" placeholder="Max">
+                </div>
                 <label for="bgColor">Background</label>
                 <input type="color" id="bgColor" value="#2c2c2c">
                 <label for="gridColor">Grid Color</label>
@@ -190,26 +255,28 @@
                 <input type="checkbox" id="showTags" checked>
             </div>
         </fieldset>
-
         <fieldset>
             <legend>Pin</legend>
             <div class="grid-form">
-                <label for="pinX">X</label>
-                <input type="number" id="pinX">
-                <label for="pinY">Y</label>
-                <input type="number" id="pinY">
-                <label for="pinZ">Z</label>
-                <input type="number" id="pinZ">
-                <label for="pinType">Type/ID</label>
-                <input type="text" id="pinType">
-                <label for="pinIcon">Icon</label>
-                <input type="text" id="pinIcon">
-                <label for="pinLabel">Label</label>
-                <input type="text" id="pinLabel">
-                <label for="pinDesc">Description</label>
-                <textarea id="pinDesc"></textarea>
+                <input type="text" id="pinLabel" placeholder="Enter a label" style="grid-column: span 2;">
+                <div class="input-group" style="grid-column: span 2;">
+                    <input type="number" id="pinX" placeholder="X">
+                    <input type="number" id="pinY" placeholder="Y">
+                    <input type="number" id="pinZ" placeholder="Z">
+                </div>
+                <div class="input-group" style="grid-column: span 2;">
+                    <input type="text" id="pinType" placeholder="Type/ID">
+                    <input type="text" id="pinIcon" placeholder="Icon">
+                </div>
+                <textarea id="pinDesc" placeholder="Enter details or notes" style="grid-column: span 2;"></textarea>
             </div>
+            <button onclick="addPin()">+ Add Pin</button>
         </fieldset>
+    </div>
+    <button id="togglePinListBtn" onclick="togglePinList()">📌 Show Pins</button>
+    <div id="pinListPanel">
+        <h3>Pins</h3>
+        <div id="pinList"></div>
     </div>
     <canvas id="mapCanvas"></canvas>
     <script>
@@ -231,7 +298,7 @@
         let textScale = 1;
         let zoom = 1, offsetX = width / 2, offsetY = height / 2;
         let panStart = {}, isPanning = false;
-        let markers = [
+        let pins = [
             { x: 0, z: 0, y: 64, id: "spawn", label: "Spawn Point", description: "Where you begin.", icon: "" },
         ];
 
@@ -286,10 +353,10 @@
                 ctx.stroke();
             }
 
-            for (const m of markers) {
-                if (m.x < minX || m.x > maxX || m.z < minZ || m.z > maxZ) continue;
-                const sx = offsetX + m.x * zoom;
-                const sy = offsetY + m.z * zoom;
+            for (const p of pins) {
+                if (p.x < minX || p.x > maxX || p.z < minZ || p.z > maxZ) continue;
+                const sx = offsetX + p.x * zoom;
+                const sy = offsetY + p.z * zoom;
 
                 const useTextScale = document.getElementById("useTextScale").checked;
                 const fontSize = useTextScale ? (12 * textScale) : Math.max(10, 12 * zoom);
@@ -308,7 +375,7 @@
 
                 // 🟨 Background box (must come before text)
                 if (document.getElementById("showLabelBackground").checked) {
-                    const text = m.label;
+                    const text = p.label;
                     const metrics = ctx.measureText(text);
                     const padding = 4;
                     const bgWidth = metrics.width + padding * 2;
@@ -322,14 +389,78 @@
 
                 if (showText) {
                     ctx.fillStyle = "white";
-                    ctx.fillText(m.label, sx + labelOffsetX, sy + labelOffsetY);
+                    ctx.fillText(p.label, sx + labelOffsetX, sy + labelOffsetY);
 
-                    if (showCoords) ctx.fillText(`(${m.x}, ${m.z})`, sx + labelOffsetX, sy + fontSize * 1.2);
-                    if (showDesc && m.description) ctx.fillText(m.description, sx + labelOffsetX, sy + fontSize * 2.4);
-                    if (showTags && m.id) ctx.fillText(`[${m.id}]`, sx + labelOffsetX, sy + fontSize * 3.6);
+                    if (showCoords) ctx.fillText(`(${p.x}, ${p.z})`, sx + labelOffsetX, sy + fontSize * 1.2);
+                    if (showDesc && p.description) ctx.fillText(p.description, sx + labelOffsetX, sy + fontSize * 2.4);
+                    if (showTags && p.id) ctx.fillText(`[${p.id}]`, sx + labelOffsetX, sy + fontSize * 3.6);
                 }
 
             }
+        }
+        function togglePinList() {
+            const panel = document.getElementById('pinListPanel');
+            panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
+            renderPinList();
+        }
+
+        function renderPinList() {
+            const container = document.getElementById('pinList');
+            container.innerHTML = '';
+            if (!Array.isArray(pins) || pins.length === 0) {
+                container.innerHTML = '<p>No pins yet.</p>';
+                return;
+            }
+
+            pins.forEach((pin, index) => {
+                const item = document.createElement('div');
+                item.className = 'pin-item';
+                item.innerHTML = `
+          <strong>${pin.id || pin.type || 'Pin'}</strong><br>
+          ${pin.label || '(no label)'}<br>
+          X:${pin.x} Z:${pin.z}
+        `;
+
+                item.onclick = () => centerOnPin(pin);
+
+                const controls = document.createElement('div');
+                controls.className = 'pin-controls';
+
+                const editBtn = document.createElement('button');
+                editBtn.textContent = '🖉';
+                editBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    document.getElementById('pinX').value = pin.x;
+                    document.getElementById('pinY').value = pin.y ?? '';
+                    document.getElementById('pinZ').value = pin.z;
+                    document.getElementById('pinType').value = pin.type ?? '';
+                    document.getElementById('pinLabel').value = pin.label ?? '';
+                    document.getElementById('pinDesc').value = pin.desc ?? '';
+                    document.getElementById('pinIcon').value = pin.icon ?? '';
+                };
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'X';
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    pins.splice(index, 1);
+                    draw();
+                    renderPinList();
+                };
+
+                controls.appendChild(editBtn);
+                controls.appendChild(deleteBtn);
+                item.appendChild(controls);
+
+                container.appendChild(item);
+            });
+        }
+
+        function centerOnPin(pin) {
+            if (!pin) return;
+            offsetX = canvas.width / 2 - pin.x * zoom;
+            offsetY = canvas.height / 2 - pin.z * zoom;
+            draw();
         }
 
         function addPin() {
@@ -341,8 +472,10 @@
             const desc = document.getElementById("pinDesc").value;
             const icon = document.getElementById("pinIcon").value;
             if (isNaN(x) || isNaN(z)) return alert("X and Z are required.");
-            markers.push({ x, y, z, id, label, description: desc, icon });
+            pins.push({ x, y, z, id, label, description: desc, icon });
             draw();
+            renderPinList(); // ← Add this line
+
         }
 
         function resetView() {
