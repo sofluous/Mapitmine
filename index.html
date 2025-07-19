@@ -13,11 +13,14 @@
             --color-bg: #1e1e1e;
             --color-panel: rgba(0, 0, 0, 0.6);
             --color-input: rgba(127, 125, 125, 0.583);
-            --color-text: #ffffff;
+            --color-control-bg: rgba(255, 255, 255, 0.06);
+            --color-text-heading: #2b5a07;
+            --color-text: #d4d4d4;
             --color-grid: #444444;
             --color-axis: #ffffff88;
-
             --color-marker: var(--color-tertiary);
+            --color-border: rgba(255, 255, 255, 0.25);
+
             --space-xs: 4px;
             --space-sm: 6px;
             --space-md: 12px;
@@ -25,8 +28,10 @@
 
             --font-sm: 12px;
             --font-md: 16px;
-
             --font-base: 13px;
+
+            --input-radius: 4px;
+            --input-padding: 4px;
         }
 
         [data-theme="light"] {
@@ -52,74 +57,58 @@
             left: var(--space-md);
             background: var(--color-panel);
             padding: var(--space-md);
-            gap: var(--space-md);
             border-radius: 8px;
             z-index: 10;
             font-size: var(--font-base);
             max-height: 95vh;
             overflow-y: auto;
-            width: 240px;
+            width: 260px;
         }
 
         canvas {
             display: block;
         }
 
-        label {
-            display: block;
-            margin: var(--space-xs) 0;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        input,
-        select,
-        button,
-        textarea {
-            display: block;
-            margin: var(--space-xs) 0;
-            width: 100%;
-            box-sizing: border-box;
-            background-color: var(--color-input);
-        }
-
         fieldset {
-            border: 1px solid var(--color-grid);
+            border: 1px solid var(--color-text-heading);
             margin-top: var(--space-sm);
             padding: var(--space-md);
         }
 
         legend {
             font-weight: bold;
+            color: var(--color-text-heading);
+            font-size: var(--space-lg);
         }
 
-        .flex-row {
-            display: flex;
-            gap: var(--space-sm);
+        .grid-form {
+            display: grid;
+            grid-template-columns: 60% 1fr;
+            gap: var(--space-md) var(--space-sm);
             align-items: center;
-            margin-bottom: var(--space-xs);
+            margin-bottom: var(--space-sm);
         }
 
-        .flex-row input[type="number"],
-        .flex-row input[type="text"],
-        .flex-row select {
-            flex: 1;
-            min-width: 0;
+        .grid-form label {
+            margin: 0;
+            font-size: var(--font-md);
         }
 
-        .checkbox-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: var(--space-sm);
+        .grid-form input,
+        .grid-form select,
+        .grid-form textarea {
+            width: 100%;
+            padding: var(--input-padding);
+            border-radius: var(--input-radius);
+            border: 1px solid var(--color-border);
+            background-color: var(--color-input);
+            color: var(--color-text);
+            box-sizing: border-box;
         }
 
-        .checkbox-row label {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            white-space: nowrap;
+        .grid-form input[type="checkbox"] {
+            width: auto;
         }
-
 
         ::-webkit-scrollbar {
             width: 8px;
@@ -131,7 +120,6 @@
 
         ::-webkit-scrollbar-thumb {
             background-color: rgb(113, 113, 113);
-            /* adjust color as needed */
             border-radius: 4px;
         }
 
@@ -144,63 +132,83 @@
 <body data-theme="dark">
     <div id="ui">
         <fieldset>
-            <legend>Theme</legend>
-            <select id="themeSelector">
-                <option value="dark" selected>Dark</option>
-                <option value="light">Light</option>
-            </select>
-        </fieldset>
-        <fieldset>
-            <legend>Map Settings</legend>
-            <label>Zoom <input type="range" id="zoom" min="0.25" max="5" step="0.01" value="1"></label>
-            <label>Text Scale <input type="range" id="textScale" min="0.5" max="5" step="0.1" value="1"></label>
-            <label><input type="checkbox" id="useTextScale"> Use Text Scale</label>
-            <label>Map Crop</label>
-            <div class="flex-row"><span>X-range:</span>
-                <input type="number" id="minX" placeholder="Min" value="-8000">
-                <input type="number" id="maxX" placeholder="Max" value="8000">
-            </div>
-            <div class="flex-row"><span>Z-range:</span>
-                <input type="number" id="minZ" placeholder="Min" value="-8000">
-                <input type="number" id="maxZ" placeholder="Max" value="8000">
-            </div>
-            <button onclick="resetView()">Reset View</button>
-            <div class="flex-row">
-                <label for="bgColor">BG</label>
-                <input type="color" id="bgColor" value="#2c2c2c">
-                <label for="gridColor">Grid</label>
-                <input type="color" id="gridColor" value="#444444">
-            </div>
-            <label>Grid Spacing <input type="number" id="gridSpacing" value="100" step="10"></label>
-            <label><input type="checkbox" id="showAxes" checked> Show Axis Lines</label>
-            <label><input type="checkbox" id="showLabelBackground"> Label Background</label>
-        </fieldset>
-        <fieldset>
-            <legend>Show/Hide Elements</legend>
-            <div class="checkbox-row">
-                <label>Grid<input type="checkbox" id="showGrid" checked></label>
-                <label>Icons<input type="checkbox" id="showIcons" checked></label>
-                <label>Text<input type="checkbox" id="showText" checked></label>
-                <label>Coordinates<input type="checkbox" id="showCoords" checked></label>
-                <label>Description<input type="checkbox" id="showDesc" checked></label>
-                <label>Tags<input type="checkbox" id="showTags" checked></label>
+            <legend>Interface</legend>
+            <div class="grid-form">
+                <label for="themeSelector">Theme</label>
+                <select id="themeSelector">
+                    <option value="dark" selected>Dark</option>
+                    <option value="light">Light</option>
+                </select>
             </div>
         </fieldset>
 
         <fieldset>
-            <legend>Add Pin</legend>
-            <div class="flex-row">
-                <input type="number" id="pinX" placeholder="X">
-                <input type="number" id="pinY" placeholder="Y">
-                <input type="number" id="pinZ" placeholder="Z">
+            <legend>Map Settings</legend>
+            <div class="grid-form">
+                <label for="zoom">Zoom</label>
+                <input type="range" id="zoom" min="0.25" max="5" step="0.01" value="1">
+                <label for="textScale">Text Scale</label>
+                <input type="range" id="textScale" min="0.5" max="5" step="0.1" value="1">
+                <label for="useTextScale">Use Text Scale</label>
+                <input type="checkbox" id="useTextScale">
+                <label for="minX">X Min</label>
+                <input type="number" id="minX" value="-8000">
+                <label for="maxX">X Max</label>
+                <input type="number" id="maxX" value="8000">
+                <label for="minZ">Z Min</label>
+                <input type="number" id="minZ" value="-8000">
+                <label for="maxZ">Z Max</label>
+                <input type="number" id="maxZ" value="8000">
+                <label for="bgColor">Background</label>
+                <input type="color" id="bgColor" value="#2c2c2c">
+                <label for="gridColor">Grid Color</label>
+                <input type="color" id="gridColor" value="#444444">
+                <label for="gridSpacing">Grid Spacing</label>
+                <input type="number" id="gridSpacing" value="100" step="10">
+                <label for="showAxes">Show Axis</label>
+                <input type="checkbox" id="showAxes" checked>
+                <label for="showLabelBackground">Label BG</label>
+                <input type="checkbox" id="showLabelBackground">
             </div>
-            <div class="flex-row">
-                <input type="text" id="pinType" placeholder="Type/ID">
-                <input type="text" id="pinLabel" placeholder="Label">
+            <button onclick="resetView()">Reset View</button>
+        </fieldset>
+
+        <fieldset>
+            <legend>Toggle Content</legend>
+            <div class="grid-form">
+                <label for="showGrid">Grid</label>
+                <input type="checkbox" id="showGrid" checked>
+                <label for="showIcons">Icons</label>
+                <input type="checkbox" id="showIcons" checked>
+                <label for="showText">Text</label>
+                <input type="checkbox" id="showText" checked>
+                <label for="showCoords">Coordinates</label>
+                <input type="checkbox" id="showCoords" checked>
+                <label for="showDesc">Description</label>
+                <input type="checkbox" id="showDesc" checked>
+                <label for="showTags">Tags</label>
+                <input type="checkbox" id="showTags" checked>
             </div>
-            <input type="text" id="pinIcon" placeholder="Icon (optional)">
-            <textarea id="pinDesc" placeholder="Description"></textarea>
-            <button onclick="addPin()">+ Add Pin</button>
+        </fieldset>
+
+        <fieldset>
+            <legend>Pin</legend>
+            <div class="grid-form">
+                <label for="pinX">X</label>
+                <input type="number" id="pinX">
+                <label for="pinY">Y</label>
+                <input type="number" id="pinY">
+                <label for="pinZ">Z</label>
+                <input type="number" id="pinZ">
+                <label for="pinType">Type/ID</label>
+                <input type="text" id="pinType">
+                <label for="pinIcon">Icon</label>
+                <input type="text" id="pinIcon">
+                <label for="pinLabel">Label</label>
+                <input type="text" id="pinLabel">
+                <label for="pinDesc">Description</label>
+                <textarea id="pinDesc"></textarea>
+            </div>
         </fieldset>
     </div>
     <canvas id="mapCanvas"></canvas>
