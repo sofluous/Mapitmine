@@ -1,166 +1,308 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <title>Minecraft Map Viewer</title>
-  <style>
-    html, body {
-      margin: 0;
-      overflow: hidden;
-      background: #1e1e1e;
-      color: white;
-      font-family: sans-serif;
-    }
-    #ui {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: rgba(0,0,0,0.5);
-      padding: 10px;
-      border-radius: 8px;
-      z-index: 10;
-    }
-    canvas {
-      display: block;
-    }
-    label {
-      font-size: 13px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Minecraft Map Viewer</title>
+    <style>
+        :root {
+            --color-bg: #1e1e1e;
+            --color-panel: rgba(0, 0, 0, 0.6);
+            --color-text: #ffffff;
+            --color-grid: #444444;
+            --color-axis: #ffffff88;
+            --color-marker: #ffcc00;
+            --space-xs: 4px;
+            --space-sm: 6px;
+            --space-md: 10px;
+            --space-lg: 20px;
+            --font-sm: 12px;
+            --font-base: 13px;
+        }
+
+        [data-theme="light"] {
+            --color-bg: #ffffff;
+            --color-panel: rgba(255, 255, 255, 0.85);
+            --color-text: #000000;
+            --color-grid: #cccccc;
+            --color-axis: #00000088;
+        }
+
+        html,
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: var(--color-bg);
+            color: var(--color-text);
+            font-family: sans-serif;
+        }
+
+        #ui {
+            position: absolute;
+            top: var(--space-md);
+            left: var(--space-md);
+            background: var(--color-panel);
+            padding: var(--space-md);
+            border-radius: 8px;
+            z-index: 10;
+            font-size: var(--font-base);
+            max-height: 95vh;
+            overflow-y: auto;
+            width: 240px;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        label,
+        input,
+        select,
+        button,
+        textarea {
+            display: block;
+            margin: var(--space-xs) 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        fieldset {
+            border: 1px solid var(--color-grid);
+            margin-top: var(--space-sm);
+            padding: var(--space-sm);
+        }
+
+        legend {
+            font-weight: bold;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: rgb(113, 113, 113);
+            /* adjust color as needed */
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: rgb(173, 173, 173);
+        }
+    </style>
 </head>
-<body>
-<div id="ui">
-  <label>Zoom: <input type="range" id="zoom" min="0.25" max="5" step="0.01" value="1"></label><br>
-  <label>Text Scale: <input type="range" id="textScale" min="0.5" max="5" step="0.1" value="1"></label><br>
-  <label><input type="checkbox" id="showGrid" checked> Show Grid</label>
-</div>
-<canvas id="mapCanvas"></canvas>
 
-<script>
-const canvas = document.getElementById("mapCanvas");
-const ctx = canvas.getContext("2d");
+<body data-theme="dark">
+    <div id="ui">
+        <fieldset>
+            <legend>Theme</legend>
+            <label>Theme
+                <select id="themeSelector">
+                    <option value="dark" selected>Dark</option>
+                    <option value="light">Light</option>
+                </select>
+            </label>
+        </fieldset>
+        <fieldset>
+            <legend>Settings</legend>
+            <label>Zoom <input type="range" id="zoom" min="0.25" max="5" step="0.01" value="1"></label>
+            <label>Text Scale: <input type="range" id="textScale" min="0.5" max="5" step="0.1" value="1"></label><br>
+            <label>Map Crop</label>
+            <input type="number" id="minX" placeholder="Min X" value="-8000">
+            <input type="number" id="maxX" placeholder="Max X" value="8000">
+            <input type="number" id="minZ" placeholder="Min Z" value="-8000">
+            <input type="number" id="maxZ" placeholder="Max Z" value="8000">
+            <button onclick="resetView()">Reset View</button>
+            <label><input type="checkbox" id="showGrid" checked> Show Grid</label>
+            <label><input type="checkbox" id="showIcons" checked> Show Icons</label>
+            <label><input type="checkbox" id="showText" checked> Show Text</label>
+            <label><input type="checkbox" id="showCoords" checked> Show Coordinates</label>
+            <label><input type="checkbox" id="showDesc" checked> Show Description</label>
+            <label><input type="checkbox" id="showTags" checked> Show Tags</label>
+        </fieldset>
+        <fieldset>
+            <legend>Appearance</legend>
+            <label>Background Color <input type="color" id="bgColor" value="#2c2c2c"></label>
+            <label>Grid Color <input type="color" id="gridColor" value="#444444"></label>
+            <label>Grid Spacing <input type="number" id="gridSpacing" value="100" step="10"></label>
+            <label><input type="checkbox" id="showAxes" checked> Show Axis Lines</label>
+        </fieldset>
+        <fieldset>
+            <legend>Add Pin</legend>
+            <input type="number" id="pinX" placeholder="X">
+            <input type="number" id="pinY" placeholder="Y (optional)">
+            <input type="number" id="pinZ" placeholder="Z">
+            <input type="text" id="pinType" placeholder="Type/ID">
+            <input type="text" id="pinLabel" placeholder="Label">
+            <textarea id="pinDesc" placeholder="Description"></textarea>
+            <input type="text" id="pinIcon" placeholder="Icon (optional)">
+            <button onclick="addPin()">+ Add Pin</button>
+        </fieldset>
+    </div>
+    <canvas id="mapCanvas"></canvas>
+    <script>
+        document.getElementById("themeSelector").addEventListener("change", (e) => {
+            document.body.setAttribute("data-theme", e.target.value);
+        });
+        const canvas = document.getElementById("mapCanvas");
+        const ctx = canvas.getContext("2d");
+        let width, height;
+        function resizeCanvas() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+        }
+        window.addEventListener("resize", resizeCanvas);
+        resizeCanvas();
 
-let width, height;
-function resizeCanvas() {
-  width = window.innerWidth;
-  height = window.innerHeight;
-  canvas.width = width;
-  canvas.height = height;
-}
-window.addEventListener("resize", resizeCanvas);
-resizeCanvas();
+        let textScale = 1;
+        let zoom = 1, offsetX = width / 2, offsetY = height / 2;
+        let panStart = {}, isPanning = false;
+        let markers = [
+            { x: 0, z: 0, y: 64, id: "spawn", label: "Spawn Point", description: "Where you begin.", icon: "" },
+        ];
 
-// Map state
-let zoom = 1;
-let textScale = 1;
-let offsetX = width / 2;
-let offsetY = height / 2;
-let isPanning = false;
-let panStart = { x: 0, y: 0 };
+        function draw() {
+            const bgColor = document.getElementById("bgColor").value;
+            const gridColor = document.getElementById("gridColor").value;
+            const gridSpacing = parseInt(document.getElementById("gridSpacing").value);
+            const showAxes = document.getElementById("showAxes").checked;
 
-// Example markers
-const markers = [
-  { x: 0, y: 0, id: "spawn", label: "Spawn Point" },
-  { x: 1000, y: 800, id: "village", label: "Village" },
-  { x: -1200, y: 400, id: "base", label: "My Base" }
-];
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, width, height);
 
-// UI Elements
-document.getElementById("zoom").addEventListener("input", (e) => {
-  zoom = parseFloat(e.target.value);
-  draw();
-});
-document.getElementById("textScale").addEventListener("input", (e) => {
-  textScale = parseFloat(e.target.value);
-  draw();
-});
-document.getElementById("showGrid").addEventListener("change", draw);
+            const showGrid = document.getElementById("showGrid").checked;
+            const showIcons = document.getElementById("showIcons").checked;
+            const showText = document.getElementById("showText").checked;
+            const showCoords = document.getElementById("showCoords").checked;
+            const showDesc = document.getElementById("showDesc").checked;
+            const showTags = document.getElementById("showTags").checked;
+            const minX = parseInt(document.getElementById("minX").value);
+            const maxX = parseInt(document.getElementById("maxX").value);
+            const minZ = parseInt(document.getElementById("minZ").value);
+            const maxZ = parseInt(document.getElementById("maxZ").value);
 
-// Pan handling
-canvas.addEventListener("mousedown", (e) => {
-  isPanning = true;
-  panStart = { x: e.clientX, y: e.clientY };
-});
-canvas.addEventListener("mouseup", () => isPanning = false);
-canvas.addEventListener("mouseleave", () => isPanning = false);
-canvas.addEventListener("mousemove", (e) => {
-  if (!isPanning) return;
-  offsetX += e.clientX - panStart.x;
-  offsetY += e.clientY - panStart.y;
-  panStart = { x: e.clientX, y: e.clientY };
-  draw();
-});
+            if (showGrid) {
+                ctx.strokeStyle = gridColor;
+                for (let x = minX; x <= maxX; x += gridSpacing) {
+                    const sx = offsetX + x * zoom;
+                    ctx.beginPath();
+                    ctx.moveTo(sx, 0);
+                    ctx.lineTo(sx, height);
+                    ctx.stroke();
+                }
+                for (let z = minZ; z <= maxZ; z += gridSpacing) {
+                    const sz = offsetY + z * zoom;
+                    ctx.beginPath();
+                    ctx.moveTo(0, sz);
+                    ctx.lineTo(width, sz);
+                    ctx.stroke();
+                }
+            }
 
-// Zoom with wheel
-canvas.addEventListener("wheel", (e) => {
-  e.preventDefault();
-  const scaleAmount = e.deltaY < 0 ? 1.1 : 0.9;
-  const mouseX = e.clientX;
-  const mouseY = e.clientY;
+            if (showAxes) {
+                ctx.strokeStyle = "#ffffff88";
+                ctx.beginPath();
+                ctx.moveTo(offsetX + 0 * zoom, 0);
+                ctx.lineTo(offsetX + 0 * zoom, height);
+                ctx.stroke();
 
-  const worldX = (mouseX - offsetX) / zoom;
-  const worldY = (mouseY - offsetY) / zoom;
+                ctx.beginPath();
+                ctx.moveTo(0, offsetY + 0 * zoom);
+                ctx.lineTo(width, offsetY + 0 * zoom);
+                ctx.stroke();
+            }
 
-  zoom *= scaleAmount;
-  zoom = Math.min(5, Math.max(0.25, zoom));
-  document.getElementById("zoom").value = zoom;
+            for (const m of markers) {
+                if (m.x < minX || m.x > maxX || m.z < minZ || m.z > maxZ) continue;
+                const sx = offsetX + m.x * zoom;
+                const sy = offsetY + m.z * zoom;
+                if (showIcons) {
+                    ctx.fillStyle = "#ffcc00";
+                    ctx.beginPath();
+                    ctx.arc(sx, sy, 5 * zoom, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                if (showText) {
+                    ctx.fillStyle = "white";
+                    ctx.font = `${12 * textScale}px sans-serif`;
+                    ctx.textAlign = "left";
+                    ctx.fillText(m.label, sx, sy - 10 * zoom);
+                    if (showCoords) ctx.fillText(`(${m.x}, ${m.z})`, sx, sy + 12 * zoom);
+                    if (showDesc && m.description) ctx.fillText(m.description, sx, sy + 24 * zoom);
+                    if (showTags && m.id) ctx.fillText(`[${m.id}]`, sx, sy + 36 * zoom);
+                }
+            }
+        }
 
-  offsetX = mouseX - worldX * zoom;
-  offsetY = mouseY - worldY * zoom;
+        function addPin() {
+            const x = parseInt(document.getElementById("pinX").value);
+            const y = parseInt(document.getElementById("pinY").value) || null;
+            const z = parseInt(document.getElementById("pinZ").value);
+            const id = document.getElementById("pinType").value || "custom";
+            const label = document.getElementById("pinLabel").value || "(no label)";
+            const desc = document.getElementById("pinDesc").value;
+            const icon = document.getElementById("pinIcon").value;
+            if (isNaN(x) || isNaN(z)) return alert("X and Z are required.");
+            markers.push({ x, y, z, id, label, description: desc, icon });
+            draw();
+        }
 
-  draw();
-}, { passive: false });
+        function resetView() {
+            zoom = 1;
+            offsetX = width / 2;
+            offsetY = height / 2;
+            document.getElementById("zoom").value = zoom;
+            draw();
+        }
 
-function draw() {
-  ctx.clearRect(0, 0, width, height);
+        canvas.addEventListener("mousedown", (e) => {
+            isPanning = true;
+            panStart = { x: e.clientX, y: e.clientY };
+        });
+        canvas.addEventListener("mouseup", () => isPanning = false);
+        canvas.addEventListener("mousemove", (e) => {
+            if (!isPanning) return;
+            offsetX += e.clientX - panStart.x;
+            offsetY += e.clientY - panStart.y;
+            panStart = { x: e.clientX, y: e.clientY };
+            draw();
+        });
+        canvas.addEventListener("wheel", (e) => {
+            e.preventDefault();
+            const scale = e.deltaY < 0 ? 1.1 : 0.9;
+            const mx = e.clientX;
+            const my = e.clientY;
+            const wx = (mx - offsetX) / zoom;
+            const wy = (my - offsetY) / zoom;
+            zoom *= scale;
+            zoom = Math.max(0.25, Math.min(5, zoom));
+            offsetX = mx - wx * zoom;
+            offsetY = my - wy * zoom;
+            document.getElementById("zoom").value = zoom;
+            draw();
+        }, { passive: false });
 
-  // Background
-  ctx.fillStyle = "#2c2c2c";
-  ctx.fillRect(0, 0, width, height);
+        document.getElementById("zoom").addEventListener("input", (e) => {
+            zoom = parseFloat(e.target.value);
+            draw();
+        });
 
-  const showGrid = document.getElementById("showGrid").checked;
+        document.getElementById("textScale").addEventListener("input", (e) => {
+            textScale = parseFloat(e.target.value);
+            draw();
+        });
 
-  // Grid
-  if (showGrid) {
-    const gridSize = 100;
-    ctx.strokeStyle = "#444";
-    ctx.lineWidth = 1;
-    for (let x = -10000; x < 10000; x += gridSize) {
-      const screenX = offsetX + x * zoom;
-      ctx.beginPath();
-      ctx.moveTo(screenX, 0);
-      ctx.lineTo(screenX, height);
-      ctx.stroke();
-    }
-    for (let y = -10000; y < 10000; y += gridSize) {
-      const screenY = offsetY + y * zoom;
-      ctx.beginPath();
-      ctx.moveTo(0, screenY);
-      ctx.lineTo(width, screenY);
-      ctx.stroke();
-    }
-  }
-
-  // Markers
-  for (const m of markers) {
-    const screenX = offsetX + m.x * zoom;
-    const screenY = offsetY + m.y * zoom;
-
-    // Dot
-    ctx.fillStyle = "#ffcc00";
-    ctx.beginPath();
-    ctx.arc(screenX, screenY, 5 * zoom, 0, 2 * Math.PI);
-    ctx.fill();
-
-    // Label
-    ctx.fillStyle = "white";
-    ctx.font = `${12 * textScale}px sans-serif`;
-    ctx.textAlign = "center";
-    ctx.fillText(m.label, screenX, screenY - 10 * zoom);
-  }
-}
-
-draw();
-</script>
+        ["showGrid", "showIcons", "showText", "showCoords", "showDesc", "showTags", "minX", "maxX", "minZ", "maxZ", "bgColor", "gridColor", "gridSpacing", "showAxes"].forEach(id => {
+            document.getElementById(id).addEventListener("input", draw);
+        });
+        draw();
+    </script>
 </body>
+
 </html>
