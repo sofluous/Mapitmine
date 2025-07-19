@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
 <head>
     <meta charset="UTF-8">
@@ -49,18 +50,24 @@
             overflow: hidden;
             background: var(--color-bg);
             color: var(--color-text);
-            font-family: sans-serif;
+            font-family: 'Inter', sans-serif;
+        }
+
+        #ui,
+        #hud,
+        #pinListPanel {
+            padding: var(--space-md);
+            background: var(--color-panel);
+            font-size: var(--font-base);
+            font-size: var(--font-md);
+            gap: var(--space-md);
         }
 
         #ui {
             position: absolute;
             top: var(--space-md);
             left: var(--space-md);
-            background: var(--color-panel);
-            padding: var(--space-md);
-            border-radius: 8px;
             z-index: 10;
-            font-size: var(--font-base);
             max-height: 95vh;
             overflow-y: auto;
             width: 260px;
@@ -71,29 +78,22 @@
             top: var(--space-sm);
             left: 50%;
             transform: translateX(-50%);
-            background: var(--color-panel);
             color: var(--color-text);
-            border-radius: 8px;
-            padding: var(--space-sm) var(--space-md);
             z-index: 20;
             display: flex;
             gap: var(--space-md);
             align-items: center;
-            font-size: var(--font-md);
         }
 
         #pinListPanel {
             position: absolute;
             top: var(--space-md);
             right: var(--space-md);
-            background: var(--color-panel);
             color: var(--color-text);
-            border-radius: 8px;
-            padding: var(--space-md);
             width: 260px;
             max-height: 95vh;
             overflow-y: auto;
-            display: none;
+            display: block;
             z-index: 10;
         }
 
@@ -128,7 +128,7 @@
         .pin-controls button {
             background: none;
             border: 1px solid var(--color-primary);
-            border border-radius: 50%;
+            border-radius: 50%;
             color: inherit;
             cursor: pointer;
             font-weight: bold;
@@ -171,23 +171,13 @@
             box-sizing: border-box;
         }
 
-        #floatingPinPanel button {
-            margin-top: var(--space-sm);
-            padding: var(--space-sm) var(--space-md);
-            font-size: var(--font-sm);
-            border-radius: var(--input-radius);
-            background: var(--color-primary);
-            border: none;
-            cursor: pointer;
-        }
-
         canvas {
             display: block;
         }
 
         fieldset {
             border: 1px solid var(--color-text-heading);
-            margin-top: var(--space-sm);
+            margin-bottom: var(--space-sm);
             padding: var(--space-md);
         }
 
@@ -197,19 +187,82 @@
             font-size: var(--space-lg);
         }
 
-        button {
-            font-size: var(--font-md);
-            background: none;
-            border: 1px solid var(--color-primary);
-            border-radius: 8px;
-            padding: var(--space-sm);
-            color: var(--color-primary);
+        select {
+            background-color: var(--color-input);
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+            border-radius: var(--input-radius);
+            padding: var(--input-padding);
         }
 
-        button:hover {
+
+        button,
+        .btn {
+            font-size: var(--font-md);
+            background-color: var(--color-control-bg);
+            color: var(--color-text);
+            border: 1px solid var(--color-primary);
+            border-radius: var(--input-radius);
+            padding: var(--space-sm);
             cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover,
+        .btn:hover {
             background-color: var(--color-primary);
             color: black;
+        }
+
+        input[type="checkbox"] {
+            appearance: none;
+            /* Reset everything, even browser quirks */
+            width: 18px;
+            height: 18px;
+            display: inline-block;
+            vertical-align: middle;
+            margin: 0;
+            padding: 0;
+            border: 2px solid var(--color-primary);
+            border-radius: 4px;
+            background-color: var(--color-control-bg);
+            cursor: pointer;
+            position: relative;
+            justify-self: end;
+            box-sizing: border-box;
+
+        }
+
+        input[type="checkbox"]:checked::after {
+            content: '✔';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+            line-height: 1;
+            color: var(--color-primary);
+            pointer-events: none;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            background: var(--color-grid);
+            border-radius: 4px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            cursor: pointer;
+            border: 1px solid var(--color-text);
         }
 
         .grid-form {
@@ -300,7 +353,7 @@
                 <input type="range" id="zoom" min="0.25" max="5" step="0.01" value="1">
                 <label for="textScale">Scale Text</label>
                 <div class="input-group">
-                    <input type="checkbox" id="useTextScale">
+                    <label></label><input type="checkbox" id="useTextScale"></label>
                     <input type="range" id="textScale" min="0.5" max="5" step="0.1" value="1">
                 </div>
                 <label for="minX">X Range</label>
@@ -364,19 +417,26 @@
             </div>
             <input type="text" id="popupPinLabel" placeholder="Enter a label" style="grid-column: span 2;">
             <div class="input-group" style="grid-column: span 2;">
-                <input type="text" id="popupPinID" placeholder="Type/ID">
-                <input type="text" id="popupPinIcon" placeholder="Icon">
+                <select id="popupPinID"></select>
+                <select id="popupPinIcon"></select>
             </div>
             <textarea id="popupPinDesc" placeholder="Enter details or notes" style="grid-column: span 2;"></textarea>
         </div>
-        <button onclick="confirmPinPlacement()">+ Add Pin</button>
-        <button onclick="cancelPinPlacement()">Cancel</button>
+        <div class="input-group" style="grid-column: span 2;">
+            <button onclick="confirmPinPlacement()">+ Add Pin</button>
+            <button onclick="cancelPinPlacement()">Cancel</button>
+        </div>
     </div>
+    <ul id="contextMenu"
+        style="display:none; position:absolute; z-index:100; background: var(--color-panel); border: 1px solid var(--color-border); border-radius: 4px; padding: 4px 0; list-style: none; font-size: var(--font-sm); min-width: 140px;">
+    </ul>
+
     <canvas id="mapCanvas"></canvas>
     <script>
         document.getElementById("themeSelector").addEventListener("change", (e) => {
             document.body.setAttribute("data-theme", e.target.value);
         });
+
         const canvas = document.getElementById("mapCanvas");
         const ctx = canvas.getContext("2d");
         let width, height;
@@ -401,6 +461,24 @@
         let tempPinScreenX = 0;
         let tempPinScreenY = 0;
 
+        const pinTypes = [
+            { id: 'spawn', label: 'Spawn Point', icon: '⭐', category: 'Special' },
+            { id: 'bed', label: 'Bed Spawn', icon: '🛏️', category: 'Special' },
+            { id: 'home', label: 'Home Base', icon: '🏡', category: 'Settlements' },
+            { id: 'village', label: 'Village', icon: '🏘️', category: 'Settlements' },
+            { id: 'farm', label: 'Farm', icon: '🌾', category: 'Settlements' },
+            { id: 'mine', label: 'Mine Entrance', icon: '⛏️', category: 'Structures' },
+            { id: 'portal', label: 'Nether Portal', icon: '🌀', category: 'Structures' },
+            { id: 'stronghold', label: 'Stronghold', icon: '🏰', category: 'Structures' },
+            { id: 'ruins', label: 'Ruins', icon: '⚰️', category: 'Structures' },
+            { id: 'tower', label: 'Tower', icon: '🗼', category: 'Structures' },
+            { id: 'beacon', label: 'Beacon', icon: '💎', category: 'Special' },
+            { id: 'sign', label: 'Signpost', icon: '🪧', category: 'Special' },
+            { id: 'danger', label: 'Danger', icon: '☠️', category: 'Warnings' },
+            { id: 'treasure', label: 'Treasure', icon: '🪙', category: 'Warnings' }
+        ];
+
+
         window.addEventListener('keydown', (e) => {
             if (e.key === 'p') {
                 isPlacingPin = true;
@@ -418,6 +496,41 @@
             const worldZ = Math.round((screenY - offsetY) / zoom);
 
             showPinPopup(screenX, screenY, worldX, worldZ);
+        });
+
+        // Populate dropdowns on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const idSelect = document.getElementById('popupPinID');
+            const iconSelect = document.getElementById('popupPinIcon');
+
+            pinTypes.forEach(pin => {
+                const opt1 = document.createElement('option');
+                opt1.value = pin.id;
+                opt1.textContent = pin.label;
+                idSelect.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = pin.icon;
+                opt2.textContent = pin.icon;
+                iconSelect.appendChild(opt2);
+
+                // ✅ Add this to sync icon when type changes:
+                idSelect.addEventListener('change', () => {
+                    const selectedType = idSelect.value;
+                    const match = pinTypes.find(p => p.id === selectedType);
+                    if (match) {
+                        iconSelect.value = match.icon;
+                    }
+                });
+            });
+        });
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const screenX = e.clientX - rect.left;
+            const screenY = e.clientY - rect.top;
+            const worldX = Math.round((screenX - offsetX) / zoom);
+            const worldZ = Math.round((screenY - offsetY) / zoom);
+            document.getElementById('cursorPos').textContent = `X: ${worldX}, Z: ${worldZ}`;
         });
 
         function showPinPopup(screenX, screenY, worldX, worldZ) {
@@ -525,6 +638,8 @@
 
             if (showGrid) {
                 ctx.strokeStyle = gridColor;
+                ctx.lineWidth = 1; // ✅ Add this
+
                 for (let x = minX; x <= maxX; x += gridSpacing) {
                     const sx = offsetX + x * zoom;
                     ctx.beginPath();
@@ -760,6 +875,104 @@
             document.getElementById("textScale").disabled = !enabled;
             draw();
         });
+        let contextWorldX = 0;
+        let contextWorldZ = 0;
+
+        canvas.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+
+            const rect = canvas.getBoundingClientRect();
+            const screenX = e.clientX - rect.left;
+            const screenY = e.clientY - rect.top;
+
+            contextWorldX = Math.round((screenX - offsetX) / zoom);
+            contextWorldZ = Math.round((screenY - offsetY) / zoom);
+
+            showContextMenu(e.clientX, e.clientY);
+        });
+
+        function showContextMenu(pageX, pageY) {
+            const menu = document.getElementById('contextMenu');
+            menu.innerHTML = ''; // Clear previous
+
+            const grouped = {};
+            pinTypes.forEach(pin => {
+                if (!grouped[pin.category]) grouped[pin.category] = [];
+                grouped[pin.category].push(pin);
+            });
+
+            const options = [
+                {
+                    label: '📍 Custom Pin…',
+                    action: () => {
+                        showPinPopup(
+                            contextWorldX * zoom + offsetX,
+                            contextWorldZ * zoom + offsetY,
+                            contextWorldX,
+                            contextWorldZ
+                        );
+                        hideContextMenu();
+                    }
+                }
+            ];
+
+            Object.entries(grouped).forEach(([category, pins]) => {
+                options.push({ label: `── ${category}`, isSeparator: true });
+
+                pins.forEach(pin => {
+                    options.push({
+                        label: `${pin.icon} ${pin.label}`,
+                        action: () => {
+                            showPinPopup(
+                                contextWorldX * zoom + offsetX,
+                                contextWorldZ * zoom + offsetY,
+                                contextWorldX,
+                                contextWorldZ
+                            );
+                            setTimeout(() => {
+                                document.getElementById('popupPinID').value = pin.id;
+                                document.getElementById('popupPinIcon').value = pin.icon;
+                                document.getElementById('popupPinLabel').value = pin.label;
+                            }, 0);
+                            hideContextMenu();
+                        }
+                    });
+                });
+            });
+
+            options.forEach(opt => {
+                const li = document.createElement('li');
+
+                if (opt.isSeparator) {
+                    li.textContent = opt.label;
+                    li.style.padding = '4px 12px';
+                    li.style.fontWeight = 'bold';
+                    li.style.color = '#aaa';
+                    li.style.cursor = 'default';
+                } else {
+                    li.textContent = opt.label;
+                    li.style.padding = '4px 12px';
+                    li.style.cursor = 'pointer';
+                    li.addEventListener('click', opt.action);
+                    li.addEventListener('mouseenter', () => li.style.background = '#333');
+                    li.addEventListener('mouseleave', () => li.style.background = 'transparent');
+                }
+
+                menu.appendChild(li);
+            });
+
+
+            menu.style.left = `${pageX}px`;
+            menu.style.top = `${pageY}px`;
+            menu.style.display = 'block';
+        }
+
+        function hideContextMenu() {
+            document.getElementById('contextMenu').style.display = 'none';
+        }
+
+        window.addEventListener('click', () => hideContextMenu());
+        window.addEventListener('keydown', () => hideContextMenu());
 
         ["showGrid", "showIcons", "showText", "showCoords", "showDesc", "showTags", "minX", "maxX", "minZ", "maxZ", "bgColor", "showLabelBackground", "useTextScale", "gridColor", "gridSpacing", "showAxes"].forEach(id => {
             document.getElementById(id).addEventListener("input", draw);
