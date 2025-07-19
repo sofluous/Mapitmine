@@ -6,17 +6,26 @@
     <title>Minecraft Map Viewer</title>
     <style>
         :root {
+            --color-primary: rgb(135, 221, 31);
+            --color-secondary: rgb(83, 24, 186);
+            --color-tertiary: rgb(177, 82, 9);
+
             --color-bg: #1e1e1e;
             --color-panel: rgba(0, 0, 0, 0.6);
+            --color-input: rgba(127, 125, 125, 0.583);
             --color-text: #ffffff;
             --color-grid: #444444;
             --color-axis: #ffffff88;
-            --color-marker: #ffcc00;
+
+            --color-marker: var(--color-tertiary);
             --space-xs: 4px;
             --space-sm: 6px;
-            --space-md: 10px;
-            --space-lg: 20px;
+            --space-md: 12px;
+            --space-lg: 24px;
+
             --font-sm: 12px;
+            --font-md: 16px;
+
             --font-base: 13px;
         }
 
@@ -43,6 +52,7 @@
             left: var(--space-md);
             background: var(--color-panel);
             padding: var(--space-md);
+            gap: var(--space-md);
             border-radius: 8px;
             z-index: 10;
             font-size: var(--font-base);
@@ -55,7 +65,13 @@
             display: block;
         }
 
-        label,
+        label {
+            display: block;
+            margin: var(--space-xs) 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
         input,
         select,
         button,
@@ -64,17 +80,46 @@
             margin: var(--space-xs) 0;
             width: 100%;
             box-sizing: border-box;
+            background-color: var(--color-input);
         }
 
         fieldset {
             border: 1px solid var(--color-grid);
             margin-top: var(--space-sm);
-            padding: var(--space-sm);
+            padding: var(--space-md);
         }
 
         legend {
             font-weight: bold;
         }
+
+        .flex-row {
+            display: flex;
+            gap: var(--space-sm);
+            align-items: center;
+            margin-bottom: var(--space-xs);
+        }
+
+        .flex-row input[type="number"],
+        .flex-row input[type="text"],
+        .flex-row select {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .checkbox-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-sm);
+        }
+
+        .checkbox-row label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+
 
         ::-webkit-scrollbar {
             width: 8px;
@@ -100,46 +145,61 @@
     <div id="ui">
         <fieldset>
             <legend>Theme</legend>
-            <label>Theme
-                <select id="themeSelector">
-                    <option value="dark" selected>Dark</option>
-                    <option value="light">Light</option>
-                </select>
-            </label>
+            <select id="themeSelector">
+                <option value="dark" selected>Dark</option>
+                <option value="light">Light</option>
+            </select>
         </fieldset>
         <fieldset>
-            <legend>Settings</legend>
+            <legend>Map Settings</legend>
             <label>Zoom <input type="range" id="zoom" min="0.25" max="5" step="0.01" value="1"></label>
-            <label>Text Scale: <input type="range" id="textScale" min="0.5" max="5" step="0.1" value="1"></label><br>
+            <label>Text Scale <input type="range" id="textScale" min="0.5" max="5" step="0.1" value="1"></label>
+            <label><input type="checkbox" id="useTextScale"> Use Text Scale</label>
             <label>Map Crop</label>
-            <input type="number" id="minX" placeholder="Min X" value="-8000">
-            <input type="number" id="maxX" placeholder="Max X" value="8000">
-            <input type="number" id="minZ" placeholder="Min Z" value="-8000">
-            <input type="number" id="maxZ" placeholder="Max Z" value="8000">
+            <div class="flex-row"><span>X-range:</span>
+                <input type="number" id="minX" placeholder="Min" value="-8000">
+                <input type="number" id="maxX" placeholder="Max" value="8000">
+            </div>
+            <div class="flex-row"><span>Z-range:</span>
+                <input type="number" id="minZ" placeholder="Min" value="-8000">
+                <input type="number" id="maxZ" placeholder="Max" value="8000">
+            </div>
             <button onclick="resetView()">Reset View</button>
-            <label><input type="checkbox" id="showGrid" checked> Show Grid</label>
-            <label><input type="checkbox" id="showIcons" checked> Show Icons</label>
-            <label><input type="checkbox" id="showText" checked> Show Text</label>
-            <label><input type="checkbox" id="showCoords" checked> Show Coordinates</label>
-            <label><input type="checkbox" id="showDesc" checked> Show Description</label>
-            <label><input type="checkbox" id="showTags" checked> Show Tags</label>
-        </fieldset>
-        <fieldset>
-            <legend>Appearance</legend>
-            <label>Background Color <input type="color" id="bgColor" value="#2c2c2c"></label>
-            <label>Grid Color <input type="color" id="gridColor" value="#444444"></label>
+            <div class="flex-row">
+                <label for="bgColor">BG</label>
+                <input type="color" id="bgColor" value="#2c2c2c">
+                <label for="gridColor">Grid</label>
+                <input type="color" id="gridColor" value="#444444">
+            </div>
             <label>Grid Spacing <input type="number" id="gridSpacing" value="100" step="10"></label>
             <label><input type="checkbox" id="showAxes" checked> Show Axis Lines</label>
+            <label><input type="checkbox" id="showLabelBackground"> Label Background</label>
         </fieldset>
         <fieldset>
+            <legend>Show/Hide Elements</legend>
+            <div class="checkbox-row">
+                <label>Grid<input type="checkbox" id="showGrid" checked></label>
+                <label>Icons<input type="checkbox" id="showIcons" checked></label>
+                <label>Text<input type="checkbox" id="showText" checked></label>
+                <label>Coordinates<input type="checkbox" id="showCoords" checked></label>
+                <label>Description<input type="checkbox" id="showDesc" checked></label>
+                <label>Tags<input type="checkbox" id="showTags" checked></label>
+            </div>
+        </fieldset>
+
+        <fieldset>
             <legend>Add Pin</legend>
-            <input type="number" id="pinX" placeholder="X">
-            <input type="number" id="pinY" placeholder="Y (optional)">
-            <input type="number" id="pinZ" placeholder="Z">
-            <input type="text" id="pinType" placeholder="Type/ID">
-            <input type="text" id="pinLabel" placeholder="Label">
-            <textarea id="pinDesc" placeholder="Description"></textarea>
+            <div class="flex-row">
+                <input type="number" id="pinX" placeholder="X">
+                <input type="number" id="pinY" placeholder="Y">
+                <input type="number" id="pinZ" placeholder="Z">
+            </div>
+            <div class="flex-row">
+                <input type="text" id="pinType" placeholder="Type/ID">
+                <input type="text" id="pinLabel" placeholder="Label">
+            </div>
             <input type="text" id="pinIcon" placeholder="Icon (optional)">
+            <textarea id="pinDesc" placeholder="Description"></textarea>
             <button onclick="addPin()">+ Add Pin</button>
         </fieldset>
     </div>
@@ -222,21 +282,45 @@
                 if (m.x < minX || m.x > maxX || m.z < minZ || m.z > maxZ) continue;
                 const sx = offsetX + m.x * zoom;
                 const sy = offsetY + m.z * zoom;
+
+                const useTextScale = document.getElementById("useTextScale").checked;
+                const fontSize = useTextScale ? (12 * textScale) : Math.max(10, 12 * zoom);
+                const labelOffsetX = 8 * zoom;
+                const labelOffsetY = 0;
+                ctx.font = `${fontSize}px sans-serif`;
+                ctx.textAlign = "left";
+                ctx.textBaseline = "middle";
+
                 if (showIcons) {
                     ctx.fillStyle = "#ffcc00";
                     ctx.beginPath();
                     ctx.arc(sx, sy, 5 * zoom, 0, Math.PI * 2);
                     ctx.fill();
                 }
+
+                // 🟨 Background box (must come before text)
+                if (document.getElementById("showLabelBackground").checked) {
+                    const text = m.label;
+                    const metrics = ctx.measureText(text);
+                    const padding = 4;
+                    const bgWidth = metrics.width + padding * 2;
+                    const bgHeight = fontSize + padding * 2;
+                    const bgX = sx + labelOffsetX - padding;
+                    const bgY = sy - bgHeight / 2;
+
+                    ctx.fillStyle = "#000000cc"; // semi-transparent black
+                    ctx.fillRect(bgX, bgY, bgWidth, bgHeight);
+                }
+
                 if (showText) {
                     ctx.fillStyle = "white";
-                    ctx.font = `${12 * textScale}px sans-serif`;
-                    ctx.textAlign = "left";
-                    ctx.fillText(m.label, sx, sy - 10 * zoom);
-                    if (showCoords) ctx.fillText(`(${m.x}, ${m.z})`, sx, sy + 12 * zoom);
-                    if (showDesc && m.description) ctx.fillText(m.description, sx, sy + 24 * zoom);
-                    if (showTags && m.id) ctx.fillText(`[${m.id}]`, sx, sy + 36 * zoom);
+                    ctx.fillText(m.label, sx + labelOffsetX, sy + labelOffsetY);
+
+                    if (showCoords) ctx.fillText(`(${m.x}, ${m.z})`, sx + labelOffsetX, sy + fontSize * 1.2);
+                    if (showDesc && m.description) ctx.fillText(m.description, sx + labelOffsetX, sy + fontSize * 2.4);
+                    if (showTags && m.id) ctx.fillText(`[${m.id}]`, sx + labelOffsetX, sy + fontSize * 3.6);
                 }
+
             }
         }
 
@@ -298,7 +382,13 @@
             draw();
         });
 
-        ["showGrid", "showIcons", "showText", "showCoords", "showDesc", "showTags", "minX", "maxX", "minZ", "maxZ", "bgColor", "gridColor", "gridSpacing", "showAxes"].forEach(id => {
+        document.getElementById("useTextScale").addEventListener("input", () => {
+            const enabled = document.getElementById("useTextScale").checked;
+            document.getElementById("textScale").disabled = !enabled;
+            draw();
+        });
+
+        ["showGrid", "showIcons", "showText", "showCoords", "showDesc", "showTags", "minX", "maxX", "minZ", "maxZ", "bgColor", "showLabelBackground", "useTextScale", "gridColor", "gridSpacing", "showAxes"].forEach(id => {
             document.getElementById(id).addEventListener("input", draw);
         });
         draw();
