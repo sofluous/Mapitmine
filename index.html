@@ -502,6 +502,10 @@
 </head>
 
 <body data-theme="dark">
+    <!-- =================== 🌐 GLOBAL UI PANELS =================== -->
+
+    <!-- UI: Settings Sidebar -->
+
     <div id="ui">
         <fieldset>
             <legend>Interface</legend>
@@ -566,6 +570,9 @@
             </div>
         </fieldset>
     </div>
+
+    <!-- HUD: Top Toolbar -->
+
     <div id="hud">
         <label for="mapSelector">Map:</label>
         <select id="mapSelector">
@@ -577,12 +584,37 @@
         <button onclick="togglePinList()">📌</button>
         <button onclick="toggleMiniMap()">🗺</button>
     </div>
-    <span id="cursorPos">X: –, Z: –</span>
+
+    <!-- Pin List: Right Sidebar -->
 
     <div id="pinListPanel">
         <h3>Pins<span id="pinCount">(0)</span></h3>
         <div id="pinList"></div>
     </div>
+
+    <!-- Floating Pin Editor -->
+
+    <div id="floatingPinPanel">
+        <div class="grid-form">
+            <div class="input-group" style="grid-column: span 2;">
+                <input type="number" id="popupPinX" placeholder="X">
+                <input type="number" id="popupPinY" placeholder="Y">
+                <input type="number" id="popupPinZ" placeholder="Z">
+            </div>
+            <input type="text" id="popupPinLabel" placeholder="Enter a label" style="grid-column: span 2;">
+            <div class="input-group" style="grid-column: span 2;">
+                <select id="popupPinID"></select>
+                <select id="popupPinIcon"></select>
+            </div>
+            <textarea id="popupPinDesc" placeholder="Enter details or notes" style="grid-column: span 2;"></textarea>
+        </div>
+        <div class="input-group" style="grid-column: span 2;">
+            <button onclick="confirmPinPlacement()">+ Add Pin</button>
+            <button onclick="cancelPinPlacement()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Minimap and Labels -->
 
     <div id="minimapContainer" class="minimap-wrapper">
         <canvas id="minimapCanvas" width="200" height="200"></canvas>
@@ -620,35 +652,64 @@
         </div>
     </div>
 
-    <div id="floatingPinPanel">
-        <div class="grid-form">
-            <div class="input-group" style="grid-column: span 2;">
-                <input type="number" id="popupPinX" placeholder="X">
-                <input type="number" id="popupPinY" placeholder="Y">
-                <input type="number" id="popupPinZ" placeholder="Z">
-            </div>
-            <input type="text" id="popupPinLabel" placeholder="Enter a label" style="grid-column: span 2;">
-            <div class="input-group" style="grid-column: span 2;">
-                <select id="popupPinID"></select>
-                <select id="popupPinIcon"></select>
-            </div>
-            <textarea id="popupPinDesc" placeholder="Enter details or notes" style="grid-column: span 2;"></textarea>
-        </div>
-        <div class="input-group" style="grid-column: span 2;">
-            <button onclick="confirmPinPlacement()">+ Add Pin</button>
-            <button onclick="cancelPinPlacement()">Cancel</button>
-        </div>
-    </div>
+    <!-- No Map Overlay Screen -->
+
+    <!-- Context Menu -->
 
     <ul id="contextMenu"
         style="display:none; position:absolute; z-index:100; background: var(--color-panel); border: 1px solid var(--color-border); border-radius: 4px; padding: 4px 0; list-style: none; font-size: var(--font-sm); min-width: 140px;">
     </ul>
 
+    <!-- Canvas (Main Map) -->
+    <span id="cursorPos">X: –, Z: –</span>
+
+    <div id="noMapOverlay" style="display: none;">
+        <div class="overlay-content">
+            <h2>No Map Selected</h2>
+            <p>Please create or select a map to begin.</p>
+            <button onclick="triggerNewMap()">+ New Map</button>
+        </div>
+    </div>
+
     <canvas id="mapCanvas"></canvas>
+
     <script>
+
+        // =================== 🔁 DOM INITIALIZATION ===================
+        // Theme selector, canvas/context setup, resizeCanvas call, initial draw
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const idSelect = document.getElementById('popupPinID');
+            const iconSelect = document.getElementById('popupPinIcon');
+
+            pinTypes.forEach(pin => {
+                const opt1 = document.createElement('option');
+                opt1.value = pin.id;
+                opt1.textContent = pin.label;
+                idSelect.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = pin.icon;
+                opt2.textContent = pin.icon;
+                iconSelect.appendChild(opt2);
+
+                // ✅ Add this to sync icon when type changes:
+                idSelect.addEventListener('change', () => {
+                    const selectedType = idSelect.value;
+                    const match = pinTypes.find(p => p.id === selectedType);
+                    if (match) {
+                        iconSelect.value = match.icon;
+                    }
+                });
+            });
+        });
+
         document.getElementById("themeSelector").addEventListener("change", (e) => {
             document.body.setAttribute("data-theme", e.target.value);
         });
+
+        // =================== 🌍 GLOBAL VARIABLES ===================
+        // canvas, context, zoom, offset, pins, pinTypes, minimap settings...
 
         const canvas = document.getElementById("mapCanvas");
         const ctx = canvas.getContext("2d");
@@ -661,6 +722,9 @@
         let offsetY = 0;
         let zoom = 1;
         let initializedCamera = false;
+
+        let contextWorldX = 0;
+        let contextWorldZ = 0;
 
         let panStart = {}, isPanning = false;
 
@@ -709,74 +773,27 @@
             }
         });
 
-        canvas.addEventListener('click', (e) => {
-            if (!isPlacingPin) return;
-            const rect = canvas.getBoundingClientRect();
-            const screenX = e.clientX - rect.left;
-            const screenY = e.clientY - rect.top;
+        // =================== 📦 LOCAL STORAGE: MAP LOADING & SAVING ===================
+        // saveCurrentMap, loadMap, loadMapNames, triggerNewMap
 
-            const worldX = Math.round((screenX - offsetX) / zoom);
-            const worldZ = Math.round((screenY - offsetY) / zoom);
+        function saveCurrentMap() {
+            // Protect against missing map name or pins array
+            if (!currentMapName || typeof currentMapName !== "string" || currentMapName.trim() === "") return;
+            if (!Array.isArray(pins)) return;
 
-            showPinPopup(screenX, screenY, worldX, worldZ);
-        });
-
-        // Populate dropdowns on load
-        window.addEventListener('DOMContentLoaded', () => {
-            const idSelect = document.getElementById('popupPinID');
-            const iconSelect = document.getElementById('popupPinIcon');
-
-            pinTypes.forEach(pin => {
-                const opt1 = document.createElement('option');
-                opt1.value = pin.id;
-                opt1.textContent = pin.label;
-                idSelect.appendChild(opt1);
-
-                const opt2 = document.createElement('option');
-                opt2.value = pin.icon;
-                opt2.textContent = pin.icon;
-                iconSelect.appendChild(opt2);
-
-                // ✅ Add this to sync icon when type changes:
-                idSelect.addEventListener('change', () => {
-                    const selectedType = idSelect.value;
-                    const match = pinTypes.find(p => p.id === selectedType);
-                    if (match) {
-                        iconSelect.value = match.icon;
-                    }
-                });
-            });
-        });
-
-        canvas.addEventListener('mousemove', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const screenX = e.clientX - rect.left;
-            const screenY = e.clientY - rect.top;
-            const worldX = Math.round((screenX - offsetX) / zoom);
-            const worldZ = Math.round((screenY - offsetY) / zoom);
-            document.getElementById('cursorPos').textContent = `X: ${worldX}, Z: ${worldZ}`;
-        });
-
-        function resizeCanvas() {
-            width = window.innerWidth;
-            height = window.innerHeight;
-            canvas.width = width;
-            canvas.height = height;
-
-            if (!initializedCamera) {
-                offsetX = -width / 2;
-                offsetY = -height / 2;
-                initializedCamera = true;
-            }
-
-            draw();
+            localStorage.setItem(`map:${currentMapName}`, JSON.stringify(pins));
         }
 
-        window.addEventListener("resize", resizeCanvas);
-
-        function updateOverlayVisibility() {
-            const overlay = document.getElementById("noMapOverlay");
-            overlay.style.display = currentMapName ? "none" : "flex";
+        function loadMap(name) {
+            const data = localStorage.getItem(`map:${name}`);
+            if (data) {
+                pins = JSON.parse(data);
+                currentMapName = name;
+                updateOverlayVisibility();
+                draw();
+                renderPinList(); // re-renders UI
+            }
+            document.getElementById("currentMapName").textContent = currentMapName;
         }
 
         function loadMapNames({ autoLoadFirst = false } = {}) {
@@ -810,205 +827,12 @@
                 selector.value = currentMapName || "__new__";
             }
         }
-
-
-        function saveCurrentMap() {
-            // Protect against missing map name or pins array
-            if (!currentMapName || typeof currentMapName !== "string" || currentMapName.trim() === "") return;
-            if (!Array.isArray(pins)) return;
-
-            localStorage.setItem(`map:${currentMapName}`, JSON.stringify(pins));
-        }
-
-
-        function loadMap(name) {
-            const data = localStorage.getItem(`map:${name}`);
-            if (data) {
-                pins = JSON.parse(data);
-                currentMapName = name;
-                updateOverlayVisibility();
-                draw();
-                renderPinList(); // re-renders UI
-            }
-            document.getElementById("currentMapName").textContent = currentMapName;
-        }
-
-
-        function showPinPopup(screenX, screenY, worldX, worldZ) {
-            const panel = document.getElementById('floatingPinPanel');
-            panel.style.left = `${screenX}px`;
-            panel.style.top = `${screenY}px`;
-            panel.style.display = 'block';
-
-            // Save for drawing
-            tempPin = { x: worldX, z: worldZ };
-            tempPinScreenX = screenX;
-            tempPinScreenY = screenY;
-
-            document.getElementById('popupPinX').value = worldX;
-            document.getElementById('popupPinY').value = '';
-            document.getElementById('popupPinZ').value = worldZ;
-            document.getElementById('popupPinID').value = '';
-            document.getElementById('popupPinLabel').value = '';
-            document.getElementById('popupPinDesc').value = '';
-            document.getElementById('popupPinIcon').value = '';
-
-            const fields = document.querySelectorAll('#floatingPinPanel input, #floatingPinPanel textarea');
-            fields.forEach(field => {
-                field.onkeydown = (e) => {
-                    if (e.key === 'Enter') {
-                        if (e.ctrlKey || e.metaKey) {
-                            e.preventDefault();
-                            confirmPinPlacement();
-                        } else {
-                            e.preventDefault();
-                            focusNextInput(e.target);
-                        }
-                    }
-                };
-            });
-
-            draw();
-            setTimeout(() => {
-                document.getElementById('popupPinLabel').focus();
-            }, 0);
-        }
-
-        function confirmPinPlacement() {
-            const x = parseInt(document.getElementById('popupPinX').value);
-            const y = parseInt(document.getElementById('popupPinY').value);
-            const z = parseInt(document.getElementById('popupPinZ').value);
-            const id = document.getElementById('popupPinID').value;
-            const label = document.getElementById('popupPinLabel').value;
-            const desc = document.getElementById('popupPinDesc').value;
-            const icon = document.getElementById('popupPinIcon').value;
-
-            const pinData = { x, y, z, id, label, desc, icon };
-
-            if (currentEditIndex !== null) {
-                pins[currentEditIndex] = pinData;
-            } else {
-                pins.push(pinData);
-            }
-            renderPinList();
-            cancelPinPlacement();
-            currentEditIndex = null;
-            tempPin = null;
-            saveCurrentMap();
-            draw();
-        }
-
-        function cancelPinPlacement() {
-            isPlacingPin = false;
-            document.getElementById('floatingPinPanel').style.display = 'none';
-            document.body.style.cursor = 'default';
-            tempPin = null;
-            draw();
-        }
-        function focusNextInput(current) {
-            const inputs = Array.from(
-                document.querySelectorAll('#floatingPinPanel input, #floatingPinPanel textarea')
-            );
-            const index = inputs.indexOf(current);
-            if (index >= 0 && index < inputs.length - 1) {
-                inputs[index + 1].focus();
-            }
-        }
         function triggerNewMap() {
             document.getElementById("createNewMapBtn").click();
         }
 
-        function drawMinimap() {
-            minimapCtx.clearRect(0, 0, minimapSize, minimapSize);
-
-            // 1. Compute total world range
-            const worldWidth = worldMaxX - worldMinX;
-            const worldHeight = worldMaxZ - worldMinZ;
-
-            // 2. Compute scale factor to fit world into minimap canvas
-            const scale = Math.min(minimapSize / worldWidth, minimapSize / worldHeight);
-
-            // Read crop bounds
-            let minX = parseInt(document.getElementById("minX").value);
-            let maxX = parseInt(document.getElementById("maxX").value);
-            let minZ = parseInt(document.getElementById("minZ").value);
-            let maxZ = parseInt(document.getElementById("maxZ").value);
-
-            if (isNaN(minX)) minX = -1000;
-            if (isNaN(maxX)) maxX = 1000;
-            if (isNaN(minZ)) minZ = -1000;
-            if (isNaN(maxZ)) maxZ = 1000;
-
-            const cropWidth = maxX - minX;
-            const cropHeight = maxZ - minZ;
-
-            // 3. Offset = world origin → canvas origin
-            const worldOffsetX = -worldMinX * scale;
-            const worldOffsetZ = -worldMinZ * scale;
-
-
-            // 📦 Draw crop bounds
-            minimapCtx.strokeStyle = "orange"; // or use a token color
-            minimapCtx.lineWidth = 1;
-            minimapCtx.strokeRect(
-                worldOffsetX + minX * scale,
-                worldOffsetZ + minZ * scale,
-                (maxX - minX) * scale,
-                (maxZ - minZ) * scale
-            );
-
-            // 🎥 Draw current camera viewport
-            // 🎥 Correctly calculate the visible viewport
-            const topLeftWorldX = (-offsetX) / zoom;
-            const topLeftWorldZ = (-offsetY) / zoom;
-            const bottomRightWorldX = (width - offsetX) / zoom;
-            const bottomRightWorldZ = (height - offsetY) / zoom;
-
-            const viewX = topLeftWorldX * scale + worldOffsetX;
-            const viewZ = topLeftWorldZ * scale + worldOffsetZ;
-            const viewWidth = (bottomRightWorldX - topLeftWorldX) * scale;
-            const viewHeight = (bottomRightWorldZ - topLeftWorldZ) * scale;
-
-            minimapCtx.strokeStyle = "lime";
-            minimapCtx.lineWidth = 1;
-            minimapCtx.strokeRect(viewX, viewZ, viewWidth, viewHeight);
-
-
-            // 📍 Draw pins
-            for (const p of pins) {
-                const px = worldOffsetX + p.x * scale;
-                const pz = worldOffsetZ + p.z * scale;
-
-                if (!isFinite(px) || !isFinite(pz)) continue; // safety
-
-                minimapCtx.fillStyle = "red";
-                minimapCtx.beginPath();
-                minimapCtx.arc(px, pz, 2, 0, Math.PI * 2);
-                minimapCtx.fill();
-            }
-            // World limits
-            document.getElementById("worldMinX").textContent = worldMinX;
-            document.getElementById("worldMaxX").textContent = worldMaxX;
-            document.getElementById("worldMinZ").textContent = worldMinZ;
-            document.getElementById("worldMaxZ").textContent = worldMaxZ;
-
-            // Crop limits
-            document.getElementById("cropMinX").textContent = minX;
-            document.getElementById("cropMaxX").textContent = maxX;
-            document.getElementById("cropMinZ").textContent = minZ;
-            document.getElementById("cropMaxZ").textContent = maxZ;
-
-            // Viewport (based on offset)
-            const viewMinX = Math.round(-offsetX / zoom);
-            const viewMaxX = Math.round((width - offsetX) / zoom);
-            const viewMinZ = Math.round(-offsetY / zoom);
-            const viewMaxZ = Math.round((height - offsetY) / zoom);
-
-            document.getElementById("viewMinX").textContent = viewMinX;
-            document.getElementById("viewMaxX").textContent = viewMaxX;
-            document.getElementById("viewMinZ").textContent = viewMinZ;
-            document.getElementById("viewMaxZ").textContent = viewMaxZ;
-        }
+        // =================== 🗺️ DRAW FUNCTIONS ===================
+        // draw(), drawMinimap()
 
         function draw() {
             const bgColor = document.getElementById("bgColor").value;
@@ -1145,11 +969,115 @@
             console.log("drawing");
         }
 
-        function togglePinList() {
-            const panel = document.getElementById('pinListPanel');
-            panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
-            renderPinList();
+        function drawMinimap() {
+            minimapCtx.clearRect(0, 0, minimapSize, minimapSize);
+
+            // 1. Compute total world range
+            const worldWidth = worldMaxX - worldMinX;
+            const worldHeight = worldMaxZ - worldMinZ;
+
+            // 2. Compute scale factor to fit world into minimap canvas
+            const scale = Math.min(minimapSize / worldWidth, minimapSize / worldHeight);
+
+            // Read crop bounds
+            let minX = parseInt(document.getElementById("minX").value);
+            let maxX = parseInt(document.getElementById("maxX").value);
+            let minZ = parseInt(document.getElementById("minZ").value);
+            let maxZ = parseInt(document.getElementById("maxZ").value);
+
+            if (isNaN(minX)) minX = -1000;
+            if (isNaN(maxX)) maxX = 1000;
+            if (isNaN(minZ)) minZ = -1000;
+            if (isNaN(maxZ)) maxZ = 1000;
+
+            const cropWidth = maxX - minX;
+            const cropHeight = maxZ - minZ;
+
+            // 3. Offset = world origin → canvas origin
+            const worldOffsetX = -worldMinX * scale;
+            const worldOffsetZ = -worldMinZ * scale;
+
+
+            // 📦 Draw crop bounds
+            minimapCtx.strokeStyle = "orange"; // or use a token color
+            minimapCtx.lineWidth = 1;
+            minimapCtx.strokeRect(
+                worldOffsetX + minX * scale,
+                worldOffsetZ + minZ * scale,
+                (maxX - minX) * scale,
+                (maxZ - minZ) * scale
+            );
+
+            // 🎥 Draw current camera viewport
+            // 🎥 Correctly calculate the visible viewport
+            const topLeftWorldX = (-offsetX) / zoom;
+            const topLeftWorldZ = (-offsetY) / zoom;
+            const bottomRightWorldX = (width - offsetX) / zoom;
+            const bottomRightWorldZ = (height - offsetY) / zoom;
+
+            const viewX = topLeftWorldX * scale + worldOffsetX;
+            const viewZ = topLeftWorldZ * scale + worldOffsetZ;
+            const viewWidth = (bottomRightWorldX - topLeftWorldX) * scale;
+            const viewHeight = (bottomRightWorldZ - topLeftWorldZ) * scale;
+
+            minimapCtx.strokeStyle = "lime";
+            minimapCtx.lineWidth = 1;
+            minimapCtx.strokeRect(viewX, viewZ, viewWidth, viewHeight);
+
+
+            // 📍 Draw pins
+            for (const p of pins) {
+                const px = worldOffsetX + p.x * scale;
+                const pz = worldOffsetZ + p.z * scale;
+
+                if (!isFinite(px) || !isFinite(pz)) continue; // safety
+
+                minimapCtx.fillStyle = "red";
+                minimapCtx.beginPath();
+                minimapCtx.arc(px, pz, 2, 0, Math.PI * 2);
+                minimapCtx.fill();
+            }
+            // World limits
+            document.getElementById("worldMinX").textContent = worldMinX;
+            document.getElementById("worldMaxX").textContent = worldMaxX;
+            document.getElementById("worldMinZ").textContent = worldMinZ;
+            document.getElementById("worldMaxZ").textContent = worldMaxZ;
+
+            // Crop limits
+            document.getElementById("cropMinX").textContent = minX;
+            document.getElementById("cropMaxX").textContent = maxX;
+            document.getElementById("cropMinZ").textContent = minZ;
+            document.getElementById("cropMaxZ").textContent = maxZ;
+
+            // Viewport (based on offset)
+            const viewMinX = Math.round(-offsetX / zoom);
+            const viewMaxX = Math.round((width - offsetX) / zoom);
+            const viewMinZ = Math.round(-offsetY / zoom);
+            const viewMaxZ = Math.round((height - offsetY) / zoom);
+
+            document.getElementById("viewMinX").textContent = viewMinX;
+            document.getElementById("viewMaxX").textContent = viewMaxX;
+            document.getElementById("viewMinZ").textContent = viewMinZ;
+            document.getElementById("viewMaxZ").textContent = viewMaxZ;
         }
+
+        function resizeCanvas() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+
+            if (!initializedCamera) {
+                offsetX = -width / 2;
+                offsetY = -height / 2;
+                initializedCamera = true;
+            }
+
+            draw();
+        }
+
+        // =================== 🖼️ UI RENDERING ===================
+        // renderPinList(), centerOnPin(), updateOverlayVisibility()
 
         function renderPinList() {
             const container = document.getElementById('pinList');
@@ -1204,6 +1132,92 @@
             document.getElementById("pinCount").textContent = `(${pins.length})`;
         }
 
+        function centerOnPin(pin) {
+            if (!pin) return;
+            offsetX = canvas.width / 2 - pin.x * zoom;
+            offsetY = canvas.height / 2 - pin.z * zoom;
+            draw();
+        }
+
+        function updateOverlayVisibility() {
+            const overlay = document.getElementById("noMapOverlay");
+            overlay.style.display = currentMapName ? "none" : "flex";
+        }
+
+        // =================== 📌 PIN MANAGEMENT ===================
+        // showPinPopup(), confirmPinPlacement(), cancelPinPlacement(), editPin(), addPin()
+
+        function showPinPopup(screenX, screenY, worldX, worldZ) {
+            const panel = document.getElementById('floatingPinPanel');
+            panel.style.left = `${screenX}px`;
+            panel.style.top = `${screenY}px`;
+            panel.style.display = 'block';
+
+            // Save for drawing
+            tempPin = { x: worldX, z: worldZ };
+            tempPinScreenX = screenX;
+            tempPinScreenY = screenY;
+
+            document.getElementById('popupPinX').value = worldX;
+            document.getElementById('popupPinY').value = '';
+            document.getElementById('popupPinZ').value = worldZ;
+            document.getElementById('popupPinID').value = '';
+            document.getElementById('popupPinLabel').value = '';
+            document.getElementById('popupPinDesc').value = '';
+            document.getElementById('popupPinIcon').value = '';
+
+            const fields = document.querySelectorAll('#floatingPinPanel input, #floatingPinPanel textarea');
+            fields.forEach(field => {
+                field.onkeydown = (e) => {
+                    if (e.key === 'Enter') {
+                        if (e.ctrlKey || e.metaKey) {
+                            e.preventDefault();
+                            confirmPinPlacement();
+                        } else {
+                            e.preventDefault();
+                            focusNextInput(e.target);
+                        }
+                    }
+                };
+            });
+
+            draw();
+            setTimeout(() => {
+                document.getElementById('popupPinLabel').focus();
+            }, 0);
+        }
+
+        function confirmPinPlacement() {
+            const x = parseInt(document.getElementById('popupPinX').value);
+            const y = parseInt(document.getElementById('popupPinY').value);
+            const z = parseInt(document.getElementById('popupPinZ').value);
+            const id = document.getElementById('popupPinID').value;
+            const label = document.getElementById('popupPinLabel').value;
+            const desc = document.getElementById('popupPinDesc').value;
+            const icon = document.getElementById('popupPinIcon').value;
+
+            const pinData = { x, y, z, id, label, desc, icon };
+
+            if (currentEditIndex !== null) {
+                pins[currentEditIndex] = pinData;
+            } else {
+                pins.push(pinData);
+            }
+            renderPinList();
+            cancelPinPlacement();
+            currentEditIndex = null;
+            tempPin = null;
+            saveCurrentMap();
+            draw();
+        }
+
+        function cancelPinPlacement() {
+            isPlacingPin = false;
+            document.getElementById('floatingPinPanel').style.display = 'none';
+            document.body.style.cursor = 'default';
+            tempPin = null;
+            draw();
+        }
         function editPin(index) {
             const pin = pins[index];
             currentEditIndex = index;
@@ -1223,13 +1237,6 @@
             document.getElementById('popupPinIcon').value = pin.icon ?? '';
         }
 
-        function centerOnPin(pin) {
-            if (!pin) return;
-            offsetX = canvas.width / 2 - pin.x * zoom;
-            offsetY = canvas.height / 2 - pin.z * zoom;
-            draw();
-        }
-
         function addPin() {
             const x = parseInt(document.getElementById("pinX").value);
             const y = parseInt(document.getElementById("pinY").value) || null;
@@ -1244,7 +1251,14 @@
             renderPinList(); // ← Add this line
             saveCurrentMap();
         }
+        // =================== 📑 UI HELPERS + TOGGLES ===================
+        // togglePinList(), resetView(), focusNextInput(), hideContextMenu()
 
+        function togglePinList() {
+            const panel = document.getElementById('pinListPanel');
+            panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
+            renderPinList();
+        }
         function resetView() {
             zoom = 1;
             offsetX = width / 2;
@@ -1253,64 +1267,18 @@
             draw();
         }
 
-        canvas.addEventListener("mousedown", (e) => {
-            isPanning = true;
-            panStart = { x: e.clientX, y: e.clientY };
-        });
-        canvas.addEventListener("mouseup", () => isPanning = false);
-        canvas.addEventListener("mousemove", (e) => {
-            if (!isPanning) return;
-            offsetX += e.clientX - panStart.x;
-            offsetY += e.clientY - panStart.y;
-            panStart = { x: e.clientX, y: e.clientY };
-            draw();
-        });
+        function focusNextInput(current) {
+            const inputs = Array.from(
+                document.querySelectorAll('#floatingPinPanel input, #floatingPinPanel textarea')
+            );
+            const index = inputs.indexOf(current);
+            if (index >= 0 && index < inputs.length - 1) {
+                inputs[index + 1].focus();
+            }
+        }
 
-        canvas.addEventListener("wheel", (e) => {
-            e.preventDefault();
-            const scale = e.deltaY < 0 ? 1.1 : 0.9;
-            const mx = e.clientX;
-            const my = e.clientY;
-            const wx = (mx - offsetX) / zoom;
-            const wy = (my - offsetY) / zoom;
-            zoom *= scale;
-            zoom = Math.max(0.25, Math.min(5, zoom));
-            offsetX = mx - wx * zoom;
-            offsetY = my - wy * zoom;
-            document.getElementById("zoom").value = zoom;
-            draw();
-        }, { passive: false });
-
-        document.getElementById("zoom").addEventListener("input", (e) => {
-            zoom = parseFloat(e.target.value);
-            draw();
-        });
-
-        document.getElementById("textScale").addEventListener("input", (e) => {
-            textScale = parseFloat(e.target.value);
-            draw();
-        });
-
-        document.getElementById("useTextScale").addEventListener("input", () => {
-            const enabled = document.getElementById("useTextScale").checked;
-            document.getElementById("textScale").disabled = !enabled;
-            draw();
-        });
-        let contextWorldX = 0;
-        let contextWorldZ = 0;
-
-        canvas.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-
-            const rect = canvas.getBoundingClientRect();
-            const screenX = e.clientX - rect.left;
-            const screenY = e.clientY - rect.top;
-
-            contextWorldX = Math.round((screenX - offsetX) / zoom);
-            contextWorldZ = Math.round((screenY - offsetY) / zoom);
-
-            showContextMenu(e.clientX, e.clientY);
-        });
+        // =================== ⚙️ CONTEXT MENU SYSTEM ===================
+        // showContextMenu(), event listeners
 
         function showContextMenu(pageX, pageY) {
             const menu = document.getElementById('contextMenu');
@@ -1382,7 +1350,6 @@
                 menu.appendChild(li);
             });
 
-
             menu.style.left = `${pageX}px`;
             menu.style.top = `${pageY}px`;
             menu.style.display = 'block';
@@ -1392,17 +1359,78 @@
             document.getElementById('contextMenu').style.display = 'none';
         }
 
-        document.getElementById("mapSelector").addEventListener("change", (e) => {
-            const selected = e.target.value;
+        canvas.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
 
-            if (selected === "__new__") {
-                e.target.value = currentMapName || "__new__"; // prevent selection sticking
-                return; // we handle New Map from the button
-            }
+            const rect = canvas.getBoundingClientRect();
+            const screenX = e.clientX - rect.left;
+            const screenY = e.clientY - rect.top;
 
-            loadMap(selected);
+            contextWorldX = Math.round((screenX - offsetX) / zoom);
+            contextWorldZ = Math.round((screenY - offsetY) / zoom);
+
+            showContextMenu(e.clientX, e.clientY);
         });
 
+        // =================== 🧭 INTERACTION: ZOOM, PAN, CLICK ===================
+        // mouse event listeners for panning, zoom, placing pins, hover cursor
+
+        canvas.addEventListener("mousedown", (e) => {
+            isPanning = true;
+            panStart = { x: e.clientX, y: e.clientY };
+        });
+        canvas.addEventListener("mouseup", () => isPanning = false);
+        canvas.addEventListener("mousemove", (e) => {
+            if (!isPanning) return;
+            offsetX += e.clientX - panStart.x;
+            offsetY += e.clientY - panStart.y;
+            panStart = { x: e.clientX, y: e.clientY };
+            draw();
+        });
+
+        canvas.addEventListener("wheel", (e) => {
+            e.preventDefault();
+            const scale = e.deltaY < 0 ? 1.1 : 0.9;
+            const mx = e.clientX;
+            const my = e.clientY;
+            const wx = (mx - offsetX) / zoom;
+            const wy = (my - offsetY) / zoom;
+            zoom *= scale;
+            zoom = Math.max(0.25, Math.min(5, zoom));
+            offsetX = mx - wx * zoom;
+            offsetY = my - wy * zoom;
+            document.getElementById("zoom").value = zoom;
+            draw();
+        }, { passive: false });
+
+        document.getElementById("zoom").addEventListener("input", (e) => {
+            zoom = parseFloat(e.target.value);
+            draw();
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const screenX = e.clientX - rect.left;
+            const screenY = e.clientY - rect.top;
+            const worldX = Math.round((screenX - offsetX) / zoom);
+            const worldZ = Math.round((screenY - offsetY) / zoom);
+            document.getElementById('cursorPos').textContent = `X: ${worldX}, Z: ${worldZ}`;
+        });
+
+        canvas.addEventListener('click', (e) => {
+            if (!isPlacingPin) return;
+            const rect = canvas.getBoundingClientRect();
+            const screenX = e.clientX - rect.left;
+            const screenY = e.clientY - rect.top;
+
+            const worldX = Math.round((screenX - offsetX) / zoom);
+            const worldZ = Math.round((screenY - offsetY) / zoom);
+
+            showPinPopup(screenX, screenY, worldX, worldZ);
+        });
+
+        // =================== 🧩 INPUT EVENT HOOKS ===================
+        // sliders, checkboxes, map selector change
 
         document.getElementById("createNewMapBtn").addEventListener("click", () => {
             let newName = prompt("Enter a name for the new map:");
@@ -1428,6 +1456,29 @@
             loadMap(currentMapName);
         });
 
+        document.getElementById("mapSelector").addEventListener("change", (e) => {
+            const selected = e.target.value;
+
+            if (selected === "__new__") {
+                e.target.value = currentMapName || "__new__"; // prevent selection sticking
+                return; // we handle New Map from the button
+            }
+
+            loadMap(selected);
+        });
+
+        window.addEventListener("resize", resizeCanvas);
+
+        document.getElementById("textScale").addEventListener("input", (e) => {
+            textScale = parseFloat(e.target.value);
+            draw();
+        });
+
+        document.getElementById("useTextScale").addEventListener("input", () => {
+            const enabled = document.getElementById("useTextScale").checked;
+            document.getElementById("textScale").disabled = !enabled;
+            draw();
+        });
 
         window.addEventListener('click', () => hideContextMenu());
         window.addEventListener('keydown', () => hideContextMenu());
@@ -1435,17 +1486,16 @@
         ["showGrid", "showIcons", "showText", "showCoords", "showDesc", "showTags", "minX", "maxX", "minZ", "maxZ", "bgColor", "showLabelBackground", "useTextScale", "gridColor", "gridSpacing", "showAxes"].forEach(id => {
             document.getElementById(id).addEventListener("input", draw);
         });
+
+        // =================== 11. 🔚 FINAL INIT CALLS ===================
+        // loadMapNames(), draw(), resizeCanvas()
+
         loadMapNames({ autoLoadFirst: true });
         draw();
         resizeCanvas();
+
     </script>
-    <div id="noMapOverlay" style="display: none;">
-        <div class="overlay-content">
-            <h2>No Map Selected</h2>
-            <p>Please create or select a map to begin.</p>
-            <button onclick="triggerNewMap()">+ New Map</button>
-        </div>
-    </div>
+
 </body>
 
 </html>
