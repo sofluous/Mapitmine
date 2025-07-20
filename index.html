@@ -315,6 +315,30 @@
             transform-origin: right center;
         }
 
+        #noMapOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-overlay, rgba(0, 0, 0, 0.85));
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            text-align: center;
+            backdrop-filter: blur(3px);
+        }
+
+        #noMapOverlay .overlay-content {
+            background: var(--card-bg, #222);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 0 1rem rgba(0, 0, 0, 0.5);
+        }
+
+
         canvas {
             display: block;
         }
@@ -548,15 +572,18 @@
             <!-- will be filled dynamically -->
         </select>
         <button id="createNewMapBtn">+ New Map</button>
-        <span id="cursorPos">X: –, Z: –</span>
+        <small>Current Map: <strong id="currentMapName">default</strong></small>
         <button onclick="toggleUI()">⚙️</button>
         <button onclick="togglePinList()">📌</button>
         <button onclick="toggleMiniMap()">🗺</button>
     </div>
+    <span id="cursorPos">X: –, Z: –</span>
+
     <div id="pinListPanel">
-        <h3>Pins</h3>
+        <h3>Pins<span id="pinCount">(0)</span></h3>
         <div id="pinList"></div>
     </div>
+
     <div id="minimapContainer" class="minimap-wrapper">
         <canvas id="minimapCanvas" width="200" height="200"></canvas>
 
@@ -592,7 +619,6 @@
             </div>
         </div>
     </div>
-
 
     <div id="floatingPinPanel">
         <div class="grid-form">
@@ -748,36 +774,63 @@
 
         window.addEventListener("resize", resizeCanvas);
 
-        function loadMapNames() {
+        function updateOverlayVisibility() {
+            const overlay = document.getElementById("noMapOverlay");
+            overlay.style.display = currentMapName ? "none" : "flex";
+        }
+
+        function loadMapNames({ autoLoadFirst = false } = {}) {
             const keys = Object.keys(localStorage).filter(k => k.startsWith("map:"));
             const selector = document.getElementById("mapSelector");
-            selector.innerHTML = '<option value="__new__">+ New Map</option>';
+
+            selector.innerHTML = ''; // clear options
+
+            // Always add the button-like +New option
+            const newOpt = document.createElement("option");
+            newOpt.value = "__new__";
+            newOpt.textContent = "+ New Map";
+            selector.appendChild(newOpt);
+
+            if (keys.length === 0) return;
+
             keys.forEach(k => {
-                const name = k.slice(4);
+                const name = k.slice(4); // remove "map:" prefix
                 const opt = document.createElement("option");
                 opt.value = name;
                 opt.textContent = name;
-                if (name === currentMapName) opt.selected = true;
                 selector.appendChild(opt);
             });
+
+            if (autoLoadFirst && !currentMapName) {
+                const firstMap = keys[0].slice(4);
+                selector.value = firstMap;
+                loadMap(firstMap);
+            } else {
+                // Ensure currentMapName is visually selected
+                selector.value = currentMapName || "__new__";
+            }
         }
 
+
         function saveCurrentMap() {
+            // Protect against missing map name or pins array
+            if (!currentMapName || typeof currentMapName !== "string" || currentMapName.trim() === "") return;
+            if (!Array.isArray(pins)) return;
+
             localStorage.setItem(`map:${currentMapName}`, JSON.stringify(pins));
         }
 
-        function saveCurrentMap() {
-            localStorage.setItem(`map:${currentMapName}`, JSON.stringify(pins));
-        }
 
         function loadMap(name) {
             const data = localStorage.getItem(`map:${name}`);
             if (data) {
                 pins = JSON.parse(data);
                 currentMapName = name;
+                updateOverlayVisibility();
                 draw();
                 renderPinList(); // re-renders UI
             }
+            document.getElementById("currentMapName").textContent = currentMapName;
         }
 
 
@@ -861,6 +914,9 @@
                 inputs[index + 1].focus();
             }
         }
+        function triggerNewMap() {
+            document.getElementById("createNewMapBtn").click();
+        }
 
         function drawMinimap() {
             minimapCtx.clearRect(0, 0, minimapSize, minimapSize);
@@ -871,7 +927,6 @@
 
             // 2. Compute scale factor to fit world into minimap canvas
             const scale = Math.min(minimapSize / worldWidth, minimapSize / worldHeight);
-
 
             // Read crop bounds
             let minX = parseInt(document.getElementById("minX").value);
@@ -953,8 +1008,6 @@
             document.getElementById("viewMaxX").textContent = viewMaxX;
             document.getElementById("viewMinZ").textContent = viewMinZ;
             document.getElementById("viewMaxZ").textContent = viewMaxZ;
-
-
         }
 
         function draw() {
@@ -1101,6 +1154,11 @@
         function renderPinList() {
             const container = document.getElementById('pinList');
             container.innerHTML = '';
+
+            // ✅ Always update pin count even if 0
+            const pinCountEl = document.getElementById("pinCount");
+            if (pinCountEl) pinCountEl.textContent = `(${pins.length})`;
+
             if (!Array.isArray(pins) || pins.length === 0) {
                 container.innerHTML = '<p>No pins yet.</p>';
                 return;
@@ -1127,14 +1185,14 @@
                     editPin(index);
                 };
 
-
                 const deleteBtn = document.createElement('button');
                 deleteBtn.textContent = 'X';
                 deleteBtn.onclick = (e) => {
                     e.stopPropagation();
                     pins.splice(index, 1);
-                    draw();
                     renderPinList();
+                    draw();
+                    saveCurrentMap(); // ✅ autosave on delete
                 };
 
                 controls.appendChild(editBtn);
@@ -1143,7 +1201,9 @@
 
                 container.appendChild(item);
             });
+            document.getElementById("pinCount").textContent = `(${pins.length})`;
         }
+
         function editPin(index) {
             const pin = pins[index];
             currentEditIndex = index;
@@ -1335,10 +1395,15 @@
         document.getElementById("mapSelector").addEventListener("change", (e) => {
             const selected = e.target.value;
 
-            if (selected) {
-                loadMap(selected);
+            if (selected === "__new__") {
+                e.target.value = currentMapName || "__new__"; // prevent selection sticking
+                return; // we handle New Map from the button
             }
+
+            loadMap(selected);
         });
+
+
         document.getElementById("createNewMapBtn").addEventListener("click", () => {
             let newName = prompt("Enter a name for the new map:");
             if (!newName) return;
@@ -1355,6 +1420,8 @@
             }
 
             currentMapName = newName;
+            updateOverlayVisibility();
+            document.getElementById("currentMapName").textContent = currentMapName;
             pins = [];
             saveCurrentMap();
             loadMapNames();
@@ -1368,10 +1435,17 @@
         ["showGrid", "showIcons", "showText", "showCoords", "showDesc", "showTags", "minX", "maxX", "minZ", "maxZ", "bgColor", "showLabelBackground", "useTextScale", "gridColor", "gridSpacing", "showAxes"].forEach(id => {
             document.getElementById(id).addEventListener("input", draw);
         });
-
+        loadMapNames({ autoLoadFirst: true });
         draw();
         resizeCanvas();
     </script>
+    <div id="noMapOverlay" style="display: none;">
+        <div class="overlay-content">
+            <h2>No Map Selected</h2>
+            <p>Please create or select a map to begin.</p>
+            <button onclick="triggerNewMap()">+ New Map</button>
+        </div>
+    </div>
 </body>
 
 </html>
