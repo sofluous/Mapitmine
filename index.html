@@ -543,6 +543,11 @@
         </fieldset>
     </div>
     <div id="hud">
+        <label for="mapSelector">Map:</label>
+        <select id="mapSelector">
+            <!-- will be filled dynamically -->
+        </select>
+        <button id="createNewMapBtn">+ New Map</button>
         <span id="cursorPos">X: –, Z: –</span>
         <button onclick="toggleUI()">⚙️</button>
         <button onclick="togglePinList()">📌</button>
@@ -668,7 +673,8 @@
             { id: 'danger', label: 'Danger', icon: '☠️', category: 'Warnings' },
             { id: 'treasure', label: 'Treasure', icon: '🪙', category: 'Warnings' }
         ];
-
+        let currentMapName = "default";
+        let mapData = {};
 
         window.addEventListener('keydown', (e) => {
             if (e.key === 'p') {
@@ -742,6 +748,39 @@
 
         window.addEventListener("resize", resizeCanvas);
 
+        function loadMapNames() {
+            const keys = Object.keys(localStorage).filter(k => k.startsWith("map:"));
+            const selector = document.getElementById("mapSelector");
+            selector.innerHTML = '<option value="__new__">+ New Map</option>';
+            keys.forEach(k => {
+                const name = k.slice(4);
+                const opt = document.createElement("option");
+                opt.value = name;
+                opt.textContent = name;
+                if (name === currentMapName) opt.selected = true;
+                selector.appendChild(opt);
+            });
+        }
+
+        function saveCurrentMap() {
+            localStorage.setItem(`map:${currentMapName}`, JSON.stringify(pins));
+        }
+
+        function saveCurrentMap() {
+            localStorage.setItem(`map:${currentMapName}`, JSON.stringify(pins));
+        }
+
+        function loadMap(name) {
+            const data = localStorage.getItem(`map:${name}`);
+            if (data) {
+                pins = JSON.parse(data);
+                currentMapName = name;
+                draw();
+                renderPinList(); // re-renders UI
+            }
+        }
+
+
         function showPinPopup(screenX, screenY, worldX, worldZ) {
             const panel = document.getElementById('floatingPinPanel');
             panel.style.left = `${screenX}px`;
@@ -802,6 +841,7 @@
             cancelPinPlacement();
             currentEditIndex = null;
             tempPin = null;
+            saveCurrentMap();
             draw();
         }
 
@@ -1142,7 +1182,7 @@
             pins.push({ x, y, z, id, label, description: desc, icon });
             draw();
             renderPinList(); // ← Add this line
-
+            saveCurrentMap();
         }
 
         function resetView() {
@@ -1291,6 +1331,36 @@
         function hideContextMenu() {
             document.getElementById('contextMenu').style.display = 'none';
         }
+
+        document.getElementById("mapSelector").addEventListener("change", (e) => {
+            const selected = e.target.value;
+
+            if (selected) {
+                loadMap(selected);
+            }
+        });
+        document.getElementById("createNewMapBtn").addEventListener("click", () => {
+            let newName = prompt("Enter a name for the new map:");
+            if (!newName) return;
+
+            newName = newName.trim();
+            if (newName === "") {
+                alert("Map name cannot be empty.");
+                return;
+            }
+
+            if (localStorage.getItem(`map:${newName}`)) {
+                alert("A map with this name already exists.");
+                return;
+            }
+
+            currentMapName = newName;
+            pins = [];
+            saveCurrentMap();
+            loadMapNames();
+            loadMap(currentMapName);
+        });
+
 
         window.addEventListener('click', () => hideContextMenu());
         window.addEventListener('keydown', () => hideContextMenu());
