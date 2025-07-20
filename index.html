@@ -171,6 +171,65 @@
             box-sizing: border-box;
         }
 
+        #minimapContainer {
+            position: fixed;
+            bottom: var(--space-md);
+            right: var(--space-md);
+            width: 200px;
+            height: 200px;
+            border: 1px solid var(--color-border);
+            background-color: var(--card-bg);
+            box-shadow: var(--shadow-md);
+            z-index: 100;
+        }
+
+        #minimapCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        #minimapOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .minimap-label {
+            position: absolute;
+            font-size: 10px;
+            color: var(--color-text-secondary);
+            font-weight: bold;
+            opacity: 0.7;
+        }
+
+        .minimap-label.north {
+            top: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .minimap-label.south {
+            bottom: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .minimap-label.west {
+            left: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .minimap-label.east {
+            right: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
         canvas {
             display: block;
         }
@@ -408,6 +467,16 @@
         <h3>Pins</h3>
         <div id="pinList"></div>
     </div>
+    <div id="minimapContainer">
+        <canvas id="minimapCanvas" width="200" height="200"></canvas>
+        <div id="minimapOverlay">
+            <span class="minimap-label north">N</span>
+            <span class="minimap-label south">S</span>
+            <span class="minimap-label west">W</span>
+            <span class="minimap-label east">E</span>
+        </div>
+    </div>
+
     <div id="floatingPinPanel">
         <div class="grid-form">
             <div class="input-group" style="grid-column: span 2;">
@@ -427,6 +496,7 @@
             <button onclick="cancelPinPlacement()">Cancel</button>
         </div>
     </div>
+
     <ul id="contextMenu"
         style="display:none; position:absolute; z-index:100; background: var(--color-panel); border: 1px solid var(--color-border); border-radius: 4px; padding: 4px 0; list-style: none; font-size: var(--font-sm); min-width: 140px;">
     </ul>
@@ -452,6 +522,7 @@
         let textScale = 1;
         let zoom = 1, offsetX = width / 2, offsetY = height / 2;
         let panStart = {}, isPanning = false;
+
         let pins = [
             { x: 0, z: 0, y: 64, id: "spawn", label: "Spawn Point", description: "Where you begin.", icon: "" },
         ];
@@ -567,13 +638,10 @@
                 };
             });
 
-
-
             draw();
             setTimeout(() => {
                 document.getElementById('popupPinLabel').focus();
             }, 0);
-
         }
 
         function confirmPinPlacement() {
@@ -635,26 +703,43 @@
             const maxX = parseInt(document.getElementById("maxX").value);
             const minZ = parseInt(document.getElementById("minZ").value);
             const maxZ = parseInt(document.getElementById("maxZ").value);
+            const visibleMinX = Math.floor(-offsetX / zoom);
+            const visibleMaxX = Math.ceil((width - offsetX) / zoom);
+            const visibleMinZ = Math.floor(-offsetY / zoom);
+            const visibleMaxZ = Math.ceil((height - offsetY) / zoom);
+            const startX = Math.floor(visibleMinX / gridSpacing) * gridSpacing;
+            const endX = Math.ceil(visibleMaxX / gridSpacing) * gridSpacing;
+            const startZ = Math.floor(visibleMinZ / gridSpacing) * gridSpacing;
+            const endZ = Math.ceil(visibleMaxZ / gridSpacing) * gridSpacing;
 
-            if (showGrid) {
+            const maxLines = 1000;
+            if ((endX - startX) / gridSpacing > maxLines) return; // skip draw
+            if (zoom < 0.1) return; // skip grid when zoomed out too far
+
+            if (showGrid && gridSpacing > 0) {
+                ctx.save();
                 ctx.strokeStyle = gridColor;
-                ctx.lineWidth = 1; // ✅ Add this
+                ctx.lineWidth = 1;
 
-                for (let x = minX; x <= maxX; x += gridSpacing) {
+                for (let x = startX; x <= endX; x += gridSpacing) {
                     const sx = offsetX + x * zoom;
                     ctx.beginPath();
                     ctx.moveTo(sx, 0);
                     ctx.lineTo(sx, height);
                     ctx.stroke();
                 }
-                for (let z = minZ; z <= maxZ; z += gridSpacing) {
+
+                for (let z = startZ; z <= endZ; z += gridSpacing) {
                     const sz = offsetY + z * zoom;
                     ctx.beginPath();
                     ctx.moveTo(0, sz);
                     ctx.lineTo(width, sz);
                     ctx.stroke();
                 }
+
+                ctx.restore();
             }
+
 
             if (showAxes) {
                 ctx.strokeStyle = "#ffffff88";
@@ -711,25 +796,24 @@
                     if (showDesc && p.description) ctx.fillText(p.description, sx + labelOffsetX, sy + fontSize * 2.4);
                     if (showTags && p.id) ctx.fillText(`[${p.id}]`, sx + labelOffsetX, sy + fontSize * 3.6);
                 }
+            }
+            if (tempPin) {
+                const px = tempPin.x * zoom + offsetX;
+                const pz = tempPin.z * zoom + offsetY;
 
-                if (tempPin) {
-                    const px = tempPin.x * zoom + offsetX;
-                    const pz = tempPin.z * zoom + offsetY;
+                // Draw placeholder pin
+                ctx.beginPath();
+                ctx.arc(px, pz, 5, 0, Math.PI * 2);
+                ctx.fillStyle = 'lime';
+                ctx.fill();
 
-                    // Draw placeholder pin
-                    ctx.beginPath();
-                    ctx.arc(px, pz, 5, 0, Math.PI * 2);
-                    ctx.fillStyle = 'lime';
-                    ctx.fill();
-
-                    // Draw line from panel to placeholder
-                    ctx.beginPath();
-                    ctx.moveTo(tempPinScreenX, tempPinScreenY);
-                    ctx.lineTo(px, pz);
-                    ctx.strokeStyle = 'lime';
-                    ctx.lineWidth = 1;
-                    ctx.stroke();
-                }
+                // Draw line from panel to placeholder
+                ctx.beginPath();
+                ctx.moveTo(tempPinScreenX, tempPinScreenY);
+                ctx.lineTo(px, pz);
+                ctx.strokeStyle = 'lime';
+                ctx.lineWidth = 1;
+                ctx.stroke();
             }
         }
         function togglePinList() {
