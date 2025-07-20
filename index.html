@@ -576,8 +576,11 @@
     <div id="hud">
         <label for="mapSelector">Map:</label>
         <select id="mapSelector">
-            <!-- will be filled dynamically -->
+            <option disabled selected value="">– Select a map –</option>
+            <option value="__new__">+ New Map</option>
         </select>
+        <button id="renameMapBtn" title="Rename map">✏️</button>
+        <button id="deleteMapBtn" title="Delete map">🗑️</button>
         <button id="createNewMapBtn">+ New Map</button>
         <small>Current Map: <strong id="currentMapName">default</strong></small>
         <button onclick="toggleUI()">⚙️</button>
@@ -773,6 +776,47 @@
             }
         });
 
+        document.getElementById("renameMapBtn").addEventListener("click", () => {
+            if (!currentMapName) return alert("No map selected.");
+
+            const newName = prompt("Enter a new name for the map:", currentMapName);
+            if (!newName || newName.trim() === "") return;
+
+            const trimmed = newName.trim();
+            if (localStorage.getItem(`map:${trimmed}`)) {
+                alert("A map with that name already exists.");
+                return;
+            }
+            
+            if (currentMapName === "__new__" || !currentMapName) {
+                alert("Please select a valid map to rename.");
+                return;
+            }
+
+            // Copy and delete old map
+            const data = localStorage.getItem(`map:${currentMapName}`);
+            localStorage.setItem(`map:${trimmed}`, data);
+            localStorage.removeItem(`map:${currentMapName}`);
+            currentMapName = trimmed;
+            loadMapNames({ autoLoadFirst: false });
+            loadMap(currentMapName);
+        });
+
+        document.getElementById("deleteMapBtn").addEventListener("click", () => {
+            if (!currentMapName) return alert("No map selected.");
+
+            const confirmDelete = confirm(`Are you sure you want to delete "${currentMapName}"?`);
+            if (!confirmDelete) return;
+
+            localStorage.removeItem(`map:${currentMapName}`);
+            currentMapName = null;
+            pins = [];
+            loadMapNames({ autoLoadFirst: false });
+            updateOverlayVisibility();
+            draw();
+            renderPinList();
+        });
+
         // =================== 📦 LOCAL STORAGE: MAP LOADING & SAVING ===================
         // saveCurrentMap, loadMap, loadMapNames, triggerNewMap
 
@@ -785,28 +829,50 @@
         }
 
         function loadMap(name) {
-            const data = localStorage.getItem(`map:${name}`);
-            if (data) {
-                pins = JSON.parse(data);
-                currentMapName = name;
+            if (!name || !localStorage.getItem(`map:${name}`)) {
+                currentMapName = null;
+                pins = [];
+                renderPinList();
                 updateOverlayVisibility();
                 draw();
-                renderPinList(); // re-renders UI
+                return;
             }
-            document.getElementById("currentMapName").textContent = currentMapName;
+
+            const data = localStorage.getItem(`map:${name}`);
+            try {
+                pins = JSON.parse(data);
+            } catch {
+                alert("Error loading map data.");
+                pins = [];
+            }
+
+            currentMapName = name;
+            document.getElementById("currentMapName").textContent = name;
+            renderPinList();
+            updateOverlayVisibility();
+            draw();
         }
 
-        function loadMapNames({ autoLoadFirst = false } = {}) {
-            const keys = Object.keys(localStorage).filter(k => k.startsWith("map:"));
-            const selector = document.getElementById("mapSelector");
 
+        function loadMapNames({ autoLoadFirst = false } = {}) {
+            const selector = document.getElementById("mapSelector");
             selector.innerHTML = ''; // clear options
+
+            // Default unselected state
+            const defaultOpt = document.createElement("option");
+            defaultOpt.disabled = true;
+            defaultOpt.selected = !currentMapName;
+            defaultOpt.value = '';
+            defaultOpt.textContent = '– Select a map –';
+            selector.appendChild(defaultOpt);
 
             // Always add the button-like +New option
             const newOpt = document.createElement("option");
             newOpt.value = "__new__";
             newOpt.textContent = "+ New Map";
             selector.appendChild(newOpt);
+
+            const keys = Object.keys(localStorage).filter(k => k.startsWith("map:"));
 
             if (keys.length === 0) return;
 
@@ -822,11 +888,12 @@
                 const firstMap = keys[0].slice(4);
                 selector.value = firstMap;
                 loadMap(firstMap);
-            } else {
-                // Ensure currentMapName is visually selected
-                selector.value = currentMapName || "__new__";
             }
+
+            updateOverlayVisibility();
+
         }
+
         function triggerNewMap() {
             document.getElementById("createNewMapBtn").click();
         }
@@ -1458,13 +1525,13 @@
 
         document.getElementById("mapSelector").addEventListener("change", (e) => {
             const selected = e.target.value;
+            if (!selected) return;
 
             if (selected === "__new__") {
-                e.target.value = currentMapName || "__new__"; // prevent selection sticking
-                return; // we handle New Map from the button
+                triggerNewMap(); // your existing map creation logic
+            } else {
+                loadMap(selected);
             }
-
-            loadMap(selected);
         });
 
         window.addEventListener("resize", resizeCanvas);
