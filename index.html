@@ -13,6 +13,7 @@
 
             --color-bg: #1e1e1e;
             --color-panel: rgba(0, 0, 0, 0.6);
+            --color-hover-highlight: rgba(44, 72, 9, 0.822);
             --color-input: rgba(44, 72, 9, 0.47);
             --color-control-bg: rgba(255, 255, 255, 0.06);
 
@@ -115,6 +116,7 @@
 
         .pin-item:hover {
             border: 1px solid var(--color-primary);
+            background-color: var(--color-hover-highlight);
 
         }
 
@@ -171,6 +173,12 @@
             box-sizing: border-box;
         }
 
+        .minimap-wrapper {
+            position: relative;
+            display: inline-block;
+            margin: 20px;
+        }
+
         #minimapContainer {
             position: fixed;
             bottom: var(--space-md);
@@ -202,8 +210,49 @@
             position: absolute;
             font-size: 10px;
             color: var(--color-text-secondary);
-            font-weight: bold;
-            opacity: 0.7;
+            font-family: monospace;
+            opacity: 0.8;
+            display: flex;
+            gap: 6px;
+        }
+
+        .top-label {
+            top: -1.5em;
+            left: 0;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .bottom-label {
+            bottom: -1.5em;
+            left: 0;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .left-label {
+            top: 0;
+            left: -7.5em;
+            height: 100%;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .right-label {
+            top: 0;
+            right: -7.5em;
+            height: 100%;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        .rotated-label {
+            transform: rotate(-90deg);
+            transform-origin: center;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
         }
 
         .minimap-label.north {
@@ -228,6 +277,42 @@
             right: 4px;
             top: 50%;
             transform: translateY(-50%);
+        }
+
+        .minimap-edge-label {
+            position: absolute;
+            font-size: 10px;
+            color: var(--color-text-secondary);
+            opacity: 0.7;
+            pointer-events: none;
+            white-space: nowrap;
+            font-weight: bold;
+        }
+
+        .north-label {
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .south-label {
+            bottom: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .west-label {
+            top: 50%;
+            left: -8px;
+            transform: translateY(-50%) rotate(-90deg);
+            transform-origin: left center;
+        }
+
+        .east-label {
+            top: 50%;
+            right: -8px;
+            transform: translateY(-50%) rotate(90deg);
+            transform-origin: right center;
         }
 
         canvas {
@@ -467,15 +552,42 @@
         <h3>Pins</h3>
         <div id="pinList"></div>
     </div>
-    <div id="minimapContainer">
+    <div id="minimapContainer" class="minimap-wrapper">
         <canvas id="minimapCanvas" width="200" height="200"></canvas>
-        <div id="minimapOverlay">
-            <span class="minimap-label north">N</span>
-            <span class="minimap-label south">S</span>
-            <span class="minimap-label west">W</span>
-            <span class="minimap-label east">E</span>
+
+        <div class="minimap-label top-label">
+            <span class="label-direction">N</span>
+            <span class="label-group">(World) <span id="worldMinZ">?</span></span>
+            <span class="label-group">(Crop) <span id="cropMinZ">?</span></span>
+            <span class="label-group">(View) <span id="viewMinZ">?</span></span>
+        </div>
+
+        <div class="minimap-label bottom-label">
+            <span class="label-direction">S</span>
+            <span class="label-group">(World) <span id="worldMaxZ">?</span></span>
+            <span class="label-group">(Crop) <span id="cropMaxZ">?</span></span>
+            <span class="label-group">(View) <span id="viewMaxZ">?</span></span>
+        </div>
+
+        <div class="minimap-label left-label">
+            <div class="rotated-label">
+                <span class="label-direction">W</span>
+                <span class="label-group">(World) <span id="worldMinX">?</span></span>
+                <span class="label-group">(Crop) <span id="cropMinX">?</span></span>
+                <span class="label-group">(View) <span id="viewMinX">?</span></span>
+            </div>
+        </div>
+
+        <div class="minimap-label right-label">
+            <div class="rotated-label">
+                <span class="label-direction">E</span>
+                <span class="label-group">(World) <span id="worldMaxX">?</span></span>
+                <span class="label-group">(Crop) <span id="cropMaxX">?</span></span>
+                <span class="label-group">(View) <span id="viewMaxX">?</span></span>
+            </div>
         </div>
     </div>
+
 
     <div id="floatingPinPanel">
         <div class="grid-form">
@@ -509,18 +621,16 @@
 
         const canvas = document.getElementById("mapCanvas");
         const ctx = canvas.getContext("2d");
-        let width, height;
-        function resizeCanvas() {
-            width = window.innerWidth;
-            height = window.innerHeight;
-            canvas.width = width;
-            canvas.height = height;
-        }
-        window.addEventListener("resize", resizeCanvas);
-        resizeCanvas();
 
         let textScale = 1;
-        let zoom = 1, offsetX = width / 2, offsetY = height / 2;
+
+        let width = 0;
+        let height = 0;
+        let offsetX = 0;
+        let offsetY = 0;
+        let zoom = 1;
+        let initializedCamera = false;
+
         let panStart = {}, isPanning = false;
 
         let pins = [
@@ -531,6 +641,16 @@
         let tempPin = null;
         let tempPinScreenX = 0;
         let tempPinScreenY = 0;
+
+        const minimapCanvas = document.getElementById("minimapCanvas");
+        const minimapCtx = minimapCanvas.getContext("2d");
+        const minimapSize = 200;
+
+        const worldMinX = -30000;
+        const worldMaxX = 30000;
+        const worldMinZ = -30000;
+        const worldMaxZ = 30000;
+
 
         const pinTypes = [
             { id: 'spawn', label: 'Spawn Point', icon: '⭐', category: 'Special' },
@@ -595,6 +715,7 @@
                 });
             });
         });
+
         canvas.addEventListener('mousemove', (e) => {
             const rect = canvas.getBoundingClientRect();
             const screenX = e.clientX - rect.left;
@@ -603,6 +724,23 @@
             const worldZ = Math.round((screenY - offsetY) / zoom);
             document.getElementById('cursorPos').textContent = `X: ${worldX}, Z: ${worldZ}`;
         });
+
+        function resizeCanvas() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+
+            if (!initializedCamera) {
+                offsetX = -width / 2;
+                offsetY = -height / 2;
+                initializedCamera = true;
+            }
+
+            draw();
+        }
+
+        window.addEventListener("resize", resizeCanvas);
 
         function showPinPopup(screenX, screenY, worldX, worldZ) {
             const panel = document.getElementById('floatingPinPanel');
@@ -682,6 +820,101 @@
             if (index >= 0 && index < inputs.length - 1) {
                 inputs[index + 1].focus();
             }
+        }
+
+        function drawMinimap() {
+            minimapCtx.clearRect(0, 0, minimapSize, minimapSize);
+
+            // 1. Compute total world range
+            const worldWidth = worldMaxX - worldMinX;
+            const worldHeight = worldMaxZ - worldMinZ;
+
+            // 2. Compute scale factor to fit world into minimap canvas
+            const scale = Math.min(minimapSize / worldWidth, minimapSize / worldHeight);
+
+
+            // Read crop bounds
+            let minX = parseInt(document.getElementById("minX").value);
+            let maxX = parseInt(document.getElementById("maxX").value);
+            let minZ = parseInt(document.getElementById("minZ").value);
+            let maxZ = parseInt(document.getElementById("maxZ").value);
+
+            if (isNaN(minX)) minX = -1000;
+            if (isNaN(maxX)) maxX = 1000;
+            if (isNaN(minZ)) minZ = -1000;
+            if (isNaN(maxZ)) maxZ = 1000;
+
+            const cropWidth = maxX - minX;
+            const cropHeight = maxZ - minZ;
+
+            // 3. Offset = world origin → canvas origin
+            const worldOffsetX = -worldMinX * scale;
+            const worldOffsetZ = -worldMinZ * scale;
+
+
+            // 📦 Draw crop bounds
+            minimapCtx.strokeStyle = "orange"; // or use a token color
+            minimapCtx.lineWidth = 1;
+            minimapCtx.strokeRect(
+                worldOffsetX + minX * scale,
+                worldOffsetZ + minZ * scale,
+                (maxX - minX) * scale,
+                (maxZ - minZ) * scale
+            );
+
+            // 🎥 Draw current camera viewport
+            // 🎥 Correctly calculate the visible viewport
+            const topLeftWorldX = (-offsetX) / zoom;
+            const topLeftWorldZ = (-offsetY) / zoom;
+            const bottomRightWorldX = (width - offsetX) / zoom;
+            const bottomRightWorldZ = (height - offsetY) / zoom;
+
+            const viewX = topLeftWorldX * scale + worldOffsetX;
+            const viewZ = topLeftWorldZ * scale + worldOffsetZ;
+            const viewWidth = (bottomRightWorldX - topLeftWorldX) * scale;
+            const viewHeight = (bottomRightWorldZ - topLeftWorldZ) * scale;
+
+            minimapCtx.strokeStyle = "lime";
+            minimapCtx.lineWidth = 1;
+            minimapCtx.strokeRect(viewX, viewZ, viewWidth, viewHeight);
+
+
+            // 📍 Draw pins
+            for (const p of pins) {
+                const px = worldOffsetX + p.x * scale;
+                const pz = worldOffsetZ + p.z * scale;
+
+                if (!isFinite(px) || !isFinite(pz)) continue; // safety
+
+                minimapCtx.fillStyle = "red";
+                minimapCtx.beginPath();
+                minimapCtx.arc(px, pz, 2, 0, Math.PI * 2);
+                minimapCtx.fill();
+            }
+            // World limits
+            document.getElementById("worldMinX").textContent = worldMinX;
+            document.getElementById("worldMaxX").textContent = worldMaxX;
+            document.getElementById("worldMinZ").textContent = worldMinZ;
+            document.getElementById("worldMaxZ").textContent = worldMaxZ;
+
+            // Crop limits
+            document.getElementById("cropMinX").textContent = minX;
+            document.getElementById("cropMaxX").textContent = maxX;
+            document.getElementById("cropMinZ").textContent = minZ;
+            document.getElementById("cropMaxZ").textContent = maxZ;
+
+            // Viewport (based on offset)
+            const viewMinX = Math.round(-offsetX / zoom);
+            const viewMaxX = Math.round((width - offsetX) / zoom);
+            const viewMinZ = Math.round(-offsetY / zoom);
+            const viewMaxZ = Math.round((height - offsetY) / zoom);
+
+            document.getElementById("viewMinX").textContent = viewMinX;
+            document.getElementById("viewMaxX").textContent = viewMaxX;
+            document.getElementById("viewMinZ").textContent = viewMinZ;
+            document.getElementById("viewMaxZ").textContent = viewMaxZ;
+
+
         }
 
         function draw() {
@@ -815,7 +1048,10 @@
                 ctx.lineWidth = 1;
                 ctx.stroke();
             }
+            drawMinimap();
+            console.log("drawing");
         }
+
         function togglePinList() {
             const panel = document.getElementById('pinListPanel');
             panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
@@ -929,6 +1165,7 @@
             panStart = { x: e.clientX, y: e.clientY };
             draw();
         });
+
         canvas.addEventListener("wheel", (e) => {
             e.preventDefault();
             const scale = e.deltaY < 0 ? 1.1 : 0.9;
@@ -1061,7 +1298,9 @@
         ["showGrid", "showIcons", "showText", "showCoords", "showDesc", "showTags", "minX", "maxX", "minZ", "maxZ", "bgColor", "showLabelBackground", "useTextScale", "gridColor", "gridSpacing", "showAxes"].forEach(id => {
             document.getElementById(id).addEventListener("input", draw);
         });
+
         draw();
+        resizeCanvas();
     </script>
 </body>
 
