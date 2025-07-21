@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+    rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+    rel="stylesheet">
 
 <head>
     <meta charset="UTF-8">
@@ -35,6 +38,8 @@
 
             --input-radius: 4px;
             --input-padding: 4px;
+
+            --font-type-monospace: "Space Mono", monospace;
         }
 
         [data-theme="light"] {
@@ -51,7 +56,7 @@
             overflow: hidden;
             background: var(--color-bg);
             color: var(--color-text);
-            font-family: 'Inter', sans-serif;
+            font-family: "Inter", sans-serif;
         }
 
         #ui,
@@ -59,24 +64,26 @@
         #pinListPanel {
             padding: var(--space-md);
             background: var(--color-panel);
-            font-size: var(--font-base);
+            border-radius: 8px;
             font-size: var(--font-md);
             gap: var(--space-md);
         }
 
         #ui {
-            position: absolute;
+            position: fixed;
             top: var(--space-md);
             left: var(--space-md);
             z-index: 10;
             max-height: 95vh;
             overflow-y: auto;
             width: 260px;
+            display: flex;
+            flex-direction: column;
         }
 
         #hud {
             position: fixed;
-            top: var(--space-sm);
+            top: var(--space-md);
             left: 50%;
             transform: translateX(-50%);
             color: var(--color-text);
@@ -87,15 +94,35 @@
         }
 
         #pinListPanel {
-            position: absolute;
+            position: fixed;
             top: var(--space-md);
             right: var(--space-md);
+            display: flex;
+            flex-direction: column;
+            height: 95vh;
+            width: 300px;
             color: var(--color-text);
-            width: 260px;
-            max-height: 95vh;
-            overflow-y: auto;
-            display: block;
             z-index: 10;
+            overflow: hidden;
+        }
+
+        .map-header select {
+            flex-grow: 1;
+        }
+
+        .pin-panel-header {
+            padding: var(--space-sm);
+            background: var(--bg-header);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+
+        .pins-header {
+            justify-content: space-between;
         }
 
         #togglePinListBtn {
@@ -105,12 +132,30 @@
             z-index: 11;
         }
 
+        .pin-header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.3em;
+        }
+
+        .pin-filters {
+            display: flex;
+            gap: 0.3em;
+        }
+
+        .scrollable-pin-list {
+            overflow-y: auto;
+            flex-grow: 1;
+            padding: none;
+            border: 1px solid var(--color-border);
+            flex-direction: column;
+
+        }
+
         .pin-item {
             padding: var(--space-sm);
-            margin-bottom: var(--space-xs);
             background-color: var(--color-control-bg);
             border: 1px solid var(--color-border);
-            border-radius: var(--input-radius);
             font-size: var(--font-md);
         }
 
@@ -182,7 +227,8 @@
         #minimapContainer {
             position: fixed;
             bottom: var(--space-md);
-            right: var(--space-md);
+            left: 50%;
+            transform: translateX(-50%);
             width: 200px;
             height: 200px;
             border: 1px solid var(--color-border);
@@ -338,7 +384,6 @@
             box-shadow: 0 0 1rem rgba(0, 0, 0, 0.5);
         }
 
-
         canvas {
             display: block;
         }
@@ -347,6 +392,9 @@
             border: 1px solid var(--color-text-heading);
             margin-bottom: var(--space-sm);
             padding: var(--space-md);
+            gap: var(--space-sm);
+            display: flex;
+            flex-direction: column;
         }
 
         legend {
@@ -361,8 +409,9 @@
             border: 1px solid var(--color-border);
             border-radius: var(--input-radius);
             padding: var(--input-padding);
+            width: 100%;
+            height: 32px;
         }
-
 
         button,
         .btn {
@@ -456,15 +505,6 @@
             background-color: var(--color-input);
             color: var(--color-text);
             box-sizing: border-box;
-        }
-
-        .grid-form select {
-            appearance: none;
-        }
-
-
-        .grid-form input[type="checkbox"] {
-            width: auto;
         }
 
         .grid-form input[type="range"] {
@@ -574,14 +614,6 @@
     <!-- HUD: Top Toolbar -->
 
     <div id="hud">
-        <label for="mapSelector">Map:</label>
-        <select id="mapSelector">
-            <option disabled selected value="">– Select a map –</option>
-            <option value="__new__">+ New Map</option>
-        </select>
-        <button id="renameMapBtn" title="Rename map">✏️</button>
-        <button id="deleteMapBtn" title="Delete map">🗑️</button>
-        <button id="createNewMapBtn">+ New Map</button>
         <small>Current Map: <strong id="currentMapName">default</strong></small>
         <button onclick="toggleUI()">⚙️</button>
         <button onclick="togglePinList()">📌</button>
@@ -591,9 +623,37 @@
     <!-- Pin List: Right Sidebar -->
 
     <div id="pinListPanel">
-        <h3>Pins<span id="pinCount">(0)</span></h3>
-        <div id="pinList"></div>
+        <!-- 🗺️ Map Header -->
+        <div class="pin-panel-heade map-header">
+            <div class="input-group">
+                <select id="mapSelector">
+                </select>
+                <button id="createNewMapBtn">+</button>
+                <button id="renameMapBtn" title="Rename map">✏️</button>
+                <button id="deleteMapBtn" title="Delete map">🗑️</button>
+            </div>
+        </div>
+
+        <!-- 📌 Pins Header -->
+        <div class="pin-panel-header pins-header">
+            <div class="pin-header-left">
+                <strong>Pins:</strong> <span id="pinCount">0</span>
+            </div>
+            <div class="pin-filters">
+                <!-- Placeholder for future filters -->
+                <!-- Example:
+      <select id="filterType">
+        <option value="">All Types</option>
+      </select> -->
+            </div>
+        </div>
+
+        <!-- 📜 Scrollable Pin List -->
+        <div id="pinList" class="scrollable-pin-list">
+            <!-- Pins will render here -->
+        </div>
     </div>
+
 
     <!-- Floating Pin Editor -->
 
@@ -657,6 +717,15 @@
 
     <!-- No Map Overlay Screen -->
 
+    <div id="noMapOverlay" class="overlay" style="display: none;">
+        <div class="overlay-content">
+            <h2>No Maps Exist</h2>
+            <p>Create or import a map to get started.</p>
+            <button onclick="triggerNewMap()">+ Create New Map</button>
+            <button onclick="triggerImportMap()">📥 Import Map</button>
+        </div>
+    </div>
+
     <!-- Context Menu -->
 
     <ul id="contextMenu"
@@ -665,15 +734,6 @@
 
     <!-- Canvas (Main Map) -->
     <span id="cursorPos">X: –, Z: –</span>
-
-    <div id="noMapOverlay" style="display: none;">
-        <div class="overlay-content">
-            <h2>No Map Selected</h2>
-            <p>Please create or select a map to begin.</p>
-            <button onclick="triggerNewMap()">+ New Map</button>
-        </div>
-    </div>
-
     <canvas id="mapCanvas"></canvas>
 
     <script>
@@ -681,31 +741,36 @@
         // =================== 🔁 DOM INITIALIZATION ===================
         // Theme selector, canvas/context setup, resizeCanvas call, initial draw
 
-        window.addEventListener('DOMContentLoaded', () => {
-            const idSelect = document.getElementById('popupPinID');
-            const iconSelect = document.getElementById('popupPinIcon');
+        window.addEventListener("DOMContentLoaded", () => {
+            // Populate dropdowns for pin types and icons
+            const idSelect = document.getElementById("popupPinID");
+            const iconSelect = document.getElementById("popupPinIcon");
 
             pinTypes.forEach(pin => {
-                const opt1 = document.createElement('option');
+                const opt1 = document.createElement("option");
                 opt1.value = pin.id;
                 opt1.textContent = pin.label;
                 idSelect.appendChild(opt1);
 
-                const opt2 = document.createElement('option');
+                const opt2 = document.createElement("option");
                 opt2.value = pin.icon;
                 opt2.textContent = pin.icon;
                 iconSelect.appendChild(opt2);
-
-                // ✅ Add this to sync icon when type changes:
-                idSelect.addEventListener('change', () => {
-                    const selectedType = idSelect.value;
-                    const match = pinTypes.find(p => p.id === selectedType);
-                    if (match) {
-                        iconSelect.value = match.icon;
-                    }
-                });
             });
+
+            // Keep dropdowns in sync when type changes
+            idSelect.addEventListener("change", () => {
+                const selectedType = idSelect.value;
+                const match = pinTypes.find(p => p.id === selectedType);
+                if (match) {
+                    iconSelect.value = match.icon;
+                }
+            });
+
+            // Now load map list and UI
+            loadMapNames({ autoLoadFirst: true });
         });
+
 
         document.getElementById("themeSelector").addEventListener("change", (e) => {
             document.body.setAttribute("data-theme", e.target.value);
@@ -787,7 +852,7 @@
                 alert("A map with that name already exists.");
                 return;
             }
-            
+
             if (currentMapName === "__new__" || !currentMapName) {
                 alert("Please select a valid map to rename.");
                 return;
@@ -803,30 +868,38 @@
         });
 
         document.getElementById("deleteMapBtn").addEventListener("click", () => {
-            if (!currentMapName) return alert("No map selected.");
+            if (!currentMapName) return;
 
-            const confirmDelete = confirm(`Are you sure you want to delete "${currentMapName}"?`);
+            const confirmDelete = confirm(`Delete "${currentMapName}"?`);
             if (!confirmDelete) return;
 
             localStorage.removeItem(`map:${currentMapName}`);
-            currentMapName = null;
-            pins = [];
-            loadMapNames({ autoLoadFirst: false });
-            updateOverlayVisibility();
-            draw();
-            renderPinList();
+
+            const remaining = Object.keys(localStorage)
+                .filter(k => k.startsWith("map:"))
+                .map(k => k.slice(4));
+
+            if (remaining.length > 0) {
+                currentMapName = remaining[0];
+                loadMapNames();
+                loadMap(currentMapName);
+            } else {
+                currentMapName = null;
+                pins = [];
+                loadMapNames();
+                updateOverlayVisibility();
+            }
         });
+
 
         // =================== 📦 LOCAL STORAGE: MAP LOADING & SAVING ===================
         // saveCurrentMap, loadMap, loadMapNames, triggerNewMap
 
         function saveCurrentMap() {
-            // Protect against missing map name or pins array
-            if (!currentMapName || typeof currentMapName !== "string" || currentMapName.trim() === "") return;
-            if (!Array.isArray(pins)) return;
-
+            if (!currentMapName) return; // skip saving if no valid name
             localStorage.setItem(`map:${currentMapName}`, JSON.stringify(pins));
         }
+
 
         function loadMap(name) {
             if (!name || !localStorage.getItem(`map:${name}`)) {
@@ -858,26 +931,15 @@
             const selector = document.getElementById("mapSelector");
             selector.innerHTML = ''; // clear options
 
-            // Default unselected state
-            const defaultOpt = document.createElement("option");
-            defaultOpt.disabled = true;
-            defaultOpt.selected = !currentMapName;
-            defaultOpt.value = '';
-            defaultOpt.textContent = '– Select a map –';
-            selector.appendChild(defaultOpt);
-
-            // Always add the button-like +New option
-            const newOpt = document.createElement("option");
-            newOpt.value = "__new__";
-            newOpt.textContent = "+ New Map";
-            selector.appendChild(newOpt);
-
             const keys = Object.keys(localStorage).filter(k => k.startsWith("map:"));
+            const names = keys.map(k => k.slice(4));
 
-            if (keys.length === 0) return;
+            if (names.length === 0) {
+                updateOverlayVisibility(); // show No Map overlay
+                return;
+            }
 
-            keys.forEach(k => {
-                const name = k.slice(4); // remove "map:" prefix
+            names.forEach(name => {
                 const opt = document.createElement("option");
                 opt.value = name;
                 opt.textContent = name;
@@ -885,17 +947,22 @@
             });
 
             if (autoLoadFirst && !currentMapName) {
-                const firstMap = keys[0].slice(4);
-                selector.value = firstMap;
-                loadMap(firstMap);
+                currentMapName = names[0];
             }
 
+            selector.value = currentMapName || names[0];
+            document.getElementById("currentMapName").textContent = currentMapName || "–";
             updateOverlayVisibility();
-
         }
+
 
         function triggerNewMap() {
             document.getElementById("createNewMapBtn").click();
+        }
+
+        function triggerImportMap() {
+            alert("Import map functionality coming soon.");
+            // Future: open file input, parse JSON, load as new map
         }
 
         // =================== 🗺️ DRAW FUNCTIONS ===================
@@ -1208,7 +1275,8 @@
 
         function updateOverlayVisibility() {
             const overlay = document.getElementById("noMapOverlay");
-            overlay.style.display = currentMapName ? "none" : "flex";
+            const hasMaps = Object.keys(localStorage).some(k => k.startsWith("map:"));
+            overlay.style.display = hasMaps && currentMapName ? "none" : "flex";
         }
 
         // =================== 📌 PIN MANAGEMENT ===================
@@ -1499,40 +1567,44 @@
         // =================== 🧩 INPUT EVENT HOOKS ===================
         // sliders, checkboxes, map selector change
 
-        document.getElementById("createNewMapBtn").addEventListener("click", () => {
-            let newName = prompt("Enter a name for the new map:");
-            if (!newName) return;
+        document.getElementById("createNewMapBtn").addEventListener("click", createNewMapFlow);
 
-            newName = newName.trim();
-            if (newName === "") {
-                alert("Map name cannot be empty.");
+        function createNewMapFlow() {
+            let name = prompt("Enter a name for the new map:", "New Map");
+
+            if (name === null) {
+                // Cancel was pressed
+                updateOverlayVisibility();
                 return;
             }
 
-            if (localStorage.getItem(`map:${newName}`)) {
-                alert("A map with this name already exists.");
-                return;
+            name = name.trim();
+            if (name === "") name = "New Map";
+
+            // Ensure uniqueness
+            const base = name;
+            const keys = Object.keys(localStorage).filter(k => k.startsWith("map:"));
+            const names = keys.map(k => k.slice(4));
+
+            let suffix = 1;
+            while (names.includes(name)) {
+                name = `${base} (${suffix++})`;
             }
 
-            currentMapName = newName;
-            updateOverlayVisibility();
-            document.getElementById("currentMapName").textContent = currentMapName;
+            currentMapName = name;
             pins = [];
             saveCurrentMap();
+
             loadMapNames();
             loadMap(currentMapName);
-        });
+        }
+
 
         document.getElementById("mapSelector").addEventListener("change", (e) => {
             const selected = e.target.value;
-            if (!selected) return;
-
-            if (selected === "__new__") {
-                triggerNewMap(); // your existing map creation logic
-            } else {
-                loadMap(selected);
-            }
+            loadMap(selected);
         });
+
 
         window.addEventListener("resize", resizeCanvas);
 
