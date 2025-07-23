@@ -59,7 +59,7 @@
             font-family: "Inter", sans-serif;
         }
 
-        #ui,
+        #show,
         #hud,
         #pinListPanel {
             padding: var(--space-md);
@@ -69,7 +69,7 @@
             gap: var(--space-md);
         }
 
-        #ui {
+        #settings {
             position: fixed;
             top: var(--space-md);
             left: var(--space-md);
@@ -125,7 +125,7 @@
             justify-content: space-between;
         }
 
-        #togglePinListBtn {
+        #hidePinListBtn {
             position: absolute;
             top: var(--space-md);
             right: calc(260px + var(--space-lg));
@@ -165,6 +165,43 @@
 
         }
 
+        .pin-item.hovered {
+            outline: 2px dashed lime;
+            background-color: var(--bg-hover);
+        }
+
+        .pin-item.selected {
+            outline: 2px solid orange;
+            background-color: var(--bg-selected);
+        }
+
+
+        .pin-summary {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pin-icon {
+            font-size: 20px;
+        }
+
+        .pin-details {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            line-height: 1.2;
+        }
+
+        .pin-label {
+            font-weight: bold;
+        }
+
+        .pin-meta {
+            font-size: 11px;
+            opacity: 0.75;
+        }
+
         .pin-controls {
             display: flex;
             justify-content: flex-end;
@@ -186,7 +223,7 @@
             color: var(--color-primary);
         }
 
-        #floatingPinPanel {
+        #pinEditorPanel {
             position: absolute;
             background: var(--color-panel);
             border: 1px solid var(--color-border);
@@ -198,16 +235,16 @@
             font-size: var(--font-base);
         }
 
-        #floatingPinPanel .grid-form {
+        #pinEditorPanel .grid-form {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: var(--space-sm);
             align-items: center;
         }
 
-        #floatingPinPanel input,
-        #floatingPinPanel select,
-        #floatingPinPanel textarea {
+        #pinEditorPanel input,
+        #pinEditorPanel select,
+        #pinEditorPanel textarea {
             width: 100%;
             margin-bottom: var(--space-sm);
             padding: var(--input-padding);
@@ -384,6 +421,49 @@
             box-shadow: 0 0 1rem rgba(0, 0, 0, 0.5);
         }
 
+        .context-menu {
+            position: fixed;
+            display: none;
+            background: var(--color-panel);
+            border: 1px solid var(--color-border);
+            padding: 0.25em 0;
+            border-radius: 0.25em;
+            z-index: 1000;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+            min-width: 160px;
+        }
+
+        .context-menu li {
+            padding: 0.5em 1em;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .context-menu-item {
+            padding: 6px 12px;
+            cursor: pointer;
+            color: var(--text, white);
+        }
+
+        .context-menu-item:hover {
+            background-color: var(--color-hover-highlight);
+        }
+
+        .context-menu button {
+            display: block;
+            width: 100%;
+            padding: 0.25em 0.5em;
+            text-align: left;
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+        }
+
+        .context-menu button:hover {
+            background: var(--fg-muted, #333);
+        }
+
         canvas {
             display: block;
         }
@@ -546,7 +626,7 @@
 
     <!-- UI: Settings Sidebar -->
 
-    <div id="ui">
+    <div id="settings">
         <fieldset>
             <legend>Interface</legend>
             <div class="grid-form">
@@ -593,7 +673,7 @@
         </fieldset>
 
         <fieldset>
-            <legend>Toggle Content</legend>
+            <legend>Hide/Show</legend>
             <div class="grid-form">
                 <label for="showGrid">Grid</label>
                 <input type="checkbox" id="showGrid" checked>
@@ -603,8 +683,8 @@
                 <input type="checkbox" id="showText" checked>
                 <label for="showCoords">Coordinates</label>
                 <input type="checkbox" id="showCoords" checked>
-                <label for="showDesc">Description</label>
-                <input type="checkbox" id="showDesc" checked>
+                <label for="showDescription">Description</label>
+                <input type="checkbox" id="showDescription" checked>
                 <label for="showTags">Tags</label>
                 <input type="checkbox" id="showTags" checked>
             </div>
@@ -615,9 +695,9 @@
 
     <div id="hud">
         <small>Current Map: <strong id="currentMapName">default</strong></small>
-        <button onclick="toggleUI()">⚙️</button>
-        <button onclick="togglePinList()">📌</button>
-        <button onclick="toggleMiniMap()">🗺</button>
+        <button onclick="hideSettings()">⚙️</button>
+        <button onclick="hidePinList()">📌</button>
+        <button onclick="hideMinimap()">🗺</button>
     </div>
 
     <!-- Pin List: Right Sidebar -->
@@ -657,23 +737,26 @@
 
     <!-- Floating Pin Editor -->
 
-    <div id="floatingPinPanel">
+    <div id="pinEditorPanel">
         <div class="grid-form">
+            <input type="color" id="pinEditorColor" value="#ffcc00">
+
             <div class="input-group" style="grid-column: span 2;">
-                <input type="number" id="popupPinX" placeholder="X">
-                <input type="number" id="popupPinY" placeholder="Y">
-                <input type="number" id="popupPinZ" placeholder="Z">
+                <input type="number" id="pinEditorX" placeholder="X">
+                <input type="number" id="pinEditorY" placeholder="Y">
+                <input type="number" id="pinEditorZ" placeholder="Z">
             </div>
-            <input type="text" id="popupPinLabel" placeholder="Enter a label" style="grid-column: span 2;">
+            <input type="text" id="pinEditorLabel" placeholder="Enter a label" style="grid-column: span 2;">
             <div class="input-group" style="grid-column: span 2;">
-                <select id="popupPinID"></select>
-                <select id="popupPinIcon"></select>
+                <select id="pinEditorID"></select>
+                <select id="pinEditorIcon"></select>
             </div>
-            <textarea id="popupPinDesc" placeholder="Enter details or notes" style="grid-column: span 2;"></textarea>
+            <textarea id="pinEditorDescription" placeholder="Enter details or notes"
+                style="grid-column: span 2;"></textarea>
         </div>
         <div class="input-group" style="grid-column: span 2;">
-            <button onclick="confirmPinPlacement()">+ Add Pin</button>
-            <button onclick="cancelPinPlacement()">Cancel</button>
+            <button onclick="submitPinEditor()">+ Add Pin</button>
+            <button onclick="closePinEditor()">Cancel</button>
         </div>
     </div>
 
@@ -728,9 +811,9 @@
 
     <!-- Context Menu -->
 
-    <ul id="contextMenu"
-        style="display:none; position:absolute; z-index:100; background: var(--color-panel); border: 1px solid var(--color-border); border-radius: 4px; padding: 4px 0; list-style: none; font-size: var(--font-sm); min-width: 140px;">
-    </ul>
+    <div id="contextMenu" class="context-menu hidden">
+        <ul id="contextMenuItems"></ul>
+    </div>
 
     <!-- Canvas (Main Map) -->
     <span id="cursorPos">X: –, Z: –</span>
@@ -743,8 +826,8 @@
 
         window.addEventListener("DOMContentLoaded", () => {
             // Populate dropdowns for pin types and icons
-            const idSelect = document.getElementById("popupPinID");
-            const iconSelect = document.getElementById("popupPinIcon");
+            const idSelect = document.getElementById("pinEditorID");
+            const iconSelect = document.getElementById("pinEditorIcon");
 
             pinTypes.forEach(pin => {
                 const opt1 = document.createElement("option");
@@ -769,6 +852,7 @@
 
             // Now load map list and UI
             loadMapNames({ autoLoadFirst: true });
+
         });
 
 
@@ -804,6 +888,12 @@
         let tempPin = null;
         let tempPinScreenX = 0;
         let tempPinScreenY = 0;
+        let hoveredPinIndex = null;
+        let selectedPinIndex = null;
+
+        let contextMenuPinIndex = null;
+        let lastCursor = { x: 0, z: 0 };
+
 
         const minimapCanvas = document.getElementById("minimapCanvas");
         const minimapCtx = minimapCanvas.getContext("2d");
@@ -831,6 +921,11 @@
             { id: 'danger', label: 'Danger', icon: '☠️', category: 'Warnings' },
             { id: 'treasure', label: 'Treasure', icon: '🪙', category: 'Warnings' }
         ];
+        const quickPinContextItems = pinTypes.map(pt => ({
+            label: `${pt.icon} ${pt.label}`,
+            action: () => startPinPlacement(pt.id)
+        }));
+
         let currentMapName = "default";
         let mapData = {};
 
@@ -905,6 +1000,8 @@
             if (!name || !localStorage.getItem(`map:${name}`)) {
                 currentMapName = null;
                 pins = [];
+                hoveredPinIndex = null;
+                selectedPinIndex = null;
                 renderPinList();
                 updateOverlayVisibility();
                 draw();
@@ -946,8 +1043,9 @@
                 selector.appendChild(opt);
             });
 
-            if (autoLoadFirst && !currentMapName) {
+            if (autoLoadFirst && (!currentMapName || !localStorage.getItem(`map:${currentMapName}`))) {
                 currentMapName = names[0];
+                loadMap(currentMapName);
             }
 
             selector.value = currentMapName || names[0];
@@ -981,7 +1079,7 @@
             const showIcons = document.getElementById("showIcons").checked;
             const showText = document.getElementById("showText").checked;
             const showCoords = document.getElementById("showCoords").checked;
-            const showDesc = document.getElementById("showDesc").checked;
+            const showDescription = document.getElementById("showDescription").checked;
             const showTags = document.getElementById("showTags").checked;
             const minX = parseInt(document.getElementById("minX").value);
             const maxX = parseInt(document.getElementById("maxX").value);
@@ -997,6 +1095,27 @@
             const endZ = Math.ceil(visibleMaxZ / gridSpacing) * gridSpacing;
 
             const maxLines = 1000;
+
+            canvas.addEventListener("dblclick", (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const mx = e.clientX - rect.left;
+                const my = e.clientY - rect.top;
+
+                pins.forEach((pin, i) => {
+                    const sx = offsetX + pin.x * zoom;
+                    const sy = offsetY + pin.z * zoom;
+                    const dx = mx - sx;
+                    const dy = my - sy;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 10) {
+                        selectedPinIndex = i;
+                        updatePinListHighlight();
+                        editPin(i);
+                    }
+                });
+            });
+
+
             if ((endX - startX) / gridSpacing > maxLines) return; // skip draw
             if (zoom < 0.1) return; // skip grid when zoomed out too far
 
@@ -1020,10 +1139,8 @@
                     ctx.lineTo(width, sz);
                     ctx.stroke();
                 }
-
                 ctx.restore();
             }
-
 
             if (showAxes) {
                 ctx.strokeStyle = "#ffffff88";
@@ -1047,15 +1164,12 @@
                 const fontSize = useTextScale ? (12 * textScale) : Math.max(10, 12 * zoom);
                 const labelOffsetX = 8 * zoom;
                 const labelOffsetY = 0;
-                ctx.font = `${fontSize}px sans-serif`;
+                ctx.font = `${fontSize}px monospace`;
                 ctx.textAlign = "left";
                 ctx.textBaseline = "middle";
 
                 if (showIcons) {
-                    ctx.fillStyle = "#ffcc00";
-                    ctx.beginPath();
-                    ctx.arc(sx, sy, 5 * zoom, 0, Math.PI * 2);
-                    ctx.fill();
+                    pins.forEach((pin, i) => drawPin(ctx, pin, i));
                 }
 
                 // 🟨 Background box (must come before text)
@@ -1077,7 +1191,7 @@
                     ctx.fillText(p.label, sx + labelOffsetX, sy + labelOffsetY);
 
                     if (showCoords) ctx.fillText(`(${p.x}, ${p.z})`, sx + labelOffsetX, sy + fontSize * 1.2);
-                    if (showDesc && p.description) ctx.fillText(p.description, sx + labelOffsetX, sy + fontSize * 2.4);
+                    if (showDescription && p.description) ctx.fillText(p.description, sx + labelOffsetX, sy + fontSize * 2.4);
                     if (showTags && p.id) ctx.fillText(`[${p.id}]`, sx + labelOffsetX, sy + fontSize * 3.6);
                 }
             }
@@ -1087,7 +1201,7 @@
 
                 // Draw placeholder pin
                 ctx.beginPath();
-                ctx.arc(px, pz, 5, 0, Math.PI * 2);
+                ctx.arc(px, pz, 6, 0, Math.PI * 2);
                 ctx.fillStyle = 'lime';
                 ctx.fill();
 
@@ -1101,6 +1215,29 @@
             }
             drawMinimap();
             console.log("drawing");
+        }
+
+        function drawPin(ctx, pin, i) {
+            const screenX = offsetX + pin.x * zoom;
+            const screenY = offsetY + pin.z * zoom;
+
+            ctx.beginPath();
+            ctx.arc(screenX, screenY, 6, 0, Math.PI * 2);
+            ctx.fillStyle = pin.color || "#ffcc00";
+            ctx.fill();
+
+            if (i === hoveredPinIndex) {
+                ctx.strokeStyle = "lime";
+                ctx.lineWidth = 2.5;
+            } else if (i === selectedPinIndex) {
+                ctx.strokeStyle = "orange";
+                ctx.lineWidth = 2.5;
+            } else {
+                ctx.strokeStyle = "black";
+                ctx.lineWidth = 1;
+            }
+
+            ctx.stroke();
         }
 
         function drawMinimap() {
@@ -1168,9 +1305,30 @@
 
                 minimapCtx.fillStyle = "red";
                 minimapCtx.beginPath();
-                minimapCtx.arc(px, pz, 2, 0, Math.PI * 2);
+                minimapCtx.arc(px, pz, 1, 0, Math.PI * 2);
                 minimapCtx.fill();
             }
+            pins.forEach((p, i) => {
+                const px = worldOffsetX + p.x * scale;
+                const pz = worldOffsetZ + p.z * scale;
+
+                minimapCtx.beginPath();
+                minimapCtx.arc(px, pz, 2, 0, Math.PI * 2);
+
+                if (i === hoveredPinIndex) {
+                    minimapCtx.fillStyle = "lime"; // hover = lime
+                    minimapCtx.strokeStyle = "black";
+                    minimapCtx.lineWidth = 1;
+                    minimapCtx.stroke();
+                } else if (i === selectedPinIndex) {
+                    minimapCtx.fillStyle = "orange"; // selected = orange
+                } else {
+                    minimapCtx.fillStyle = p.color || "yellow";
+                }
+
+                minimapCtx.fill();
+            });
+
             // World limits
             document.getElementById("worldMinX").textContent = worldMinX;
             document.getElementById("worldMaxX").textContent = worldMaxX;
@@ -1210,6 +1368,51 @@
             draw();
         }
 
+        function initApp() {
+            // 1. Zoom level
+            zoom = 4;
+
+            // 2. Setup canvas to full size first
+            resizeCanvas();
+
+            // 3. THEN center camera on (0,0)
+            offsetX = canvas.width / 2;
+            offsetY = canvas.height / 2;
+
+            // 4. Initial draw
+            draw();
+
+            // 5. Setup pin dropdowns
+            const idSelect = document.getElementById("pinEditorID");
+            const iconSelect = document.getElementById("pinEditorIcon");
+            idSelect.innerHTML = '';
+            iconSelect.innerHTML = '';
+
+            pinTypes.forEach(pin => {
+                const opt1 = document.createElement("option");
+                opt1.value = pin.id;
+                opt1.textContent = pin.label;
+                idSelect.appendChild(opt1);
+
+                const opt2 = document.createElement("option");
+                opt2.value = pin.icon;
+                opt2.textContent = pin.icon;
+                iconSelect.appendChild(opt2);
+            });
+
+            idSelect.addEventListener("change", () => {
+                const selectedType = idSelect.value;
+                const match = pinTypes.find(p => p.id === selectedType);
+                if (match) iconSelect.value = match.icon;
+            });
+
+            // 6. Load maps and overlays
+            loadMapNames({ autoLoadFirst: true });
+            updateOverlayVisibility();
+        }
+
+
+
         // =================== 🖼️ UI RENDERING ===================
         // renderPinList(), centerOnPin(), updateOverlayVisibility()
 
@@ -1229,13 +1432,33 @@
             pins.forEach((pin, index) => {
                 const item = document.createElement('div');
                 item.className = 'pin-item';
+                item.dataset.index = index; // 📌 for matching
+
                 item.innerHTML = `
-          <strong>${pin.id || pin.type || 'Pin'}</strong><br>
-          ${pin.label || '(no label)'}<br>
-          X:${pin.x} Z:${pin.z}
-        `;
+                <div class="pin-summary">
+                    <span class="pin-icon">${pin.icon || "📍"}</span>
+                    <div class="pin-details">
+                    <div class="pin-label">${pin.label || "(no label)"}</div>
+                    <div class="pin-meta">
+                        <small>${pin.id || "custom"} • X:${pin.x} Z:${pin.z}</small>
+                    </div>
+                    </div>
+                </div>
+                `;
 
                 item.onclick = () => centerOnPin(pin);
+
+                // 🔄 Hover effect (list → canvas)
+                item.addEventListener("mouseenter", () => {
+                    hoveredPinIndex = index;
+                    draw();
+                });
+
+                item.addEventListener("mouseleave", () => {
+                    hoveredPinIndex = null;
+                    draw();
+                });
+
 
                 const controls = document.createElement('div');
                 controls.className = 'pin-controls';
@@ -1260,7 +1483,6 @@
                 controls.appendChild(editBtn);
                 controls.appendChild(deleteBtn);
                 item.appendChild(controls);
-
                 container.appendChild(item);
             });
             document.getElementById("pinCount").textContent = `(${pins.length})`;
@@ -1272,6 +1494,19 @@
             offsetY = canvas.height / 2 - pin.z * zoom;
             draw();
         }
+        function updatePinListHighlight() {
+            const pinCards = document.querySelectorAll('.pin-item');
+            pinCards.forEach((card, i) => {
+                if (i === hoveredPinIndex) {
+                    card.classList.add("hovered");
+                } else {
+                    card.classList.remove("hovered");
+                }
+            });
+            draw();         // redraw canvas
+            drawMinimap();  // redraw minimap too
+        }
+
 
         function updateOverlayVisibility() {
             const overlay = document.getElementById("noMapOverlay");
@@ -1280,34 +1515,58 @@
         }
 
         // =================== 📌 PIN MANAGEMENT ===================
-        // showPinPopup(), confirmPinPlacement(), cancelPinPlacement(), editPin(), addPin()
+        // openPinEditor(), submitPinEditor(), closePinEditor(), editPin(), addPin()
 
-        function showPinPopup(screenX, screenY, worldX, worldZ) {
-            const panel = document.getElementById('floatingPinPanel');
+        function openPinEditor(_, __, worldX, worldZ, typeID = "", icon = "", label = "") {
+            const panel = document.getElementById('pinEditorPanel');
+
+            // Convert world → canvas → screen position
+            const px = offsetX + worldX * zoom;
+            const pz = offsetY + worldZ * zoom;
+            const rect = canvas.getBoundingClientRect();
+            let screenX = rect.left + px;
+            let screenY = rect.top + pz;
+
+            // Prevent panel from overflowing the viewport
+            const panelWidth = 240;
+            const panelHeight = 200;
+            const padding = 10;
+
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+
+            if (screenX + panelWidth + padding > vw) {
+                screenX = vw - panelWidth - padding;
+            }
+            if (screenY + panelHeight + padding > vh) {
+                screenY = vh - panelHeight - padding;
+            }
+
             panel.style.left = `${screenX}px`;
             panel.style.top = `${screenY}px`;
             panel.style.display = 'block';
 
-            // Save for drawing
+            // Save for drawing line
             tempPin = { x: worldX, z: worldZ };
-            tempPinScreenX = screenX;
-            tempPinScreenY = screenY;
+            tempPinScreenX = px;
+            tempPinScreenY = pz;
 
-            document.getElementById('popupPinX').value = worldX;
-            document.getElementById('popupPinY').value = '';
-            document.getElementById('popupPinZ').value = worldZ;
-            document.getElementById('popupPinID').value = '';
-            document.getElementById('popupPinLabel').value = '';
-            document.getElementById('popupPinDesc').value = '';
-            document.getElementById('popupPinIcon').value = '';
+            // Clear or prepare inputs
+            document.getElementById('pinEditorX').value = worldX;
+            document.getElementById('pinEditorY').value = '';
+            document.getElementById('pinEditorZ').value = worldZ;
+            document.getElementById('pinEditorID').value = typeID;
+            document.getElementById('pinEditorLabel').value = label || typeID;
+            document.getElementById('pinEditorDescription').value = '';
+            document.getElementById('pinEditorIcon').value = icon;
 
-            const fields = document.querySelectorAll('#floatingPinPanel input, #floatingPinPanel textarea');
+            const fields = document.querySelectorAll('#pinEditorPanel input, #pinEditorPanel textarea');
             fields.forEach(field => {
                 field.onkeydown = (e) => {
                     if (e.key === 'Enter') {
                         if (e.ctrlKey || e.metaKey) {
                             e.preventDefault();
-                            confirmPinPlacement();
+                            submitPinEditor();
                         } else {
                             e.preventDefault();
                             focusNextInput(e.target);
@@ -1316,39 +1575,33 @@
                 };
             });
 
-            draw();
             setTimeout(() => {
-                document.getElementById('popupPinLabel').focus();
+                document.getElementById('pinEditorLabel').focus();
             }, 0);
-        }
 
-        function confirmPinPlacement() {
-            const x = parseInt(document.getElementById('popupPinX').value);
-            const y = parseInt(document.getElementById('popupPinY').value);
-            const z = parseInt(document.getElementById('popupPinZ').value);
-            const id = document.getElementById('popupPinID').value;
-            const label = document.getElementById('popupPinLabel').value;
-            const desc = document.getElementById('popupPinDesc').value;
-            const icon = document.getElementById('popupPinIcon').value;
-
-            const pinData = { x, y, z, id, label, desc, icon };
-
-            if (currentEditIndex !== null) {
-                pins[currentEditIndex] = pinData;
-            } else {
-                pins.push(pinData);
-            }
-            renderPinList();
-            cancelPinPlacement();
-            currentEditIndex = null;
-            tempPin = null;
-            saveCurrentMap();
             draw();
         }
 
-        function cancelPinPlacement() {
+
+
+        function startPinPlacement(typeID) {
+            const pinType = pinTypes.find(p => p.id === typeID);
+            if (!pinType) return;
+            openPinEditor(lastCursor.x, lastCursor.z, lastCursor.x, lastCursor.z, typeID, pinType.icon);
+        }
+
+        function deletePin(index) {
+            if (confirm("Delete this pin?")) {
+                pins.splice(index, 1);
+                saveCurrentMap();
+                renderPinList();
+                draw();
+            }
+        }
+
+        function closePinEditor() {
             isPlacingPin = false;
-            document.getElementById('floatingPinPanel').style.display = 'none';
+            document.getElementById('pinEditorPanel').style.display = 'none';
             document.body.style.cursor = 'default';
             tempPin = null;
             draw();
@@ -1361,15 +1614,19 @@
             const screenX = canvas.width / 2;
             const screenY = canvas.height / 2;
 
-            showPinPopup(screenX, screenY, pin.x, pin.z);
+            openPinEditor(screenX, screenY, pin.x, pin.z);
 
-            document.getElementById('popupPinX').value = pin.x;
-            document.getElementById('popupPinY').value = pin.y ?? '';
-            document.getElementById('popupPinZ').value = pin.z;
-            document.getElementById('popupPinID').value = pin.id ?? '';
-            document.getElementById('popupPinLabel').value = pin.label ?? '';
-            document.getElementById('popupPinDesc').value = pin.desc ?? '';
-            document.getElementById('popupPinIcon').value = pin.icon ?? '';
+            document.getElementById('pinEditorX').value = pin.x;
+            document.getElementById('pinEditorY').value = pin.y ?? '';
+            document.getElementById('pinEditorZ').value = pin.z;
+            document.getElementById('pinEditorID').value = pin.id ?? '';
+            document.getElementById('pinEditorLabel').value = pin.label ?? '';
+            document.getElementById('pinEditorDescription').value = pin.description ?? '';
+            document.getElementById('pinEditorIcon').value = pin.icon ?? '';
+
+            selectedPinIndex = index;
+            draw();
+            drawMinimap();
         }
 
         function addPin() {
@@ -1378,22 +1635,58 @@
             const z = parseInt(document.getElementById("pinZ").value);
             const id = document.getElementById("pinType").value || "custom";
             const label = document.getElementById("pinLabel").value || "(no label)";
-            const desc = document.getElementById("pinDesc").value;
+            const description = document.getElementById("pinDescription").value;
             const icon = document.getElementById("pinIcon").value;
             if (isNaN(x) || isNaN(z)) return alert("X and Z are required.");
-            pins.push({ x, y, z, id, label, description: desc, icon });
+            pins.push({ x, y, z, id, label, description: description, icon });
             draw();
             renderPinList(); // ← Add this line
             saveCurrentMap();
         }
-        // =================== 📑 UI HELPERS + TOGGLES ===================
-        // togglePinList(), resetView(), focusNextInput(), hideContextMenu()
 
-        function togglePinList() {
+        function submitPinEditor() {
+            const x = parseInt(document.getElementById('pinEditorX').value);
+            const y = parseInt(document.getElementById('pinEditorY').value);
+            const z = parseInt(document.getElementById('pinEditorZ').value);
+            const id = document.getElementById('pinEditorID').value;
+            const label = document.getElementById('pinEditorLabel').value;
+            const description = document.getElementById('pinEditorDescription').value;
+            const icon = document.getElementById('pinEditorIcon').value;
+            const color = document.getElementById('pinEditorColor').value;
+            const pinData = { x, y, z, id, label, description, icon, color };
+
+            if (currentEditIndex !== null) {
+                pins[currentEditIndex] = pinData;
+            } else {
+                pins.push(pinData);
+            }
+            renderPinList();
+            closePinEditor();
+            currentEditIndex = null;
+            tempPin = null;
+            saveCurrentMap();
+            draw();
+        }
+
+        // =================== 📑 UI HELPERS + TOGGLES ===================
+        // hidePinList(), resetView(), focusNextInput(), hideContextMenu()
+
+        function hidePinList() {
             const panel = document.getElementById('pinListPanel');
             panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
             renderPinList();
         }
+
+        function hideSettings() {
+            const panel = document.getElementById('settings');
+            panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
+        }
+
+        function hideMinimap() {
+            const panel = document.getElementById('minimapContainer');
+            panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
+        }
+
         function resetView() {
             zoom = 1;
             offsetX = width / 2;
@@ -1404,7 +1697,7 @@
 
         function focusNextInput(current) {
             const inputs = Array.from(
-                document.querySelectorAll('#floatingPinPanel input, #floatingPinPanel textarea')
+                document.querySelectorAll('#pinEditorPanel input, #pinEditorPanel textarea')
             );
             const index = inputs.indexOf(current);
             if (index >= 0 && index < inputs.length - 1) {
@@ -1412,100 +1705,123 @@
             }
         }
 
+        function populateTypeAndIconDropdowns() {
+            const idSelect = document.getElementById("pinEditorID");
+            const iconSelect = document.getElementById("pinEditorIcon");
+            idSelect.innerHTML = '';
+            iconSelect.innerHTML = '';
+
+            pinTypes.forEach(pin => {
+                const opt1 = document.createElement("option");
+                opt1.value = pin.id;
+                opt1.textContent = pin.label;
+                idSelect.appendChild(opt1);
+
+                const opt2 = document.createElement("option");
+                opt2.value = pin.icon;
+                opt2.textContent = pin.icon;
+                iconSelect.appendChild(opt2);
+            });
+
+            idSelect.addEventListener("change", () => {
+                const selectedType = idSelect.value;
+                const match = pinTypes.find(p => p.id === selectedType);
+                if (match) iconSelect.value = match.icon;
+            });
+        }
+
         // =================== ⚙️ CONTEXT MENU SYSTEM ===================
         // showContextMenu(), event listeners
 
-        function showContextMenu(pageX, pageY) {
-            const menu = document.getElementById('contextMenu');
-            menu.innerHTML = ''; // Clear previous
+        function showContextMenu(items, x, y) {
+            const menu = document.getElementById("contextMenu");
+            menu.innerHTML = ""; // Clear old
 
-            const grouped = {};
-            pinTypes.forEach(pin => {
-                if (!grouped[pin.category]) grouped[pin.category] = [];
-                grouped[pin.category].push(pin);
-            });
-
-            const options = [
-                {
-                    label: '📍 Custom Pin…',
-                    action: () => {
-                        showPinPopup(
-                            contextWorldX * zoom + offsetX,
-                            contextWorldZ * zoom + offsetY,
-                            contextWorldX,
-                            contextWorldZ
-                        );
-                        hideContextMenu();
-                    }
-                }
-            ];
-
-            Object.entries(grouped).forEach(([category, pins]) => {
-                options.push({ label: `── ${category}`, isSeparator: true });
-
-                pins.forEach(pin => {
-                    options.push({
-                        label: `${pin.icon} ${pin.label}`,
-                        action: () => {
-                            showPinPopup(
-                                contextWorldX * zoom + offsetX,
-                                contextWorldZ * zoom + offsetY,
-                                contextWorldX,
-                                contextWorldZ
-                            );
-                            setTimeout(() => {
-                                document.getElementById('popupPinID').value = pin.id;
-                                document.getElementById('popupPinIcon').value = pin.icon;
-                                document.getElementById('popupPinLabel').value = pin.label;
-                            }, 0);
-                            hideContextMenu();
-                        }
-                    });
-                });
-            });
-
-            options.forEach(opt => {
-                const li = document.createElement('li');
-
-                if (opt.isSeparator) {
-                    li.textContent = opt.label;
-                    li.style.padding = '4px 12px';
-                    li.style.fontWeight = 'bold';
-                    li.style.color = '#aaa';
-                    li.style.cursor = 'default';
-                } else {
-                    li.textContent = opt.label;
-                    li.style.padding = '4px 12px';
-                    li.style.cursor = 'pointer';
-                    li.addEventListener('click', opt.action);
-                    li.addEventListener('mouseenter', () => li.style.background = '#333');
-                    li.addEventListener('mouseleave', () => li.style.background = 'transparent');
-                }
-
+            items.forEach(({ label, action }) => {
+                const li = document.createElement("li");
+                li.textContent = label;
+                li.onclick = () => {
+                    action();
+                    menu.style.display = "none";
+                };
                 menu.appendChild(li);
             });
 
-            menu.style.left = `${pageX}px`;
-            menu.style.top = `${pageY}px`;
-            menu.style.display = 'block';
+            menu.style.left = `${x}px`;
+            menu.style.top = `${y}px`;
+            menu.style.display = "block";
+
+            // Viewport size
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            const menuRect = menu.getBoundingClientRect();
+
+            // Adjust position if near edge
+            const left = (x + menuRect.width > vw) ? (x - menuRect.width) : x;
+            const top = (y + menuRect.height > vh) ? (y - menuRect.height) : y;
+
+            menu.style.left = `${Math.max(left, 0)}px`;
+            menu.style.top = `${Math.max(top, 0)}px`;
         }
+
+
+        function hideContextMenu() {
+            const menu = document.getElementById('contextMenu');
+            menu.classList.add('hidden');
+        }
+
+        window.addEventListener('click', hideContextMenu);
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') hideContextMenu();
+        });
 
         function hideContextMenu() {
             document.getElementById('contextMenu').style.display = 'none';
         }
 
-        canvas.addEventListener('contextmenu', (e) => {
+        canvas.addEventListener("contextmenu", (e) => {
             e.preventDefault();
-
             const rect = canvas.getBoundingClientRect();
-            const screenX = e.clientX - rect.left;
-            const screenY = e.clientY - rect.top;
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
 
-            contextWorldX = Math.round((screenX - offsetX) / zoom);
-            contextWorldZ = Math.round((screenY - offsetY) / zoom);
+            const worldX = Math.floor((mx - offsetX) / zoom);
+            const worldZ = Math.floor((my - offsetY) / zoom);
+            lastCursor = { x: worldX, z: worldZ };
 
-            showContextMenu(e.clientX, e.clientY);
+            const found = pins.find(pin => {
+                const sx = offsetX + pin.x * zoom;
+                const sy = offsetY + pin.z * zoom;
+                return Math.hypot(mx - sx, my - sy) < 10;
+            });
+
+            if (found) {
+                const index = pins.indexOf(found);
+                showContextMenu([
+                    { label: "✏️ Edit Pin", action: () => editPin(index) },
+                    { label: "🗑️ Delete Pin", action: () => deletePin(index) }
+                ], e.clientX, e.clientY);
+            } else {
+                showContextMenu(quickPinContextItems, e.clientX, e.clientY);
+            }
         });
+
+        function getHoveredPinIndex(e) {
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+
+            for (let i = 0; i < pins.length; i++) {
+                const pin = pins[i];
+                const sx = offsetX + pin.x * zoom;
+                const sy = offsetY + pin.z * zoom;
+                const dx = mx - sx;
+                const dy = my - sy;
+                if (Math.sqrt(dx * dx + dy * dy) < 10) return i;
+            }
+            return null;
+        }
+
 
         // =================== 🧭 INTERACTION: ZOOM, PAN, CLICK ===================
         // mouse event listeners for panning, zoom, placing pins, hover cursor
@@ -1516,6 +1832,26 @@
         });
         canvas.addEventListener("mouseup", () => isPanning = false);
         canvas.addEventListener("mousemove", (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+
+            let found = null;
+            pins.forEach((pin, i) => {
+                const sx = offsetX + pin.x * zoom;
+                const sy = offsetY + pin.z * zoom;
+                const dx = mx - sx;
+                const dy = my - sy;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 10) found = i;
+            });
+
+            if (found !== hoveredPinIndex) {
+                hoveredPinIndex = found;
+                updatePinListHighlight();
+                draw();
+            }
+
             if (!isPanning) return;
             offsetX += e.clientX - panStart.x;
             offsetY += e.clientY - panStart.y;
@@ -1554,14 +1890,27 @@
 
         canvas.addEventListener('click', (e) => {
             if (!isPlacingPin) return;
-            const rect = canvas.getBoundingClientRect();
-            const screenX = e.clientX - rect.left;
-            const screenY = e.clientY - rect.top;
 
             const worldX = Math.round((screenX - offsetX) / zoom);
             const worldZ = Math.round((screenY - offsetY) / zoom);
 
-            showPinPopup(screenX, screenY, worldX, worldZ);
+            openPinEditor(e.clientX, e.clientY, worldX, worldZ);
+
+            let found = null;
+            pins.forEach((pin, i) => {
+                const sx = offsetX + pin.x * zoom;
+                const sy = offsetY + pin.z * zoom;
+                const dx = mx - sx;
+                const dy = my - sy;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 10) found = i;
+            });
+
+            if (found !== null) {
+                selectedPinIndex = found;
+                centerOnPin(pins[found]); // optional
+                draw();
+            }
         });
 
         // =================== 🧩 INPUT EVENT HOOKS ===================
@@ -1622,16 +1971,14 @@
         window.addEventListener('click', () => hideContextMenu());
         window.addEventListener('keydown', () => hideContextMenu());
 
-        ["showGrid", "showIcons", "showText", "showCoords", "showDesc", "showTags", "minX", "maxX", "minZ", "maxZ", "bgColor", "showLabelBackground", "useTextScale", "gridColor", "gridSpacing", "showAxes"].forEach(id => {
+        ["showGrid", "showIcons", "showText", "showCoords", "showDescription", "showTags", "minX", "maxX", "minZ", "maxZ", "bgColor", "showLabelBackground", "useTextScale", "gridColor", "gridSpacing", "showAxes"].forEach(id => {
             document.getElementById(id).addEventListener("input", draw);
         });
 
         // =================== 11. 🔚 FINAL INIT CALLS ===================
         // loadMapNames(), draw(), resizeCanvas()
 
-        loadMapNames({ autoLoadFirst: true });
-        draw();
-        resizeCanvas();
+        window.addEventListener("DOMContentLoaded", initApp);
 
     </script>
 
