@@ -73,7 +73,7 @@
             position: fixed;
             top: var(--space-md);
             left: var(--space-md);
-            z-index: 10;
+            z-index: 100;
             max-height: 95vh;
             overflow-y: auto;
             width: 260px;
@@ -87,7 +87,7 @@
             left: 50%;
             transform: translateX(-50%);
             color: var(--color-text);
-            z-index: 20;
+            z-index: 200;
             display: flex;
             gap: var(--space-md);
             align-items: center;
@@ -102,7 +102,7 @@
             height: 95vh;
             width: 300px;
             color: var(--color-text);
-            z-index: 10;
+            z-index: 300;
             overflow: hidden;
         }
 
@@ -121,7 +121,7 @@
             flex-shrink: 0;
         }
 
-        .pins-header {
+        .pin-list-header {
             justify-content: space-between;
         }
 
@@ -152,55 +152,65 @@
 
         }
 
-        .pin-item {
+        .pin-card {
             padding: var(--space-sm);
             background-color: var(--color-control-bg);
             border: 1px solid var(--color-border);
             font-size: var(--font-md);
         }
 
-        .pin-item:hover {
+        .pin-card:hover {
             border: 1px solid var(--color-primary);
             background-color: var(--color-hover-highlight);
 
         }
 
-        .pin-item.hovered {
+        .pin-card.hovered {
             outline: 2px dashed lime;
             background-color: var(--bg-hover);
         }
 
-        .pin-item.selected {
+        .pin-card.selected {
             outline: 2px solid orange;
             background-color: var(--bg-selected);
         }
 
 
-        .pin-summary {
+        .pin-card-content {
             display: flex;
-            align-items: center;
+            flex-direction: column;
+            align-items: left;
             gap: 8px;
+        }
+
+        .pin-card-header {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            font-size: 11px;
+            opacity: 0.75;
+        }
+
+        .pin-card-body {
+            display: flex;
+            flex-direction: column;
+            justify-content: left;
+            line-height: 1.2;
+        }
+
+        .pin-card-row {
+            display: flex;
+            flex-direction: row;
         }
 
         .pin-icon {
             font-size: 20px;
         }
 
-        .pin-details {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            line-height: 1.2;
-        }
-
         .pin-label {
             font-weight: bold;
         }
 
-        .pin-meta {
-            font-size: 11px;
-            opacity: 0.75;
-        }
 
         .pin-controls {
             display: flex;
@@ -289,113 +299,63 @@
             pointer-events: none;
         }
 
-        .minimap-label {
+        .minimap-label-group {
             position: absolute;
-            font-size: 10px;
-            color: var(--color-text-secondary);
-            font-family: monospace;
-            opacity: 0.8;
             display: flex;
             gap: 6px;
         }
 
-        .top-label {
-            top: -1.5em;
+        .minimap-label-group.top {
+            top: -28px;
             left: 0;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
             width: 100%;
-            justify-content: center;
         }
 
-        .bottom-label {
-            bottom: -1.5em;
+        .minimap-label-group.bottom {
+            bottom: -28px;
             left: 0;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
             width: 100%;
-            justify-content: center;
         }
 
-        .left-label {
+        .minimap-label-group.left {
+            left: -36px;
             top: 0;
-            left: -7.5em;
             height: 100%;
-            justify-content: flex-end;
-            align-items: center;
-        }
-
-        .right-label {
-            top: 0;
-            right: -7.5em;
-            height: 100%;
-            justify-content: flex-start;
-            align-items: center;
-        }
-
-        .rotated-label {
-            transform: rotate(-90deg);
-            transform-origin: center;
-            text-align: center;
             display: flex;
             flex-direction: column;
-            gap: 3px;
+            justify-content: space-between;
+            /* distributes rows evenly down edge */
+
+            align-items: flex-end;
         }
 
-        .minimap-label.north {
-            top: 4px;
-            left: 50%;
-            transform: translateX(-50%);
+        .minimap-label-group.right {
+            right: -34px;
+            top: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            /* distributes rows evenly down edge */
+            align-items: flex-start;
         }
 
-        .minimap-label.south {
-            bottom: 4px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .minimap-label.west {
-            left: 4px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        .minimap-label.east {
-            right: 4px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        .minimap-edge-label {
-            position: absolute;
+        .label-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             font-size: 10px;
-            color: var(--color-text-secondary);
-            opacity: 0.7;
-            pointer-events: none;
-            white-space: nowrap;
+            text-align: center;
+        }
+
+        .label-header {
             font-weight: bold;
-        }
-
-        .north-label {
-            top: -14px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .south-label {
-            bottom: -14px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .west-label {
-            top: 50%;
-            left: -8px;
-            transform: translateY(-50%) rotate(-90deg);
-            transform-origin: left center;
-        }
-
-        .east-label {
-            top: 50%;
-            right: -8px;
-            transform: translateY(-50%) rotate(90deg);
-            transform-origin: right center;
         }
 
         #noMapOverlay {
@@ -589,6 +549,8 @@
         .input-group {
             display: flex;
             gap: var(--space-sm);
+            width: 100%;
+            justify-content: right;
         }
 
         .input-group input {
@@ -692,27 +654,28 @@
 
     <div id="hud">
         <small>Current Map: <strong id="currentMapName">default</strong></small>
+        <button id="toggleCrosshair">🞔 Crosshair</button>
         <button onclick="hideSettings()">⚙️</button>
-        <button onclick="hidePinList()">📌</button>
         <button onclick="hideMinimap()">🗺</button>
+        <button onclick="hidePinList()">📌</button>
     </div>
 
     <!-- Pin List: Right Sidebar -->
 
     <div id="pinListPanel">
         <!-- 🗺️ Map Header -->
-        <div class="pin-panel-heade map-header">
+        <div class="pin-panel-header map-header">
             <div class="input-group">
-                <select id="mapSelector">
-                </select>
+                <select id="mapSelector"></select>
                 <button id="createNewMapBtn">+</button>
                 <button id="renameMapBtn" title="Rename map">✏️</button>
+                <button id="copyMapPath" title="Copy Map Key to Clipboard">📋</button>
                 <button id="deleteMapBtn" title="Delete map">🗑️</button>
             </div>
         </div>
 
         <!-- 📌 Pins Header -->
-        <div class="pin-panel-header pins-header">
+        <div class="pin-panel-header pin-list-header">
             <div class="pin-header-left">
                 <strong>Pins:</strong> <span id="pinCount">0</span>
             </div>
@@ -732,8 +695,7 @@
     </div>
 
 
-    <!-- Floating Pin Editor -->
-
+    <!-- Pin Editor -->
     <div id="pinEditorPanel">
         <div class="grid-form">
             <input type="color" id="pinEditorColor" value="#ffcc00">
@@ -758,45 +720,73 @@
     </div>
 
     <!-- Minimap and Labels -->
-
     <div id="minimapContainer" class="minimap-wrapper">
         <canvas id="minimapCanvas" width="200" height="200"></canvas>
 
-        <div class="minimap-label top-label">
-            <span class="label-direction">N</span>
-            <span class="label-group">(World) <span id="worldMinZ">?</span></span>
-            <span class="label-group">(Crop) <span id="cropMinZ">?</span></span>
-            <span class="label-group">(View) <span id="viewMinZ">?</span></span>
-        </div>
-
-        <div class="minimap-label bottom-label">
-            <span class="label-direction">S</span>
-            <span class="label-group">(World) <span id="worldMaxZ">?</span></span>
-            <span class="label-group">(Crop) <span id="cropMaxZ">?</span></span>
-            <span class="label-group">(View) <span id="viewMaxZ">?</span></span>
-        </div>
-
-        <div class="minimap-label left-label">
-            <div class="rotated-label">
-                <span class="label-direction">W</span>
-                <span class="label-group">(World) <span id="worldMinX">?</span></span>
-                <span class="label-group">(Crop) <span id="cropMinX">?</span></span>
-                <span class="label-group">(View) <span id="viewMinX">?</span></span>
+        <div class="minimap-label-group top">
+            <div class="label-column">
+                <span class="label-header">World</span>
+                <span id="worldMinX" class="label-value"></span>
+            </div>
+            <div class="label-column">
+                <span class="label-header">View</span>
+                <span id="viewMinX" class="label-value"></span>
+            </div>
+            <div class="label-column">
+                <span class="label-header">Crop</span>
+                <span id="cropMinX" class="label-value"></span>
             </div>
         </div>
 
-        <div class="minimap-label right-label">
-            <div class="rotated-label">
-                <span class="label-direction">E</span>
-                <span class="label-group">(World) <span id="worldMaxX">?</span></span>
-                <span class="label-group">(Crop) <span id="cropMaxX">?</span></span>
-                <span class="label-group">(View) <span id="viewMaxX">?</span></span>
+        <div class="minimap-label-group right">
+            <div class="label-column">
+                <span class="label-header">Crop</span>
+                <span id="cropMaxZ" class="label-value"></span>
+            </div>
+            <div class="label-column">
+                <span class="label-header">View</span>
+                <span id="viewMaxZ" class="label-value"></span>
+            </div>
+
+            <div class="label-column">
+                <span class="label-header">World</span>
+                <span id="worldMaxZ" class="label-value"></span>
+            </div>
+        </div>
+
+        <div class="minimap-label-group left">
+            <div class="label-column">
+                <span class="label-header">World</span>
+                <span id="worldMinZ" class="label-value"></span>
+            </div>
+            <div class="label-column">
+                <span class="label-header">View</span>
+                <span id="viewMinZ" class="label-value"></span>
+            </div>
+            <div class="label-column">
+                <span class="label-header">Crop</span>
+                <span id="cropMinZ" class="label-value"></span>
+            </div>
+
+        </div>
+
+        <div class="minimap-label-group bottom">
+            <div class="label-column">
+                <span class="label-header">Crop</span>
+                <span id="cropMaxX" class="label-value"></span>
+            </div>
+            <div class="label-column">
+                <span class="label-header">View</span>
+                <span id="viewMaxX" class="label-value"></span>
+            </div>
+            <div class="label-column">
+                <span class="label-header">World</span>
+                <span id="worldMaxX" class="label-value"></span>
             </div>
         </div>
     </div>
 
     <!-- No Map Overlay Screen -->
-
     <div id="noMapOverlay" class="overlay" style="display: none;">
         <div class="overlay-content">
             <h2>No Maps Exist</h2>
@@ -807,14 +797,14 @@
     </div>
 
     <!-- Context Menu -->
-
     <div id="contextMenu" class="context-menu hidden">
         <ul id="contextMenuItems"></ul>
     </div>
 
     <!-- Canvas (Main Map) -->
-    <span id="cursorPos">X: –, Z: –</span>
     <canvas id="mapCanvas"></canvas>
+    <div id="cursorLabel"></div>
+
 
     <script>
 
@@ -887,9 +877,13 @@
         let tempPinScreenY = 0;
         let hoveredPinIndex = null;
         let selectedPinIndex = null;
+        let crosshairMode = false;
 
         let contextMenuPinIndex = null;
         let lastCursor = { x: 0, z: 0 };
+
+        let crosshairX = 0;
+        let crosshairY = 0;
 
 
         const minimapCanvas = document.getElementById("minimapCanvas");
@@ -903,8 +897,8 @@
 
 
         const pinTypes = [
-            { id: 'spawn', label: 'Spawn Point', icon: '⭐', category: 'Special' },
-            { id: 'bed', label: 'Bed Spawn', icon: '🛏️', category: 'Special' },
+            { id: 'spawn', label: 'Spawn', icon: '⭐', category: 'Special' },
+            { id: 'bed', label: 'Bed', icon: '🛏️', category: 'Special' },
             { id: 'home', label: 'Home Base', icon: '🏡', category: 'Settlements' },
             { id: 'village', label: 'Village', icon: '🏘️', category: 'Settlements' },
             { id: 'farm', label: 'Farm', icon: '🌾', category: 'Settlements' },
@@ -1019,7 +1013,6 @@
             updateOverlayVisibility();
             draw();
         }
-
 
         function loadMapNames({ autoLoadFirst = false } = {}) {
             const selector = document.getElementById("mapSelector");
@@ -1161,12 +1154,27 @@
                 const fontSize = useTextScale ? (12 * textScale) : Math.max(10, 12 * zoom);
                 const labelOffsetX = 8 * zoom;
                 const labelOffsetY = 0;
+
+                if (showIcons && p.icon) {
+                    const iconSize = Math.max(10, 12 * zoom); // match your scaling
+                    ctx.font = `${iconSize}px monospace`;
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "bottom";
+                    ctx.fillStyle = "white";
+
+                    ctx.fillText(p.icon, sx, sy - 8); // just above the pin
+                }
+
                 ctx.font = `${fontSize}px monospace`;
                 ctx.textAlign = "left";
-                ctx.textBaseline = "middle";
+                ctx.textBaseline = "bottom";
 
-                if (showIcons) {
-                    pins.forEach((pin, i) => drawPin(ctx, pin, i));
+                pins.forEach((pin, i) => {
+                    if (i !== hoveredPinIndex) drawPin(ctx, pin, i);
+                });
+
+                if (hoveredPinIndex !== null && pins[hoveredPinIndex]) {
+                    drawPin(ctx, pins[hoveredPinIndex], hoveredPinIndex);
                 }
 
                 // 🟨 Background box (must come before text)
@@ -1184,13 +1192,13 @@
                 }
 
                 if (showText) {
-                    ctx.fillStyle = "white";
-                    ctx.fillText(p.label, sx + labelOffsetX, sy + labelOffsetY);
-
+                    ctx.fillStyle = "lime";
+                    if (showTags && p.id) ctx.fillText(`[${p.id}]`, sx + labelOffsetX, sy);
                     if (showCoords) ctx.fillText(`(${p.x}, ${p.z})`, sx + labelOffsetX, sy + fontSize * 1.2);
-                    if (showDescription && p.description) ctx.fillText(p.description, sx + labelOffsetX, sy + fontSize * 2.4);
-                    if (showTags && p.id) ctx.fillText(`[${p.id}]`, sx + labelOffsetX, sy + fontSize * 3.6);
+                    ctx.fillText(p.label, sx + labelOffsetX, sy + fontSize * 2.4);
+                    if (showDescription && p.description) ctx.fillText(p.description, sx + labelOffsetX, sy + fontSize * 3.6);
                 }
+
             }
             if (tempPin) {
                 const px = tempPin.x * zoom + offsetX;
@@ -1210,6 +1218,25 @@
                 ctx.lineWidth = 1;
                 ctx.stroke();
             }
+
+            if (crosshairMode) {
+                ctx.strokeStyle = "white";
+                ctx.lineWidth = 1;
+                ctx.setLineDash([4, 4]);
+
+                ctx.beginPath();
+                ctx.moveTo(crosshairX, 0);
+                ctx.lineTo(crosshairX, height);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(0, crosshairY);
+                ctx.lineTo(width, crosshairY);
+                ctx.stroke();
+
+                ctx.setLineDash([]);
+            }
+
             drawMinimap();
             console.log("drawing");
         }
@@ -1233,8 +1260,8 @@
                 ctx.strokeStyle = "black";
                 ctx.lineWidth = 1;
             }
-
             ctx.stroke();
+
         }
 
         function drawMiniGrid() {
@@ -1319,43 +1346,52 @@
             const viewWidth = (bottomRightWorldX - topLeftWorldX) * scale;
             const viewHeight = (bottomRightWorldZ - topLeftWorldZ) * scale;
 
-            minimapCtx.strokeStyle = "lime";
-            minimapCtx.lineWidth = 1;
-            minimapCtx.strokeRect(viewX, viewZ, viewWidth, viewHeight);
 
+            // 📍 Draw all pins except hovered one
+            for (let i = 0; i < pins.length; i++) {
+                if (i === hoveredPinIndex) continue;
 
-            // 📍 Draw pins
-            for (const p of pins) {
+                const p = pins[i];
                 const px = worldOffsetX + p.x * scale;
                 const pz = worldOffsetZ + p.z * scale;
 
-                if (!isFinite(px) || !isFinite(pz)) continue; // safety
-
-                minimapCtx.fillStyle = "red";
-                minimapCtx.beginPath();
-                minimapCtx.arc(px, pz, 1, 0, Math.PI * 2);
-                minimapCtx.fill();
-            }
-            pins.forEach((p, i) => {
-                const px = worldOffsetX + p.x * scale;
-                const pz = worldOffsetZ + p.z * scale;
+                if (!isFinite(px) || !isFinite(pz)) continue;
 
                 minimapCtx.beginPath();
                 minimapCtx.arc(px, pz, 2, 0, Math.PI * 2);
 
-                if (i === hoveredPinIndex) {
-                    minimapCtx.fillStyle = "lime"; // hover = lime
-                    minimapCtx.strokeStyle = "black";
-                    minimapCtx.lineWidth = 1;
-                    minimapCtx.stroke();
-                } else if (i === selectedPinIndex) {
-                    minimapCtx.fillStyle = "orange"; // selected = orange
+                if (i === selectedPinIndex) {
+                    minimapCtx.fillStyle = "orange";
                 } else {
                     minimapCtx.fillStyle = p.color || "yellow";
                 }
 
                 minimapCtx.fill();
-            });
+            }
+
+            // ✅ Draw hovered pin on top
+            if (hoveredPinIndex !== null && pins[hoveredPinIndex]) {
+                const p = pins[hoveredPinIndex];
+                const px = worldOffsetX + p.x * scale;
+                const pz = worldOffsetZ + p.z * scale;
+
+                if (isFinite(px) && isFinite(pz)) {
+                    minimapCtx.beginPath();
+                    minimapCtx.arc(px, pz, 2, 0, Math.PI * 2);
+                    minimapCtx.fillStyle = "lime";
+                    minimapCtx.strokeStyle = "black";
+                    minimapCtx.lineWidth = 1;
+                    minimapCtx.stroke();
+                    minimapCtx.fill();
+                }
+            }
+
+            // ✅ Draw current view window (draw once, not per pin)
+            minimapCtx.strokeStyle = "lime";
+            minimapCtx.lineWidth = 1;
+            minimapCtx.strokeRect(viewX, viewZ, viewWidth, viewHeight);
+
+            drawMinimapLabels(minimapCtx, minimapCanvas.width, minimapCanvas.height);
 
             // World limits
             document.getElementById("worldMinX").textContent = worldMinX;
@@ -1394,6 +1430,33 @@
             }
 
             draw();
+        }
+        function drawMinimapLabels(ctxMini, canvasWidth, canvasHeight) {
+            const padding = 8;
+            ctxMini.fillStyle = "#fff";
+            ctxMini.font = "12px sans-serif";
+            ctxMini.textAlign = "center";
+            ctxMini.textBaseline = "middle";
+
+            // Top
+            ctxMini.fillText("North", canvasWidth / 2, padding);
+
+            // Bottom
+            ctxMini.fillText("South", canvasWidth / 2, canvasHeight - padding);
+
+            // Left (rotated)
+            ctxMini.save();
+            ctxMini.translate(padding, canvasHeight / 2);
+            ctxMini.rotate(-Math.PI / 2);
+            ctxMini.fillText("West", 0, 0);
+            ctxMini.restore();
+
+            // Right (rotated)
+            ctxMini.save();
+            ctxMini.translate(canvasWidth - padding, canvasHeight / 2);
+            ctxMini.rotate(Math.PI / 2);
+            ctxMini.fillText("East", 0, 0);
+            ctxMini.restore();
         }
 
         function initApp() {
@@ -1459,20 +1522,21 @@
 
             pins.forEach((pin, index) => {
                 const item = document.createElement('div');
-                item.className = 'pin-item';
+                item.className = 'pin-card';
                 item.dataset.index = index; // 📌 for matching
                 const time = pin.timestamp
                     ? new Date(pin.timestamp).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
                     : '';
                 item.innerHTML = `
-                <div class="pin-summary">
-                    <div class="pin-details">
-                        <span class="pin-icon">${pin.icon || "📍"}</span>
-                        <div class="pin-label">${pin.label || "(no label)"}</div>
-                        <div class="pin-meta">
-                            <small>${pin.id || "custom"} • X:${pin.x} Z:${pin.z}</small>
+                <div class="pin-card-content">
+                    <div class="pin-card-header">
+                            <medium>${pin.id || "custom"} • x:${pin.x} z:${pin.z}</medium>
                                                 <span class="pin-date">${time}</span>
-
+                    </div>
+                    <div class="pin-card-body">
+                        <div class="pin-card-row">
+                            <span class="pin-icon">${pin.icon || "📍"}</span>
+                            <div class="pin-label">${pin.label || "(no label)"}</div>
                         </div>
                     </div>
                 </div>
@@ -1527,7 +1591,7 @@
             draw();
         }
         function updatePinListHighlight() {
-            const pinCards = document.querySelectorAll('.pin-item');
+            const pinCards = document.querySelectorAll('.pin-card');
             pinCards.forEach((card, i) => {
                 if (i === hoveredPinIndex) {
                     card.classList.add("hovered");
@@ -1538,7 +1602,6 @@
             draw();         // redraw canvas
             drawMinimap();  // redraw minimap too
         }
-
 
         function updateOverlayVisibility() {
             const overlay = document.getElementById("noMapOverlay");
@@ -1613,8 +1676,6 @@
 
             draw();
         }
-
-
 
         function startPinPlacement(typeID) {
             const pinType = pinTypes.find(p => p.id === typeID);
@@ -1770,7 +1831,6 @@
 
         // =================== ⚙️ CONTEXT MENU SYSTEM ===================
         // showContextMenu(), event listeners
-
         function showContextMenu(items, x, y) {
             const menu = document.getElementById("contextMenu");
             menu.innerHTML = ""; // Clear old
@@ -1860,15 +1920,14 @@
             return null;
         }
 
-
         // =================== 🧭 INTERACTION: ZOOM, PAN, CLICK ===================
         // mouse event listeners for panning, zoom, placing pins, hover cursor
-
         canvas.addEventListener("mousedown", (e) => {
             isPanning = true;
             panStart = { x: e.clientX, y: e.clientY };
         });
         canvas.addEventListener("mouseup", () => isPanning = false);
+
         canvas.addEventListener("mousemove", (e) => {
             const rect = canvas.getBoundingClientRect();
             const mx = e.clientX - rect.left;
@@ -1917,13 +1976,30 @@
             draw();
         });
 
-        canvas.addEventListener('mousemove', (e) => {
+        canvas.addEventListener("mousemove", (e) => {
+            if (!crosshairMode) return;
+
             const rect = canvas.getBoundingClientRect();
-            const screenX = e.clientX - rect.left;
-            const screenY = e.clientY - rect.top;
-            const worldX = Math.round((screenX - offsetX) / zoom);
-            const worldZ = Math.round((screenY - offsetY) / zoom);
-            document.getElementById('cursorPos').textContent = `X: ${worldX}, Z: ${worldZ}`;
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+
+            const worldX = Math.round((mx - offsetX) / zoom);
+            const worldZ = Math.round((my - offsetY) / zoom);
+
+            const label = document.getElementById("cursorLabel");
+            label.style.left = `${e.clientX + 10}px`;
+            label.style.top = `${e.clientY + 10}px`;
+            label.textContent = `(${worldX}, ${worldZ})`;
+            label.style.display = "block";
+
+            crosshairX = mx;
+            crosshairY = my;
+
+            draw(); // so the crosshair line is drawn under mouse
+        });
+
+        canvas.addEventListener("mouseleave", () => {
+            document.getElementById("cursorLabel").style.display = "none";
         });
 
         canvas.addEventListener('click', (e) => {
@@ -1951,6 +2027,83 @@
             }
         });
 
+        minimapCanvas.addEventListener("click", (e) => {
+            const rect = minimapCanvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+
+            const worldWidth = worldMaxX - worldMinX;
+            const worldHeight = worldMaxZ - worldMinZ;
+
+            const scale = Math.min(minimapSize / worldWidth, minimapSize / worldHeight);
+
+            const worldX = worldMinX + clickX / scale;
+            const worldZ = worldMinZ + clickY / scale;
+
+            // Center the canvas on that world coordinate
+            offsetX = width / 2 - worldX * zoom;
+            offsetY = height / 2 - worldZ * zoom;
+
+            draw();
+        });
+
+        minimapCanvas.addEventListener("wheel", (e) => {
+            e.preventDefault();
+
+            const delta = Math.sign(e.deltaY);
+            const zoomFactor = 1.1;
+            const oldZoom = zoom;
+
+            // Mouse position relative to minimap
+            const rect = minimapCanvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+
+            const worldWidth = worldMaxX - worldMinX;
+            const worldHeight = worldMaxZ - worldMinZ;
+            const scale = Math.min(minimapSize / worldWidth, minimapSize / worldHeight);
+
+            // Convert minimap pixel → world coordinate
+            const worldX = worldMinX + mx / scale;
+            const worldZ = worldMinZ + my / scale;
+
+            // Apply zoom
+            if (delta < 0) {
+                zoom *= zoomFactor;
+            } else {
+                zoom /= zoomFactor;
+            }
+
+            // Keep mouse over same world point (anchor zoom to cursor)
+            offsetX = width / 2 - worldX * zoom;
+            offsetY = height / 2 - worldZ * zoom;
+
+            draw();
+        }, { passive: false });
+
+        document.getElementById("toggleCrosshair").addEventListener("click", () => {
+            crosshairMode = !crosshairMode;
+            canvas.style.cursor = crosshairMode ? "crosshair" : "default";
+            draw(); // re-render to clear/add crosshair
+        });
+        
+        document.getElementById("copyMapPath").addEventListener("click", () => {
+            if (!currentMapName) {
+                alert("No map is loaded.");
+                return;
+            }
+
+            const path = `localStorage key: map_${currentMapName}`;
+
+            navigator.clipboard.writeText(path).then(() => {
+                alert("Map storage path copied to clipboard:\n" + path);
+            }).catch(() => {
+                alert("Failed to copy to clipboard.");
+            });
+        });
+
+        window.addEventListener('click', () => hideContextMenu());
+        window.addEventListener('keydown', () => hideContextMenu());
         // =================== 🧩 INPUT EVENT HOOKS ===================
         // sliders, checkboxes, map selector change
 
@@ -2006,8 +2159,6 @@
             draw();
         });
 
-        window.addEventListener('click', () => hideContextMenu());
-        window.addEventListener('keydown', () => hideContextMenu());
 
         ["showGrid", "showIcons", "showText", "showCoords", "showDescription", "showTags", "minX", "maxX", "minZ", "maxZ", "bgColor", "showLabelBackground", "useTextScale", "gridColor", "gridSpacing", "showAxes"].forEach(id => {
             document.getElementById(id).addEventListener("input", draw);
