@@ -420,6 +420,18 @@
             background: var(--color-hover-highlight);
         }
 
+        #cursorLabel {
+            position: absolute;
+            color: lime;
+            background: var(--color-panel);
+            padding: 2px 6px;
+            font-size: var(--font-md);
+            border-radius: 4px;
+            pointer-events: none;
+            display: none;
+            z-index: 10;
+        }
+
         canvas {
             display: block;
         }
@@ -1989,7 +2001,7 @@
             const label = document.getElementById("cursorLabel");
             label.style.left = `${e.clientX + 10}px`;
             label.style.top = `${e.clientY + 10}px`;
-            label.textContent = `(${worldX}, ${worldZ})`;
+            label.textContent = `${worldX}x, ${worldZ}z`;
             label.style.display = "block";
 
             crosshairX = mx;
@@ -2086,7 +2098,7 @@
             canvas.style.cursor = crosshairMode ? "crosshair" : "default";
             draw(); // re-render to clear/add crosshair
         });
-        
+
         document.getElementById("copyMapPath").addEventListener("click", () => {
             if (!currentMapName) {
                 alert("No map is loaded.");
