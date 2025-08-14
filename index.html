@@ -2,52 +2,79 @@
 <html lang="en">
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
     rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
-    rel="stylesheet">
 
 <head>
     <meta charset="UTF-8">
     <title>Minecraft Map Viewer</title>
     <style>
         :root {
-            --color-primary: rgb(135, 221, 31);
-            --color-secondary: rgb(83, 24, 186);
-            --color-tertiary: rgb(177, 82, 9);
+            /* MonoSpec palette */
+            --ms-bg: #0a0f0a;
+            --ms-hud: #86f7a2;
+            --ms-hud-dim: #3bbf73;
+            --ms-hud-faint: #1f6b43;
+            --ms-accent: #e3ff7a;
+            --ms-warn: #f7c986;
+            --ms-card-bg: #0a130d;
+            --ms-grid: rgba(134, 247, 162, 0.06);
+            --ms-scan: rgba(134, 247, 162, 0.04);
+            --ms-shadow: rgba(0, 0, 0, 0.5);
 
-            --color-bg: #1e1e1e;
-            --color-panel: rgba(0, 0, 0, 0.6);
-            --color-hover-highlight: rgba(44, 72, 9, 0.822);
-            --color-input: rgba(44, 72, 9, 0.47);
-            --color-control-bg: rgba(255, 255, 255, 0.06);
+            /* Typography */
+            --font-ui: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
-            --color-text-heading: var(--color-primary);
-            --color-text: var(--color-primary);
-            --color-grid: #444444;
-            --color-axis: #ffffff88;
-            --color-pin: var(--color-tertiary);
-            --color-border: var(--color-primary);
+            /* 2) MapItMine tokens ALIASED to MonoSpec */
+            --color-bg: var(--ms-bg);
+            --color-panel: var(--ms-card-bg);
+            --color-control-bg: rgba(255, 255, 255, 0.04);
+            /* subtle control base */
+            --color-input: rgba(134, 247, 162, 0.06);
+            --color-hover-highlight: rgba(134, 247, 162, 0.10);
 
+            --color-text-heading: var(--ms-hud);
+            --color-text: var(--ms-hud);
+            --color-grid: var(--ms-grid);
+            --color-axis: rgba(255, 255, 255, 0.33);
+            --color-pin: var(--ms-accent);
+            --color-border: var(--ms-hud-faint);
+            --color-primary: var(--ms-hud);
+            /* primary = HUD green */
+            --color-secondary: var(--ms-accent);
+            /* accent pop */
+            --color-tertiary: var(--ms-warn);
+            /* warm callouts */
+
+            /* Spacing (tighter, MonoSpec-ish) */
             --space-xs: 4px;
             --space-sm: 6px;
-            --space-md: 12px;
-            --space-lg: 24px;
+            --space-md: 10px;
+            --space-lg: 16px;
 
-            --font-sm: 12px;
-            --font-md: 16px;
-            --font-base: 13px;
+            /* Font sizes (tighter) */
+            --font-sm: 10px;
+            --font-base: 12px;
+            --font-md: 12px;
 
+            /* Radius / inputs */
             --input-radius: 4px;
-            --input-padding: 4px;
+            --input-padding: 6px;
 
-            --font-type-monospace: "Space Mono", monospace;
+            /* Effects */
+            --panel-gradient: linear-gradient(180deg, rgba(134, 247, 162, 0.06), rgba(134, 247, 162, 0));
+            --panel-inset: inset 0 0 0 2px rgba(0, 0, 0, 0.35);
         }
 
+        /* Optional light theme stays, but with toned mapping */
         [data-theme="light"] {
             --color-bg: #ffffff;
-            --color-panel: rgba(255, 255, 255, 0.85);
-            --color-text: #000000;
-            --color-grid: #cccccc;
-            --color-axis: #00000088;
+            --color-panel: rgba(0, 0, 0, 0.06);
+            --color-text: #0b2816;
+            --color-text-heading: #145c36;
+            --color-grid: #d6e9df;
+            --color-axis: #145c3688;
+            --color-border: #93d9b1;
+            --color-control-bg: rgba(0, 0, 0, 0.04);
+            --color-input: rgba(20, 92, 54, 0.08);
         }
 
         html,
@@ -56,7 +83,7 @@
             overflow: hidden;
             background: var(--color-bg);
             color: var(--color-text);
-            font-family: "Inter", sans-serif;
+            font-family: var(--font-ui);
         }
 
         #settings,
@@ -437,7 +464,7 @@
         }
 
         fieldset {
-            border: 1px solid var(--color-text-heading);
+            border: 1px solid var(--color-border);
             padding: var(--space-md);
             gap: var(--space-sm);
             display: flex;
@@ -591,13 +618,12 @@
 </head>
 
 <body data-theme="dark">
+
     <!-- =================== 🌐 GLOBAL UI PANELS =================== -->
-
     <!-- UI: Settings Sidebar -->
-
     <div id="settings">
         <fieldset>
-            <legend>Interface</legend>
+            <legend>INTERFACE</legend>
             <div class="grid-form">
                 <label for="themeSelector">Theme</label>
                 <select id="themeSelector">
@@ -608,7 +634,7 @@
         </fieldset>
 
         <fieldset>
-            <legend>Map Settings</legend>
+            <legend>MAP SETTINGS</legend>
             <div class="grid-form">
                 <label for="zoom">Zoom</label>
                 <input type="range" id="zoom" min="0.25" max="5" step="0.01" value="1">
@@ -642,7 +668,7 @@
         </fieldset>
 
         <fieldset>
-            <legend>Hide/Show</legend>
+            <legend>LABELS</legend>
             <div class="grid-form">
                 <label for="showGrid">Grid</label>
                 <input type="checkbox" id="showGrid" checked>
@@ -689,7 +715,7 @@
         <!-- 📌 Pins Header -->
         <div class="pin-panel-header pin-list-header">
             <div class="pin-header-left">
-                <strong>Pins:</strong> <span id="pinCount">0</span>
+                <strong>PINS:</strong> <span id="pinCount">0</span>
             </div>
             <div class="pin-filters">
                 <!-- Placeholder for future filters -->
