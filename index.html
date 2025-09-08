@@ -704,6 +704,9 @@
     <div id="pinListPanel">
         <!-- 🗺️ Map Header -->
         <div class="pin-panel-header map-header">
+            <button id="exportJsonBtn" title="Export current map as JSON">Export</button>
+            <label for="importJsonInput" style="margin-left:8px;">Import</label>
+            <input id="importJsonInput" type="file" accept="application/json" style="display:none;">
             <div class="input-group">
                 <select id="mapSelector"></select>
                 <button id="createNewMapBtn">+</button>
@@ -844,7 +847,6 @@
     <canvas id="mapCanvas"></canvas>
     <div id="cursorLabel"></div>
 
-
     <script>
 
         // =================== 🔁 DOM INITIALIZATION ===================
@@ -891,6 +893,22 @@
 
         const canvas = document.getElementById("mapCanvas");
         const ctx = canvas.getContext("2d");
+
+        canvas.addEventListener("dblclick", (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+            pins.forEach((pin, i) => {
+                const sx = offsetX + pin.x * zoom;
+                const sy = offsetY + pin.z * zoom;
+                const dx = mx - sx, dy = my - sy;
+                if (Math.sqrt(dx * dx + dy * dy) < 10) {
+                    selectedPinIndex = i;
+                    updatePinListHighlight();
+                    editPin(i);
+                }
+            });
+        });
 
         let textScale = 1;
 
@@ -1020,6 +1038,32 @@
         // =================== 📦 LOCAL STORAGE: MAP LOADING & SAVING ===================
         // saveCurrentMap, loadMap, loadMapNames, triggerNewMap
 
+        function mapKey(name) {
+            return `map:${name}`;
+        }
+
+        function mapExists(name) {
+            return localStorage.getItem(mapKey(name)) !== null;
+        }
+
+        function dedupeMapName(baseName) {
+            let name = baseName || "imported";
+            if (!mapExists(name)) return name;
+            let i = 2;
+            while (mapExists(`${name}-${i}`)) i++;
+            return `${name}-${i}`;
+        }
+
+        function saveMapAs(name, pinsArray) {
+            const finalName = dedupeMapName(name);
+            localStorage.setItem(mapKey(finalName), JSON.stringify(pinsArray || []));
+            currentMapName = finalName;
+            document.getElementById("currentMapName").textContent = finalName;
+            loadMapNames({ autoLoadFirst: false });
+            loadMap(finalName);
+            return finalName;
+        }
+
         function saveCurrentMap() {
             if (!currentMapName) return; // skip saving if no valid name
             localStorage.setItem(`map:${currentMapName}`, JSON.stringify(pins));
@@ -1124,26 +1168,6 @@
             const endZ = Math.ceil(visibleMaxZ / gridSpacing) * gridSpacing;
 
             const maxLines = 1000;
-
-            canvas.addEventListener("dblclick", (e) => {
-                const rect = canvas.getBoundingClientRect();
-                const mx = e.clientX - rect.left;
-                const my = e.clientY - rect.top;
-
-                pins.forEach((pin, i) => {
-                    const sx = offsetX + pin.x * zoom;
-                    const sy = offsetY + pin.z * zoom;
-                    const dx = mx - sx;
-                    const dy = my - sy;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < 10) {
-                        selectedPinIndex = i;
-                        updatePinListHighlight();
-                        editPin(i);
-                    }
-                });
-            });
-
 
             if ((endX - startX) / gridSpacing > maxLines) return; // skip draw
             if (zoom < 0.1) return; // skip grid when zoomed out too far
@@ -1277,7 +1301,6 @@
             }
 
             drawMinimap();
-            console.log("drawing");
         }
 
         function drawPin(ctx, pin, i) {
@@ -1650,7 +1673,6 @@
 
         // =================== 📌 PIN MANAGEMENT ===================
         // openPinEditor(), submitPinEditor(), closePinEditor(), editPin(), addPin()
-
         function openPinEditor(_, __, worldX, worldZ, typeID = "", icon = "", label = "") {
             const panel = document.getElementById('pinEditorPanel');
 
@@ -1808,7 +1830,6 @@
 
         // =================== 📑 UI HELPERS + TOGGLES ===================
         // hidePinList(), resetView(), focusNextInput(), hideContextMenu()
-
         function hidePinList() {
             const panel = document.getElementById('pinListPanel');
             panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
@@ -1867,6 +1888,144 @@
                 if (match) iconSelect.value = match.icon;
             });
         }
+        // ===== IMPORT / EXPORT JSON =====
+
+        // Optional: snapshot a few UI settings (safe to remove if you want pins-only)
+        function collectSettingsSnapshot() {
+            return {
+                bgColor: document.getElementById("bgColor")?.value,
+                gridColor: document.getElementById("gridColor")?.value,
+                gridSpacing: parseInt(document.getElementById("gridSpacing")?.value || "16", 10),
+                showGrid: !!document.getElementById("showGrid")?.checked,
+                showIcons: !!document.getElementById("showIcons")?.checked,
+                showText: !!document.getElementById("showText")?.checked,
+                showCoords: !!document.getElementById("showCoords")?.checked,
+                showDescription: !!document.getElementById("showDescription")?.checked,
+                showTags: !!document.getElementById("showTags")?.checked,
+                zoom,
+                offsetX,
+                offsetY
+            };
+        }
+
+        // Optional: apply settings if present in imported file
+        function applySettingsSnapshot(s) {
+            if (!s) return;
+            const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+            const check = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+
+            if (s.bgColor) set("bgColor", s.bgColor);
+            if (s.gridColor) set("gridColor", s.gridColor);
+            if (Number.isFinite(s.gridSpacing)) set("gridSpacing", s.gridSpacing);
+            if ("showGrid" in s) check("showGrid", s.showGrid);
+            if ("showIcons" in s) check("showIcons", s.showIcons);
+            if ("showText" in s) check("showText", s.showText);
+            if ("showCoords" in s) check("showCoords", s.showCoords);
+            if ("showDescription" in s) check("showDescription", s.showDescription);
+            if ("showTags" in s) check("showTags", s.showTags);
+            if (Number.isFinite(s.zoom)) zoom = s.zoom;
+            if (Number.isFinite(s.offsetX)) offsetX = s.offsetX;
+            if (Number.isFinite(s.offsetY)) offsetY = s.offsetY;
+        }
+
+        // Export current map (pins + optional settings) to a file
+        function exportCurrentMap() {
+            const mapName = currentMapName || "unnamed";
+            const payload = {
+                version: 1,
+                name: mapName,
+                createdAt: new Date().toISOString(),
+                pins: Array.isArray(pins) ? pins : [],
+                settings: collectSettingsSnapshot()
+            };
+
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = `map_${mapName}.json`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(a.href);
+        }
+
+        // Import map JSON (supports array-of-pins or object-with-pins)
+        async function importMapFromFile(file) {
+            const text = await file.text();
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch {
+                alert("Invalid JSON file.");
+                return;
+            }
+
+            // Accept either: [pins]  OR  { pins, name, settings }
+            let importedPins = [];
+            let importedName = file.name.replace(/\.json$/i, "");
+            let importedSettings = null;
+
+            if (Array.isArray(data)) {
+                importedPins = data;
+            } else if (data && typeof data === "object") {
+                if (Array.isArray(data.pins)) importedPins = data.pins;
+                if (data.name) importedName = String(data.name);
+                if (data.settings) importedSettings = data.settings;
+            } else {
+                alert("Unsupported JSON format.");
+                return;
+            }
+
+            // Normalize pins a bit
+            importedPins = importedPins.map(p => ({
+                x: Number(p.x) || 0,
+                z: Number(p.z) || 0,
+                y: Number.isFinite(p.y) ? Number(p.y) : undefined,
+                id: (p.id ?? "").toString(),
+                label: (p.label ?? "").toString(),
+                description: (p.description ?? "").toString(),
+                icon: (p.icon ?? "").toString(),
+                color: (p.color ?? "").toString(),
+                tags: Array.isArray(p.tags) ? p.tags.map(String) : undefined,
+                timestamp: p.timestamp || new Date().toISOString()
+            }));
+
+            // ✅ IMPORT semantics: create a new saved map (unlinked copy)
+            const finalName = saveMapAs(importedName, importedPins);
+
+            // Apply settings if provided (optional)
+            if (importedSettings) {
+                applySettingsSnapshot(importedSettings);
+            }
+
+            // Refresh UI
+            renderPinList();
+            draw();
+
+            alert(`Imported as new map: "${finalName}"`);
+        }
+
+        // Wire up the buttons/inputs
+        (function setupImportExportUI() {
+            const exportBtn = document.getElementById("exportJsonBtn");
+            const importInput = document.getElementById("importJsonInput");
+
+            if (exportBtn) exportBtn.addEventListener("click", exportCurrentMap);
+            if (importInput) {
+                importInput.addEventListener("change", () => {
+                    const file = importInput.files && importInput.files[0];
+                    if (!file) return;
+                    importMapFromFile(file).finally(() => { importInput.value = ""; });
+                });
+            }
+        })();
+
+        document.getElementById("exportJsonBtn")?.addEventListener("click", exportCurrentMap);
+        document.getElementById("importJsonInput")?.addEventListener("change", () => {
+            const file = importJsonInput.files && importJsonInput.files[0];
+            if (!file) return;
+            importMapFromFile(file).finally(() => { importJsonInput.value = ""; });
+        });
 
         // =================== ⚙️ CONTEXT MENU SYSTEM ===================
         // showContextMenu(), event listeners
@@ -2143,6 +2302,7 @@
 
         window.addEventListener('click', () => hideContextMenu());
         window.addEventListener('keydown', () => hideContextMenu());
+
         // =================== 🧩 INPUT EVENT HOOKS ===================
         // sliders, checkboxes, map selector change
 
@@ -2178,12 +2338,10 @@
             loadMap(currentMapName);
         }
 
-
         document.getElementById("mapSelector").addEventListener("change", (e) => {
             const selected = e.target.value;
             loadMap(selected);
         });
-
 
         window.addEventListener("resize", resizeCanvas);
 
