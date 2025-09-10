@@ -181,6 +181,7 @@
         }
 
         .pin-card {
+            position: relative;
             padding: var(--space-sm);
             background-color: var(--color-control-bg);
             border: 1px solid var(--color-border);
@@ -194,15 +195,14 @@
         }
 
         .pin-card.hovered {
-            outline: 2px dashed lime;
-            background-color: var(--bg-hover);
+            border: 1px solid var(--color-primary);
+            background-color: var(--color-hover-highlight);
         }
 
         .pin-card.selected {
             outline: 2px solid orange;
             background-color: var(--bg-selected);
         }
-
 
         .pin-card-content {
             display: flex;
@@ -215,8 +215,10 @@
             display: flex;
             flex-direction: row;
             justify-content: space-between;
-            font-size: 11px;
+            font-size: var(--font-md);
             opacity: 0.75;
+            padding-right: 56px;
+            /* add spacing so text doesn't collide with top-right controls */
         }
 
         .pin-card-body {
@@ -239,26 +241,50 @@
             font-weight: bold;
         }
 
-
         .pin-controls {
+            position: absolute;
+            top: var(--space-sm);
+            right: var(--space-sm);
             display: flex;
-            justify-content: flex-end;
             gap: var(--space-xs);
-            margin-top: var(--space-xs);
+
+            opacity: 0;
+            /* hidden until hover/focus */
+            pointer-events: none;
+            /* avoid stray clicks when hidden */
+            transition: opacity 120ms ease;
+            margin-top: 0;
+            /* remove old bottom spacing */
+            justify-content: flex-end;
         }
 
+        /* Reveal controls when user hovers the card OR focuses inside (keyboard-friendly) */
+        .pin-card:hover .pin-controls,
+        .pin-card:focus-within .pin-controls {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Borderless pill buttons by default… */
         .pin-controls button {
             background: none;
-            border: 1px solid var(--color-primary);
+            border: 1px solid transparent;
+            /* transparent until hovered */
             border-radius: var(--panel-radius);
             color: inherit;
             cursor: pointer;
             font-weight: bold;
             font-size: var(--font-sm);
+            padding: 2px 6px;
+            /* a bit tighter */
         }
 
+        /* …gain a border on hover for affordance */
         .pin-controls button:hover {
+            border-color: var(--color-primary);
             color: var(--color-primary);
+            background: none;
+            /* keep transparent feel */
         }
 
         #pinEditorPanel {
@@ -740,24 +766,23 @@
     <!-- Pin Editor -->
     <div id="pinEditorPanel">
         <div class="grid-form">
-            <input type="color" id="pinEditorColor" value="#ffcc00">
-
+            <div class="input-group" style="grid-column: span 2;">
+                <select id="pinEditorID"></select>
+                <select id="pinEditorIcon"></select>
+                <input type="color" id="pinEditorColor" value="#ffcc00">
+            </div>
             <div class="input-group" style="grid-column: span 2;">
                 <input type="number" id="pinEditorX" placeholder="X">
                 <input type="number" id="pinEditorY" placeholder="Y">
                 <input type="number" id="pinEditorZ" placeholder="Z">
             </div>
             <input type="text" id="pinEditorLabel" placeholder="Enter a label" style="grid-column: span 2;">
-            <div class="input-group" style="grid-column: span 2;">
-                <select id="pinEditorID"></select>
-                <select id="pinEditorIcon"></select>
-            </div>
             <textarea id="pinEditorDescription" placeholder="Enter details or notes"
                 style="grid-column: span 2;"></textarea>
         </div>
         <div class="input-group" style="grid-column: span 2;">
-            <button onclick="submitPinEditor()">+ Add Pin</button>
             <button onclick="closePinEditor()">Cancel</button>
+            <button onclick="submitPinEditor()">Save</button>
         </div>
     </div>
 
@@ -839,7 +864,7 @@
     </div>
 
     <!-- Context Menu -->
-    <div id="contextMenu" class="context-menu hidden">
+    <div id="contextMenu" class="context-menu">
         <ul id="contextMenuItems"></ul>
     </div>
 
@@ -1069,7 +1094,6 @@
             localStorage.setItem(`map:${currentMapName}`, JSON.stringify(pins));
         }
 
-
         function loadMap(name) {
             if (!name || !localStorage.getItem(`map:${name}`)) {
                 currentMapName = null;
@@ -1124,16 +1148,6 @@
             selector.value = currentMapName || names[0];
             document.getElementById("currentMapName").textContent = currentMapName || "–";
             updateOverlayVisibility();
-        }
-
-
-        function triggerNewMap() {
-            document.getElementById("createNewMapBtn").click();
-        }
-
-        function triggerImportMap() {
-            alert("Import map functionality coming soon.");
-            // Future: open file input, parse JSON, load as new map
         }
 
         // =================== 🗺️ DRAW FUNCTIONS ===================
@@ -1255,9 +1269,10 @@
                 }
 
                 if (showText) {
+                    const yText = (p.y === undefined || p.y === null || p.y === '' || Number.isNaN(p.y)) ? '—' : p.y;
                     ctx.fillStyle = "lime";
                     if (showTags && p.id) ctx.fillText(`[${p.id}]`, sx + labelOffsetX, sy);
-                    if (showCoords) ctx.fillText(`(${p.x}, ${p.z})`, sx + labelOffsetX, sy + fontSize * 1.2);
+                    if (showCoords) ctx.fillText(`(${p.x}, ${yText}, ${p.z})`, sx + labelOffsetX, sy + fontSize * 1.2);
                     ctx.fillText(p.label, sx + labelOffsetX, sy + fontSize * 2.4);
                     if (showDescription && p.description) ctx.fillText(p.description, sx + labelOffsetX, sy + fontSize * 3.6);
                 }
@@ -1560,7 +1575,6 @@
             });
 
             // 6. Load maps and overlays
-            loadMapNames({ autoLoadFirst: true });
             updateOverlayVisibility();
         }
 
@@ -1586,14 +1600,15 @@
                 const item = document.createElement('div');
                 item.className = 'pin-card';
                 item.dataset.index = index; // 📌 for matching
+                const yStr = (pin.y === undefined || pin.y === null || pin.y === '' || Number.isNaN(pin.y)) ? '—' : pin.y;
                 const time = pin.timestamp
                     ? new Date(pin.timestamp).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
                     : '';
                 item.innerHTML = `
                 <div class="pin-card-content">
                     <div class="pin-card-header">
-                            <medium>${pin.id || "custom"} • x:${pin.x} z:${pin.z}</medium>
-                                                <span class="pin-date">${time}</span>
+                        <medium>${pin.id || "custom"} • x:${pin.x} y:${yStr} z:${pin.z}</medium>
+                        <span class="pin-date">${time}</span>
                     </div>
                     <div class="pin-card-body">
                         <div class="pin-card-row">
@@ -1616,7 +1631,6 @@
                     hoveredPinIndex = null;
                     draw();
                 });
-
 
                 const controls = document.createElement('div');
                 controls.className = 'pin-controls';
@@ -1942,7 +1956,7 @@
             const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
             const a = document.createElement("a");
             a.href = URL.createObjectURL(blob);
-            a.download = `map_${mapName}.json`;
+            a.download = `map:${mapName}.json`;
             document.body.appendChild(a);
             a.click();
             a.remove();
@@ -2027,56 +2041,56 @@
             importMapFromFile(file).finally(() => { importJsonInput.value = ""; });
         });
 
-        // =================== ⚙️ CONTEXT MENU SYSTEM ===================
-        // showContextMenu(), event listeners
+        /* =================== ⚙️ CONTEXT MENU SYSTEM =================== */
+        /* Signature: showContextMenu(items, x, y) */
+
         function showContextMenu(items, x, y) {
             const menu = document.getElementById("contextMenu");
-            menu.innerHTML = ""; // Clear old
+            const list = document.getElementById("contextMenuItems"); // <ul> inside the menu
+            if (!menu || !list) return;
 
+            // Build items
+            list.innerHTML = "";
             items.forEach(({ label, action }) => {
                 const li = document.createElement("li");
                 li.textContent = label;
-                li.onclick = () => {
-                    action();
-                    menu.style.display = "none";
+                li.onclick = (ev) => {
+                    ev.stopPropagation();
+                    try { action && action(); } finally {
+                        hideContextMenu();
+                    }
                 };
-                menu.appendChild(li);
+                list.appendChild(li);
             });
 
+            // Position near cursor, then clamp to viewport
             menu.style.left = `${x}px`;
             menu.style.top = `${y}px`;
             menu.style.display = "block";
 
-            // Viewport size
             const vw = window.innerWidth;
             const vh = window.innerHeight;
-            const menuRect = menu.getBoundingClientRect();
+            const r = menu.getBoundingClientRect();
 
-            // Adjust position if near edge
-            const left = (x + menuRect.width > vw) ? (x - menuRect.width) : x;
-            const top = (y + menuRect.height > vh) ? (y - menuRect.height) : y;
+            const left = (x + r.width > vw) ? (x - r.width) : x;
+            const top = (y + r.height > vh) ? (y - r.height) : y;
 
-            menu.style.left = `${Math.max(left, 0)}px`;
-            menu.style.top = `${Math.max(top, 0)}px`;
+            menu.style.left = `${Math.max(0, left)}px`;
+            menu.style.top = `${Math.max(0, top)}px`;
         }
-
 
         function hideContextMenu() {
-            const menu = document.getElementById('contextMenu');
-            menu.classList.add('hidden');
+            const menu = document.getElementById("contextMenu");
+            if (menu) menu.style.display = "none";
         }
 
-        window.addEventListener('click', hideContextMenu);
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') hideContextMenu();
-        });
+        window.addEventListener("click", hideContextMenu);
+        window.addEventListener("keydown", (e) => { if (e.key === "Escape") hideContextMenu(); });
 
-        function hideContextMenu() {
-            document.getElementById('contextMenu').style.display = 'none';
-        }
-
+        /* Right-click on the canvas */
         canvas.addEventListener("contextmenu", (e) => {
             e.preventDefault();
+
             const rect = canvas.getBoundingClientRect();
             const mx = e.clientX - rect.left;
             const my = e.clientY - rect.top;
@@ -2098,6 +2112,7 @@
                     { label: "🗑️ Delete Pin", action: () => deletePin(index) }
                 ], e.clientX, e.clientY);
             } else {
+                // quickPinContextItems must be an array of {label, action}
                 showContextMenu(quickPinContextItems, e.clientX, e.clientY);
             }
         });
@@ -2291,7 +2306,7 @@
                 return;
             }
 
-            const path = `localStorage key: map_${currentMapName}`;
+            const path = `localStorage key: map:${currentMapName}`;
 
             navigator.clipboard.writeText(path).then(() => {
                 alert("Map storage path copied to clipboard:\n" + path);
