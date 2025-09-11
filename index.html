@@ -217,13 +217,12 @@
             justify-content: space-between;
             font-size: var(--font-md);
             opacity: 0.75;
-            padding-right: 56px;
-            /* add spacing so text doesn't collide with top-right controls */
         }
 
         .pin-card-body {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
+            gap: var(--space-sm);
             justify-content: left;
             line-height: 1.2;
         }
@@ -234,20 +233,42 @@
         }
 
         .pin-icon {
-            font-size: 20px;
+            display: flex;
+            font-size: 24px;
+            align-self: stretch;
+            line-height: 1;
+        }
+
+        .pin-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
         }
 
         .pin-label {
             font-weight: bold;
         }
 
+        .pin-tag {
+            font-size: var(--font-sm);
+            opacity: 0.8;
+        }
+
+        .pin-date-footer {
+            position: absolute;
+            right: var(--space-sm);
+            bottom: var(--space-sm);
+            font-size: var(--font-sm);
+            opacity: 0.75;
+        }
+
         .pin-controls {
             position: absolute;
-            top: var(--space-sm);
-            right: var(--space-sm);
+            top: var(--space-xs);
+            right: var(--space-xs);
             display: flex;
-            gap: var(--space-xs);
-
+            gap: 0px;
             opacity: 0;
             /* hidden until hover/focus */
             pointer-events: none;
@@ -275,7 +296,7 @@
             cursor: pointer;
             font-weight: bold;
             font-size: var(--font-sm);
-            padding: 2px 6px;
+            padding: var(--space-xs);
             /* a bit tighter */
         }
 
@@ -977,7 +998,6 @@
         const worldMinZ = -30000;
         const worldMaxZ = 30000;
 
-
         const pinTypes = [
             { id: 'spawn', label: 'Spawn', icon: '⭐', category: 'Special' },
             { id: 'bed', label: 'Bed', icon: '🛏️', category: 'Special' },
@@ -1314,7 +1334,7 @@
 
                 ctx.setLineDash([]);
             }
-
+            drawScaleRuler();
             drawMinimap();
         }
 
@@ -1339,6 +1359,50 @@
             }
             ctx.stroke();
 
+        }
+
+        function drawScaleRuler() {
+            const showGridEl = document.getElementById("showGrid");
+            const gridSpacingEl = document.getElementById("gridSpacing");
+            if (!showGridEl || !gridSpacingEl) return;
+            if (!showGridEl.checked) return;
+
+            const spacing = parseInt(gridSpacingEl.value || "16", 10);
+            if (!Number.isFinite(spacing) || spacing <= 0) return;
+
+            const px = spacing * zoom;                 // screen length of one grid cell
+            const label = `${spacing} blocks`;
+
+            const pad = 10;
+            const y = canvas.height - pad - 18;        // baseline y
+            const minLen = 24, maxLen = 180;           // keep it readable
+            const len = Math.max(minLen, Math.min(px, maxLen));
+            const x0 = pad;
+            const x1 = x0 + len;
+
+            ctx.save();
+            ctx.strokeStyle = "#86f7a2";
+            ctx.fillStyle = "#86f7a2";
+            ctx.lineWidth = 2;
+
+            // baseline
+            ctx.beginPath();
+            ctx.moveTo(x0, y);
+            ctx.lineTo(x1, y);
+            ctx.stroke();
+
+            // end ticks
+            ctx.beginPath();
+            ctx.moveTo(x0, y - 4); ctx.lineTo(x0, y + 4);
+            ctx.moveTo(x1, y - 4); ctx.lineTo(x1, y + 4);
+            ctx.stroke();
+
+            // label
+            ctx.font = "12px monospace";
+            ctx.textBaseline = "top";
+            ctx.fillText(label, x0, y + 6);
+
+            ctx.restore();
         }
 
         function drawMiniGrid() {
@@ -1600,24 +1664,31 @@
                 const item = document.createElement('div');
                 item.className = 'pin-card';
                 item.dataset.index = index; // 📌 for matching
+                item.tabIndex = 0; // ← ADD THIS LINE
+
                 const yStr = (pin.y === undefined || pin.y === null || pin.y === '' || Number.isNaN(pin.y)) ? '—' : pin.y;
                 const time = pin.timestamp
                     ? new Date(pin.timestamp).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
                     : '';
                 item.innerHTML = `
-                <div class="pin-card-content">
-                    <div class="pin-card-header">
-                        <medium>${pin.id || "custom"} • x:${pin.x} y:${yStr} z:${pin.z}</medium>
-                        <span class="pin-date">${time}</span>
-                    </div>
-                    <div class="pin-card-body">
-                        <div class="pin-card-row">
-                            <span class="pin-icon">${pin.icon || "📍"}</span>
-                            <div class="pin-label">${pin.label || "(no label)"}</div>
+                    <div class="pin-card-content">
+                        <div class="pin-card-header">
+                        <medium>x:${pin.x} y:${yStr} z:${pin.z}</medium>
                         </div>
+
+                        <div class="pin-card-body">
+                        <span class="pin-icon">${pin.icon || "📍"}</span>
+
+                        <div class="pin-text">
+                            <div class="pin-label">${pin.label || "(no label)"}</div>
+                            <div class="pin-tag">${pin.id ? `[${pin.id}]` : ""}</div>
+                        </div>
+                        </div>
+
+                        <div class="pin-date-footer">${time}</div>
                     </div>
-                </div>
                 `;
+
 
                 item.onclick = () => centerOnPin(pin);
 
@@ -1626,35 +1697,66 @@
                     hoveredPinIndex = index;
                     draw();
                 });
-
                 item.addEventListener("mouseleave", () => {
                     hoveredPinIndex = null;
                     draw();
                 });
 
+                // === TOP-RIGHT CONTROLS (hidden until hover/focus) ===
                 const controls = document.createElement('div');
-                controls.className = 'pin-controls';
+                controls.className = 'pin-controls'; // CSS positions this at top-right
 
-                const editBtn = document.createElement('button');
-                editBtn.textContent = '🖉';
-                editBtn.onclick = (e) => {
+                // 📋 Copy coords (X Y Z for Minecraft; Y uses '—' if unset)
+                const btnCopy = document.createElement('button');
+                btnCopy.className = 'btn-copy-coords';
+                btnCopy.title = 'Copy coordinates';
+                btnCopy.textContent = '📋';
+                btnCopy.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const yStr = (pin.y === undefined || pin.y === null || pin.y === '' || Number.isNaN(pin.y)) ? '—' : pin.y;
+                    navigator.clipboard.writeText(`${pin.x} ${yStr} ${pin.z}`);
+                });
+
+                // 🎯 Center on pin (same behavior as clicking the row)
+                const btnCenter = document.createElement('button');
+                btnCenter.className = 'btn-center';
+                btnCenter.title = 'Center on pin';
+                btnCenter.textContent = '🎯';
+                btnCenter.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    centerOnPin(pin);   // you already have item.onclick = () => centerOnPin(pin)
+                });
+
+                // ✏️ Edit
+                const btnEdit = document.createElement('button');
+                btnEdit.className = 'btn-edit';
+                btnEdit.title = 'Edit';
+                btnEdit.textContent = '✏️';
+                btnEdit.addEventListener('click', (e) => {
                     e.stopPropagation();
                     editPin(index);
-                };
+                });
 
-                const deleteBtn = document.createElement('button');
-                deleteBtn.textContent = 'X';
-                deleteBtn.onclick = (e) => {
+                // 🗑️ Delete (with autosave)
+                const btnDelete = document.createElement('button');
+                btnDelete.className = 'btn-delete';
+                btnDelete.title = 'Delete';
+                btnDelete.textContent = '🗑️';
+                btnDelete.addEventListener('click', (e) => {
                     e.stopPropagation();
                     pins.splice(index, 1);
                     renderPinList();
                     draw();
-                    saveCurrentMap(); // ✅ autosave on delete
-                };
+                    saveCurrentMap(); // autosave on delete
+                });
 
-                controls.appendChild(editBtn);
-                controls.appendChild(deleteBtn);
+                // mount
+                controls.appendChild(btnCopy);
+                controls.appendChild(btnCenter);
+                controls.appendChild(btnEdit);
+                controls.appendChild(btnDelete);
                 item.appendChild(controls);
+
                 container.appendChild(item);
             });
             document.getElementById("pinCount").textContent = `(${pins.length})`;
