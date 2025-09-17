@@ -1083,6 +1083,17 @@
         // =================== 📦 LOCAL STORAGE: MAP LOADING & SAVING ===================
         // saveCurrentMap, loadMap, loadMapNames, triggerNewMap
 
+        // Overlay button → create new map (opens the same flow as the + button)
+        function triggerNewMap() {
+            createNewMapFlow();
+        }
+
+        // Overlay button → import (clicks the hidden file input)
+        function triggerImportMap() {
+            const input = document.getElementById("importJsonInput");
+            if (input) input.click();
+        }
+
         function mapKey(name) {
             return `map:${name}`;
         }
@@ -1663,13 +1674,15 @@
             pins.forEach((pin, index) => {
                 const item = document.createElement('div');
                 item.className = 'pin-card';
-                item.dataset.index = index; // 📌 for matching
-                item.tabIndex = 0; // ← ADD THIS LINE
+                item.dataset.index = index;  // 📌 for matching
+                item.tabIndex = 0;           // enables :focus-within to show controls
 
                 const yStr = (pin.y === undefined || pin.y === null || pin.y === '' || Number.isNaN(pin.y)) ? '—' : pin.y;
                 const time = pin.timestamp
                     ? new Date(pin.timestamp).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
                     : '';
+
+                // Card markup (coords header; icon+text stack; footer date)
                 item.innerHTML = `
                     <div class="pin-card-content">
                         <div class="pin-card-header">
@@ -1678,7 +1691,6 @@
 
                         <div class="pin-card-body">
                         <span class="pin-icon">${pin.icon || "📍"}</span>
-
                         <div class="pin-text">
                             <div class="pin-label">${pin.label || "(no label)"}</div>
                             <div class="pin-tag">${pin.id ? `[${pin.id}]` : ""}</div>
@@ -1689,68 +1701,46 @@
                     </div>
                 `;
 
-
+                // Whole row centers on pin
                 item.onclick = () => centerOnPin(pin);
 
                 // 🔄 Hover effect (list → canvas)
-                item.addEventListener("mouseenter", () => {
-                    hoveredPinIndex = index;
-                    draw();
-                });
-                item.addEventListener("mouseleave", () => {
-                    hoveredPinIndex = null;
-                    draw();
-                });
+                item.addEventListener("mouseenter", () => { hoveredPinIndex = index; draw(); });
+                item.addEventListener("mouseleave", () => { hoveredPinIndex = null; draw(); });
 
                 // === TOP-RIGHT CONTROLS (hidden until hover/focus) ===
                 const controls = document.createElement('div');
-                controls.className = 'pin-controls'; // CSS positions this at top-right
+                controls.className = 'pin-controls'; // CSS positions this at top-right and hides by default
 
-                // 📋 Copy coords (X Y Z for Minecraft; Y uses '—' if unset)
+                // Buttons (NO listeners here — we delegate later)
                 const btnCopy = document.createElement('button');
                 btnCopy.className = 'btn-copy-coords';
                 btnCopy.title = 'Copy coordinates';
                 btnCopy.textContent = '📋';
-                btnCopy.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const yStr = (pin.y === undefined || pin.y === null || pin.y === '' || Number.isNaN(pin.y)) ? '—' : pin.y;
-                    navigator.clipboard.writeText(`${pin.x} ${yStr} ${pin.z}`);
-                });
+                btnCopy.dataset.action = 'copy';
+                btnCopy.dataset.index = String(index);
 
-                // 🎯 Center on pin (same behavior as clicking the row)
                 const btnCenter = document.createElement('button');
                 btnCenter.className = 'btn-center';
                 btnCenter.title = 'Center on pin';
                 btnCenter.textContent = '🎯';
-                btnCenter.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    centerOnPin(pin);   // you already have item.onclick = () => centerOnPin(pin)
-                });
+                btnCenter.dataset.action = 'center';
+                btnCenter.dataset.index = String(index);
 
-                // ✏️ Edit
                 const btnEdit = document.createElement('button');
                 btnEdit.className = 'btn-edit';
                 btnEdit.title = 'Edit';
                 btnEdit.textContent = '✏️';
-                btnEdit.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    editPin(index);
-                });
+                btnEdit.dataset.action = 'edit';
+                btnEdit.dataset.index = String(index);
 
-                // 🗑️ Delete (with autosave)
                 const btnDelete = document.createElement('button');
                 btnDelete.className = 'btn-delete';
                 btnDelete.title = 'Delete';
                 btnDelete.textContent = '🗑️';
-                btnDelete.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    pins.splice(index, 1);
-                    renderPinList();
-                    draw();
-                    saveCurrentMap(); // autosave on delete
-                });
+                btnDelete.dataset.action = 'delete';
+                btnDelete.dataset.index = String(index);
 
-                // mount
                 controls.appendChild(btnCopy);
                 controls.appendChild(btnCenter);
                 controls.appendChild(btnEdit);
@@ -1759,8 +1749,11 @@
 
                 container.appendChild(item);
             });
+
+            // ✅ re-sync count at end (kept from your version)
             document.getElementById("pinCount").textContent = `(${pins.length})`;
         }
+
 
         function centerOnPin(pin) {
             if (!pin) return;
@@ -2417,6 +2410,40 @@
             });
         });
 
+        // Delegated handlers for pin list buttons
+        document.getElementById('pinList').addEventListener('click', (e) => {
+            const btn = e.target.closest('button');
+            if (!btn || !btn.dataset.action) return;
+
+            e.stopPropagation();
+            const idx = Number(btn.dataset.index);
+            const p = pins[idx];
+            if (!p) return;
+
+            switch (btn.dataset.action) {
+                case 'copy': {
+                    const yStr = (p.y === undefined || p.y === null || p.y === '' || Number.isNaN(p.y)) ? '—' : p.y;
+                    navigator.clipboard.writeText(`${p.x} ${yStr} ${p.z}`);
+                    break;
+                }
+                case 'center': {
+                    centerOnPin(p);
+                    break;
+                }
+                case 'edit': {
+                    editPin(idx);
+                    break;
+                }
+                case 'delete': {
+                    pins.splice(idx, 1);
+                    renderPinList();
+                    draw();
+                    saveCurrentMap(); // autosave on delete
+                    break;
+                }
+            }
+        });
+
         window.addEventListener('click', () => hideContextMenu());
         window.addEventListener('keydown', () => hideContextMenu());
 
@@ -2472,7 +2499,6 @@
             document.getElementById("textScale").disabled = !enabled;
             draw();
         });
-
 
         ["showGrid", "showIcons", "showText", "showCoords", "showDescription", "showTags", "minX", "maxX", "minZ", "maxZ", "bgColor", "showLabelBackground", "useTextScale", "gridColor", "gridSpacing", "showAxes"].forEach(id => {
             document.getElementById(id).addEventListener("input", draw);
