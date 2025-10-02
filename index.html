@@ -100,7 +100,7 @@
         #settings {
             position: fixed;
             top: var(--space-md);
-            left: var(--space-md);
+            right: var(--space-md);
             z-index: 100;
             max-height: 95vh;
             overflow-y: auto;
@@ -124,7 +124,7 @@
         #pinListPanel {
             position: fixed;
             top: var(--space-md);
-            right: var(--space-md);
+            left: var(--space-md);
             display: flex;
             flex-direction: column;
             height: 95vh;
@@ -132,6 +132,78 @@
             color: var(--color-text);
             z-index: 300;
             overflow: hidden;
+        }
+
+        /* ===== Menu bar ===== */
+        .menu-bar {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .menu {
+            position: relative;
+        }
+
+        .menu-button {
+            background: var(--color-control-bg);
+            border: 1px solid var(--color-border);
+            padding: 4px 8px;
+            border-radius: var(--panel-radius);
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .menu-button:hover {
+            border-color: var(--color-primary);
+        }
+
+        .menu-dropdown {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            min-width: 220px;
+            background: var(--color-panel);
+            border: 1px solid var(--color-border);
+            border-radius: var(--panel-radius);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+            padding: 6px 0;
+            z-index: 10000;
+            display: none;
+            /* toggled to block by JS */
+        }
+
+        .menu.open .menu-dropdown {
+            display: block;
+            background: var(--color-panel);
+
+        }
+
+        .menu-item {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 6px 10px;
+            background: var(--color-control-bg);
+            border: 0;
+            cursor: pointer;
+            font-size: var(--font-md);
+        }
+
+        .menu-item[disabled] {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        .menu-item:hover:not([disabled]) {
+            background: var(--color-hover-highlight);
+        }
+
+        .menu-separator {
+            height: 1px;
+            background: var(--color-border);
+            margin: 6px 0;
         }
 
         .map-header select {
@@ -737,7 +809,6 @@
     </div>
 
     <!-- HUD: Top Toolbar -->
-
     <div id="hud">
         <small>Current Map: <strong id="currentMapName">default</strong></small>
         <button id="toggleCrosshair">🞔 Crosshair</button>
@@ -747,20 +818,32 @@
     </div>
 
     <!-- Pin List: Right Sidebar -->
-
     <div id="pinListPanel">
-        <!-- 🗺️ Map Header -->
-        <div class="pin-panel-header map-header">
-            <button id="exportJsonBtn" title="Export current map as JSON">Export</button>
-            <label for="importJsonInput" style="margin-left:8px;">Import</label>
-            <input id="importJsonInput" type="file" accept="application/json" style="display:none;">
-            <div class="input-group">
-                <select id="mapSelector"></select>
-                <button id="createNewMapBtn">+</button>
-                <button id="renameMapBtn" title="Rename map">✏️</button>
-                <button id="copyMapPath" title="Copy Map Key to Clipboard">📋</button>
-                <button id="deleteMapBtn" title="Delete map">🗑️</button>
+        <!-- ===== File menu (Pin Panel header) ===== -->
+        <div class="menu-bar">
+            <div class="menu" id="fileMenu">
+                <button class="menu-button" id="fileMenuBtn">File ▾</button>
+                <div class="menu-dropdown" id="fileMenuDropdown" aria-labelledby="fileMenuBtn">
+                    <button class="menu-item" data-cmd="open">📂 Open…</button>
+                    <button class="menu-item" data-cmd="save" id="menuSave" disabled>💾 Save</button>
+                    <button class="menu-item" data-cmd="saveas" id="menuSaveAs" disabled>📝 Save As…</button>
+
+                    <div class="menu-separator"></div>
+
+                    <button class="menu-item" data-cmd="import">📥 Import Copy…</button>
+                    <button class="menu-item" data-cmd="export">📤 Export Copy…</button>
+                </div>
             </div>
+
+            <!-- Keep the hidden Import input (used by Import menu item) -->
+            <input id="importJsonInput" type="file" accept="application/json" style="display:none;">
+        </div>
+        <div class="input-group">
+            <select id="mapSelector"></select>
+            <button id="createNewMapBtn">+</button>
+            <button id="renameMapBtn" title="Rename map">✏️</button>
+            <button id="copyMapPath" title="Copy Map Key to Clipboard">📋</button>
+            <button id="deleteMapBtn" title="Delete map">🗑️</button>
         </div>
 
         <!-- 📌 Pins Header -->
@@ -782,7 +865,6 @@
             <!-- Pins will render here -->
         </div>
     </div>
-
 
     <!-- Pin Editor -->
     <div id="pinEditorPanel">
@@ -895,47 +977,9 @@
 
     <script>
 
-        // =================== 🔁 DOM INITIALIZATION ===================
-        // Theme selector, canvas/context setup, resizeCanvas call, initial draw
-
-        window.addEventListener("DOMContentLoaded", () => {
-            // Populate dropdowns for pin types and icons
-            const idSelect = document.getElementById("pinEditorID");
-            const iconSelect = document.getElementById("pinEditorIcon");
-
-            pinTypes.forEach(pin => {
-                const opt1 = document.createElement("option");
-                opt1.value = pin.id;
-                opt1.textContent = pin.label;
-                idSelect.appendChild(opt1);
-
-                const opt2 = document.createElement("option");
-                opt2.value = pin.icon;
-                opt2.textContent = pin.icon;
-                iconSelect.appendChild(opt2);
-            });
-
-            // Keep dropdowns in sync when type changes
-            idSelect.addEventListener("change", () => {
-                const selectedType = idSelect.value;
-                const match = pinTypes.find(p => p.id === selectedType);
-                if (match) {
-                    iconSelect.value = match.icon;
-                }
-            });
-
-            // Now load map list and UI
-            loadMapNames({ autoLoadFirst: true });
-
-        });
-
-
-        document.getElementById("themeSelector").addEventListener("change", (e) => {
-            document.body.setAttribute("data-theme", e.target.value);
-        });
-
         // =================== 🌍 GLOBAL VARIABLES ===================
         // canvas, context, zoom, offset, pins, pinTypes, minimap settings...
+        let currentFileHandle = null; // set when you use Open or Save As
 
         const canvas = document.getElementById("mapCanvas");
         const ctx = canvas.getContext("2d");
@@ -1079,10 +1123,83 @@
             }
         });
 
+        // =================== 🔁 DOM INITIALIZATION ===================
+        // Theme selector, canvas/context setup, resizeCanvas call, initial draw
+        document.getElementById("themeSelector").addEventListener("change", (e) => {
+            document.body.setAttribute("data-theme", e.target.value);
+        });
+
+        // ===== File menu wiring =====
+        (function setupFileMenu() {
+            const menu = document.getElementById('fileMenu');
+            const btn = document.getElementById('fileMenuBtn');
+            const dd = document.getElementById('fileMenuDropdown');
+            const saveBtn = document.getElementById('menuSave');
+            const saveAsBtn = document.getElementById('menuSaveAs');
+
+            if (!menu || !btn || !dd) return;
+
+            // Toggle dropdown
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                menu.classList.toggle('open');
+            });
+
+            // Close on outside click / Esc
+            window.addEventListener('click', () => menu.classList.remove('open'));
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') menu.classList.remove('open');
+            });
+
+            // Command dispatch
+            dd.addEventListener('click', (e) => {
+                const item = e.target.closest('.menu-item');
+                if (!item || item.disabled) return;
+
+                const cmd = item.dataset.cmd;
+                menu.classList.remove('open'); // close after click
+
+                switch (cmd) {
+                    case 'open':
+                        openMapFromDisk();
+                        break;
+                    case 'save':
+                        saveMapToDisk();
+                        break;
+                    case 'saveas':
+                        saveAsMapToDisk();
+                        break;
+                    case 'import': {
+                        const input = document.getElementById('importJsonInput');
+                        if (input) input.click();
+                        break;
+                    }
+                    case 'export':
+                        exportCurrentMap();
+                        break;
+                }
+            });
+
+            // Keep Save/Save As enabled state in sync with file link
+            function refreshSaveState() {
+                const linked = (typeof currentFileHandle !== 'undefined') && !!currentFileHandle;
+                saveBtn.disabled = !linked;
+                saveAsBtn.disabled = !window.showSaveFilePicker;
+            }
+
+            // Expose a hook you can call elsewhere (after Open/Save As)
+            window.__refreshSaveState = refreshSaveState;
+            refreshSaveState();
+        })();
 
         // =================== 📦 LOCAL STORAGE: MAP LOADING & SAVING ===================
         // saveCurrentMap, loadMap, loadMapNames, triggerNewMap
-
+        let _diskSaveTimer = null;
+        function queueDiskSave() {
+            if (!currentFileHandle) return; // only if a file is open
+            clearTimeout(_diskSaveTimer);
+            _diskSaveTimer = setTimeout(() => { saveMapToDisk(); }, 800); // debounce ~0.8s
+        }
         // Overlay button → create new map (opens the same flow as the + button)
         function triggerNewMap() {
             createNewMapFlow();
@@ -1120,9 +1237,20 @@
             return finalName;
         }
 
+        function mapMetaKey(name) { return `mapmeta:${name}`; }
+        function getMapMeta(name) {
+            try { return JSON.parse(localStorage.getItem(mapMetaKey(name)) || 'null'); }
+            catch { return null; }
+        }
+        function setMapMeta(name, meta) {
+            try { localStorage.setItem(mapMetaKey(name), JSON.stringify(meta || {})); }
+            catch (e) { console.warn('Failed to set map meta', e); }
+        }
+
         function saveCurrentMap() {
             if (!currentMapName) return; // skip saving if no valid name
             localStorage.setItem(`map:${currentMapName}`, JSON.stringify(pins));
+            queueDiskSave();
         }
 
         function loadMap(name) {
@@ -1153,33 +1281,45 @@
         }
 
         function loadMapNames({ autoLoadFirst = false } = {}) {
-            const selector = document.getElementById("mapSelector");
-            selector.innerHTML = ''; // clear options
+            const sel = document.getElementById('mapSelector');
+            if (!sel) return;
 
-            const keys = Object.keys(localStorage).filter(k => k.startsWith("map:"));
-            const names = keys.map(k => k.slice(4));
+            const names = Object.keys(localStorage)
+                .filter(k => k.startsWith('map:'))
+                .map(k => k.slice(4))
+                .sort((a, b) => a.localeCompare(b));
 
+            sel.innerHTML = '';
+
+            // Optional placeholder if none
             if (names.length === 0) {
-                updateOverlayVisibility(); // show No Map overlay
-                return;
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = '(no maps)';
+                sel.appendChild(opt);
             }
 
             names.forEach(name => {
-                const opt = document.createElement("option");
+                const meta = getMapMeta(name);
+                const icon = (meta && meta.source === 'disk') ? '📂' : '🗄️';
+                const opt = document.createElement('option');
                 opt.value = name;
-                opt.textContent = name;
-                selector.appendChild(opt);
+                opt.textContent = `${icon} ${name}`;
+                sel.appendChild(opt);
             });
 
-            if (autoLoadFirst && (!currentMapName || !localStorage.getItem(`map:${currentMapName}`))) {
-                currentMapName = names[0];
-                loadMap(currentMapName);
+            // Select current map if available
+            if (currentMapName && names.includes(currentMapName)) {
+                sel.value = currentMapName;
+            } else if (autoLoadFirst && names[0]) {
+                sel.value = names[0];
+                loadMap(names[0]);
             }
 
-            selector.value = currentMapName || names[0];
-            document.getElementById("currentMapName").textContent = currentMapName || "–";
-            updateOverlayVisibility();
+            // Update overlay visibility
+            updateOverlayVisibility?.();
         }
+
 
         // =================== 🗺️ DRAW FUNCTIONS ===================
         // draw(), drawMinimap()
@@ -1498,7 +1638,6 @@
             const viewWidth = (bottomRightWorldX - topLeftWorldX) * scale;
             const viewHeight = (bottomRightWorldZ - topLeftWorldZ) * scale;
 
-
             // 📍 Draw all pins except hovered one
             for (let i = 0; i < pins.length; i++) {
                 if (i === hoveredPinIndex) continue;
@@ -1626,31 +1765,11 @@
             draw();
 
             // 5. Setup pin dropdowns
-            const idSelect = document.getElementById("pinEditorID");
-            const iconSelect = document.getElementById("pinEditorIcon");
-            idSelect.innerHTML = '';
-            iconSelect.innerHTML = '';
-
-            pinTypes.forEach(pin => {
-                const opt1 = document.createElement("option");
-                opt1.value = pin.id;
-                opt1.textContent = pin.label;
-                idSelect.appendChild(opt1);
-
-                const opt2 = document.createElement("option");
-                opt2.value = pin.icon;
-                opt2.textContent = pin.icon;
-                iconSelect.appendChild(opt2);
-            });
-
-            idSelect.addEventListener("change", () => {
-                const selectedType = idSelect.value;
-                const match = pinTypes.find(p => p.id === selectedType);
-                if (match) iconSelect.value = match.icon;
-            });
+            populateTypeAndIconDropdowns();
 
             // 6. Load maps and overlays
             updateOverlayVisibility();
+            loadMapNames({ autoLoadFirst: true });
         }
 
 
@@ -2107,6 +2226,9 @@
                 applySettingsSnapshot(importedSettings);
             }
 
+            setMapMeta(finalName, { source: 'local' });
+            loadMapNames({ autoLoadFirst: false });
+
             // Refresh UI
             renderPinList();
             draw();
@@ -2129,12 +2251,128 @@
             }
         })();
 
-        document.getElementById("exportJsonBtn")?.addEventListener("click", exportCurrentMap);
-        document.getElementById("importJsonInput")?.addEventListener("change", () => {
-            const file = importJsonInput.files && importJsonInput.files[0];
-            if (!file) return;
-            importMapFromFile(file).finally(() => { importJsonInput.value = ""; });
-        });
+        // =================== 📁 FILE SYSTEM ACCESS (Open / Save / Save As) ===================
+
+        function getMapPayloadForDisk() {
+            // what you want written to disk; keep it simple & compatible with your importer
+            return {
+                version: 1,
+                name: currentMapName || "unnamed",
+                createdAt: new Date().toISOString(),
+                pins: Array.isArray(pins) ? pins : [],
+                settings: typeof collectSettingsSnapshot === "function" ? collectSettingsSnapshot() : undefined
+            };
+        }
+
+        async function openMapFromDisk() {
+            if (!window.showOpenFilePicker) {
+                alert("Your browser doesn’t support 'Open'. Use Import instead.");
+                return;
+            }
+            try {
+                const [handle] = await showOpenFilePicker({
+                    types: [{ description: "JSON files", accept: { "application/json": [".json"] } }],
+                    excludeAcceptAllOption: false,
+                    multiple: false
+                });
+                if (!handle) return;
+
+                const file = await handle.getFile();
+                const text = await file.text();
+
+                let data;
+                try { data = JSON.parse(text); } catch { alert("Invalid JSON file."); return; }
+
+                // Accept either [pins] or {pins, settings, name}
+                let importedPins = [];
+                let importedSettings = null;
+                let importedName = file.name.replace(/\.json$/i, "");
+
+                if (Array.isArray(data)) {
+                    importedPins = data;
+                } else if (data && typeof data === "object") {
+                    if (Array.isArray(data.pins)) importedPins = data.pins;
+                    if (data.settings) importedSettings = data.settings;
+                    if (data.name) importedName = String(data.name);
+                } else {
+                    alert("Unsupported JSON format."); return;
+                }
+
+                // normalize a bit
+                importedPins = importedPins.map(p => ({
+                    x: Number(p.x) || 0,
+                    z: Number(p.z) || 0,
+                    y: Number.isFinite(p.y) ? Number(p.y) : undefined,
+                    id: (p.id ?? "").toString(),
+                    label: (p.label ?? "").toString(),
+                    description: (p.description ?? "").toString(),
+                    icon: (p.icon ?? "").toString(),
+                    color: (p.color ?? "").toString(),
+                    tags: Array.isArray(p.tags) ? p.tags.map(String) : undefined,
+                    timestamp: p.timestamp || new Date().toISOString()
+                }));
+
+                // Set app state
+                pins = importedPins;
+                currentMapName = importedName;
+                currentFileHandle = handle;
+
+                // Also save to localStorage so the map shows in your selector
+                saveMapAs(importedName, importedPins); // this updates selector & loads map name label
+                if (importedSettings && typeof applySettingsSnapshot === "function") {
+                    applySettingsSnapshot(importedSettings);
+                }
+
+                setMapMeta(importedName, { source: 'disk', fileName: currentFileHandle?.name || '' });
+                loadMapNames({ autoLoadFirst: false });
+                if (window.__refreshSaveState) window.__refreshSaveState();
+
+                renderPinList();
+                draw();
+                updateOverlayVisibility?.();
+
+            } catch (err) {
+                // user canceled or permissions issue
+                console.warn(err);
+            }
+        }
+
+        async function saveMapToDisk() {
+            try {
+                if (!currentFileHandle) return saveAsMapToDisk(); // fallback to Save As
+                const writable = await currentFileHandle.createWritable();
+                await writable.write(JSON.stringify(getMapPayloadForDisk(), null, 2));
+                await writable.close();
+                if (typeof showToast === "function") showToast("Saved to disk");
+            } catch (err) {
+                console.warn(err);
+                alert("Could not save to disk.");
+            }
+        }
+
+        async function saveAsMapToDisk() {
+            if (!window.showSaveFilePicker) {
+                alert("Your browser doesn’t support 'Save As'. Use Export instead.");
+                return;
+            }
+            try {
+                const handle = await showSaveFilePicker({
+                    suggestedName: `${currentMapName || "map"}.json`,
+                    types: [{ description: "JSON files", accept: { "application/json": [".json"] } }]
+                });
+                if (!handle) return;
+
+                currentFileHandle = handle;
+                setMapMeta(currentMapName, { source: 'disk', fileName: currentFileHandle?.name || '' });
+                loadMapNames({ autoLoadFirst: false });
+
+                if (window.__refreshSaveState) window.__refreshSaveState();
+
+                await saveMapToDisk(); // writes using the new handle
+            } catch (err) {
+                console.warn(err);
+            }
+        }
 
         /* =================== ⚙️ CONTEXT MENU SYSTEM =================== */
         /* Signature: showContextMenu(items, x, y) */
@@ -2478,7 +2716,8 @@
             pins = [];
             saveCurrentMap();
 
-            loadMapNames();
+            setMapMeta(currentMapName, { source: 'local' });
+            loadMapNames({ autoLoadFirst: false });
             loadMap(currentMapName);
         }
 
@@ -2500,9 +2739,11 @@
             draw();
         });
 
-        ["showGrid", "showIcons", "showText", "showCoords", "showDescription", "showTags", "minX", "maxX", "minZ", "maxZ", "bgColor", "showLabelBackground", "useTextScale", "gridColor", "gridSpacing", "showAxes"].forEach(id => {
-            document.getElementById(id).addEventListener("input", draw);
+        ["showGrid", "showIcons", "showText", "showCoords", "showDescription", "showTags", "bgColor", "gridColor", "gridSpacing", "showAxes"].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener("input", draw);
         });
+
 
         // =================== 11. 🔚 FINAL INIT CALLS ===================
         // loadMapNames(), draw(), resizeCanvas()
