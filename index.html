@@ -1,83 +1,283 @@
 <!DOCTYPE html>
-<html lang="en">
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
-    rel="stylesheet">
+<html lang="en" data-accent="cyan">
 
 <head>
     <meta charset="UTF-8">
     <title>Minecraft Map Viewer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+        rel="stylesheet">
     <style>
+        /* ============================================================================
+ MapItMine — Tokenized, Theme-Ready Styles (drop-in paste-over)
+ - Switch via [data-theme="light|dark"] and [data-accent="cyan|magenta|amber|lime|black|white"]
+ - Sizing/radii/layout preserved from your current CSS
+============================================================================ */
+
+        /* 0) App primitives (sizes/radii/fonts) — unchanged from your setup */
         :root {
-            /* MonoSpec palette */
-            --ms-bg: #0a0f0a;
-            --ms-hud: #86f7a2;
-            --ms-hud-dim: #3bbf73;
-            --ms-hud-faint: #1f6b43;
-            --ms-accent: #e3ff7a;
-            --ms-warn: #f7c986;
-            --ms-card-bg: #0a130d;
-            --ms-grid: rgba(134, 247, 162, 0.06);
-            --ms-scan: rgba(134, 247, 162, 0.04);
-            --ms-shadow: rgba(0, 0, 0, 0.5);
-
-            /* Typography */
-            --font-ui: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-
-            /* 2) MapItMine tokens ALIASED to MonoSpec */
-            --color-bg: var(--ms-bg);
-            --color-panel: var(--ms-card-bg);
-            --color-control-bg: rgba(255, 255, 255, 0.04);
-            /* subtle control base */
-            --color-input: rgba(134, 247, 162, 0.06);
-            --color-hover-highlight: rgba(134, 247, 162, 0.10);
-
-            --color-text-heading: var(--ms-hud);
-            --color-text: var(--ms-hud);
-            --color-grid: var(--ms-grid);
-            --color-axis: rgba(255, 255, 255, 0.33);
-            --color-pin: var(--ms-accent);
-            --color-border: var(--ms-hud-faint);
-            --color-primary: var(--ms-hud);
-            /* primary = HUD green */
-            --color-secondary: var(--ms-accent);
-            /* accent pop */
-            --color-tertiary: var(--ms-warn);
-            /* warm callouts */
-
-            /* Spacing (tighter, MonoSpec-ish) */
+            /* Spacing & type */
             --space-xs: 4px;
             --space-sm: 6px;
             --space-md: 10px;
             --space-lg: 16px;
 
-            /* Font sizes (tighter) */
             --font-sm: 10px;
             --font-base: 12px;
             --font-md: 12px;
+
+            --font-ui: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Inter, "Noto Sans", "Helvetica Neue", Arial, sans-serif;
 
             /* Radius / inputs */
             --input-radius: 4px;
             --panel-radius: 2px;
             --input-padding: 6px;
 
-            /* Effects */
-            --panel-gradient: linear-gradient(180deg, rgba(134, 247, 162, 0.06), rgba(134, 247, 162, 0));
-            --panel-inset: inset 0 0 0 2px rgba(0, 0, 0, 0.35);
+            /* Shadows */
+            --shadow-sm: 0 1px 1px rgba(0, 0, 0, .06);
+            --shadow-md: 0 4px 14px rgba(0, 0, 0, .08);
+
+            /* Back-compat aliases used by a few rules below */
+            --bg-header: var(--color-panel);
+            --border-color: var(--color-border);
+            --bg-selected: var(--ui-surface-active);
         }
 
-        /* Optional light theme stays, but with toned mapping */
-        [data-theme="light"] {
-            --color-bg: #ffffff;
-            --color-panel: rgba(0, 0, 0, 0.06);
-            --color-text: #0b2816;
-            --color-text-heading: #145c36;
-            --color-grid: #d6e9df;
-            --color-axis: #145c3688;
-            --color-border: #93d9b1;
-            --color-control-bg: rgba(0, 0, 0, 0.04);
-            --color-input: rgba(20, 92, 54, 0.08);
+        /* 1) Accent families (Bonsai-compatible) */
+        :root[data-accent="cyan"] {
+            --accent-100: #e4fff8;
+            --accent-200: #cafff1;
+            --accent-300: #a7ffe9;
+            --accent-400: #5df0c9;
+            --accent-500: #38ffd8;
+            --accent-600: #1ce3bf;
+            --accent-700: #12b69b;
+            --accent-800: #0b8d78;
+            --accent-900: #0a6d5d;
+            --accent-on: #021a16;
         }
 
+        :root[data-accent="magenta"] {
+            --accent-100: #fff1fb;
+            --accent-200: #ffd5f5;
+            --accent-300: #ffc4f6;
+            --accent-400: #ff86f0;
+            --accent-500: #ff5bea;
+            --accent-600: #e544d1;
+            --accent-700: #c22eb1;
+            --accent-800: #97238a;
+            --accent-900: #701a67;
+            --accent-on: #180616;
+        }
+
+        :root[data-accent="amber"] {
+            --accent-100: #fff9e6;
+            --accent-200: #fff1cc;
+            --accent-300: #ffe8a1;
+            --accent-400: #ffd46a;
+            --accent-500: #ffcc4d;
+            --accent-600: #f2b83a;
+            --accent-700: #d19a25;
+            --accent-800: #a9791a;
+            --accent-900: #7f5914;
+            --accent-on: #0f0b02;
+        }
+
+        :root[data-accent="lime"] {
+            --accent-100: #f3ffe3;
+            --accent-200: #e7ffc8;
+            --accent-300: #e0ffb8;
+            --accent-400: #cdfb89;
+            --accent-500: #b7ff64;
+            --accent-600: #9deb49;
+            --accent-700: #79c52e;
+            --accent-800: #5a9a23;
+            --accent-900: #3f6f19;
+            --accent-on: #0b1304;
+        }
+
+        :root[data-accent="black"] {
+            --accent-100: #f5f5f5;
+            --accent-200: #e0e0e0;
+            --accent-300: #c2c2c2;
+            --accent-400: #9e9e9e;
+            --accent-500: #757575;
+            --accent-600: #555555;
+            --accent-700: #333333;
+            --accent-800: #1f1f1f;
+            --accent-900: #000000;
+            --accent-on: #ffffff;
+        }
+
+        :root[data-accent="white"] {
+            --accent-100: #ffffff;
+            --accent-200: #fafafa;
+            --accent-300: #f5f5f5;
+            --accent-400: #e0e0e0;
+            --accent-500: #cccccc;
+            --accent-600: #aaaaaa;
+            --accent-700: #888888;
+            --accent-800: #555555;
+            --accent-900: #222222;
+            --accent-on: #0b0f12;
+        }
+
+        /* 2) Theme surfaces/text/borders (maps to your role variables) */
+        :root[data-theme="dark"] {
+            /* Neutral surfaces with subtle accent tint */
+            --surface-0: #0e1115;
+            --surface-1: #0f141a;
+            --surface-2: #141a22;
+
+            --color-bg: color-mix(in oklab, var(--surface-0) 94%, var(--accent-900));
+            --color-panel: color-mix(in oklab, var(--surface-1) 94%, var(--accent-900));
+            --color-input: color-mix(in oklab, var(--surface-2) 96%, var(--accent-900));
+            --color-control-bg: transparent;
+
+            --color-text: color-mix(in oklab, var(--accent-600) 95%, transparent);
+            --color-text-heading: var(--accent-300);
+
+            --color-border: color-mix(in oklab, var(--accent-600) 18%, var(--color-panel));
+            --color-primary: var(--accent-600);
+            --color-primary-strong: var(--accent-700);
+            --color-secondary: var(--accent-400);
+
+            --ui-surface: var(--color-panel);
+            --ui-surface-hover: color-mix(in oklab, var(--ui-surface), white 4%);
+            --ui-surface-active: color-mix(in oklab, var(--color-primary), black 12%);
+            --ui-border: var(--color-border);
+            --ui-border-quiet: color-mix(in oklab, var(--color-border) 70%, transparent);
+            --ui-border-strong: color-mix(in oklab, var(--color-primary) 55%, black 40%);
+            --ui-glow: color-mix(in oklab, var(--color-primary), white 30%);
+
+            --color-grid: color-mix(in oklab, var(--accent-600) 16%, transparent);
+            --color-axis: color-mix(in oklab, var(--accent-400) 60%, transparent);
+
+            --shadow-sm: 0 1px 1.5px rgba(0, 0, 0, .5);
+            --shadow-md: 0 6px 18px rgba(0, 0, 0, .45);
+        }
+
+        :root[data-theme="light"] {
+            --surface-0: #f6f8fb;
+            --surface-1: #eef2f7;
+            --surface-2: #e7edf5;
+
+            --color-bg: color-mix(in oklab, var(--surface-0) 96%, var(--accent-200));
+            --color-panel: color-mix(in oklab, var(--surface-1) 96%, var(--accent-200));
+            --color-input: color-mix(in oklab, var(--surface-2) 96%, var(--accent-200));
+            --color-control-bg: transparent;
+
+            --color-text: color-mix(in oklab, var(--accent-900) 90%, transparent);
+            --color-text-heading: var(--accent-800);
+
+            --color-border: color-mix(in oklab, var(--accent-700) 20%, #b7c4d6);
+            --color-primary: var(--accent-700);
+            --color-primary-strong: var(--accent-800);
+            --color-secondary: var(--accent-500);
+
+            --ui-surface: var(--color-panel);
+            --ui-surface-hover: color-mix(in oklab, var(--ui-surface), black 4%);
+            --ui-surface-active: color-mix(in oklab, var(--color-primary), white 30%);
+            --ui-border: var(--color-border);
+            --ui-border-quiet: color-mix(in oklab, var(--color-border) 70%, transparent);
+            --ui-border-strong: color-mix(in oklab, var(--color-primary) 55%, black 20%);
+            --ui-glow: color-mix(in oklab, var(--color-primary), white 30%);
+
+            --color-grid: color-mix(in oklab, var(--accent-700) 14%, transparent);
+            --color-axis: color-mix(in oklab, var(--accent-700) 42%, transparent);
+
+            --shadow-sm: 0 1px 1px rgba(0, 0, 0, .06);
+            --shadow-md: 0 4px 14px rgba(0, 0, 0, .08);
+        }
+
+        /* B1) Accent fallback — if no [data-accent] is set, default to 'cyan' */
+        :root:not([data-accent]) {
+            --accent-100: #e4fff8;
+            --accent-200: #cafff1;
+            --accent-300: #a7ffe9;
+            --accent-400: #5df0c9;
+            --accent-500: #38ffd8;
+            --accent-600: #1ce3bf;
+            --accent-700: #12b69b;
+            --accent-800: #0b8d78;
+            --accent-900: #0a6d5d;
+            --accent-on: #021a16;
+        }
+
+        /* B2) Theme fallback for “Auto” on systems that prefer dark */
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme]) {
+                --surface-0: #0e1115;
+                --surface-1: #0f141a;
+                --surface-2: #141a22;
+
+                --color-bg: color-mix(in oklab, var(--surface-0) 94%, var(--accent-900));
+                --color-panel: color-mix(in oklab, var(--surface-1) 94%, var(--accent-900));
+                --color-input: color-mix(in oklab, var(--surface-2) 96%, var(--accent-900));
+                --color-control-bg: transparent;
+
+                --color-text: color-mix(in oklab, var(--accent-100) 88%, transparent);
+                --color-text-heading: var(--accent-300);
+
+                --color-border: color-mix(in oklab, var(--accent-600) 18%, var(--color-panel));
+                --color-primary: var(--accent-600);
+                --color-primary-strong: var(--accent-700);
+                --color-secondary: var(--accent-400);
+
+                --ui-surface: var(--color-panel);
+                --ui-surface-hover: color-mix(in oklab, var(--ui-surface), white 4%);
+                --ui-surface-active: color-mix(in oklab, var(--color-primary), black 12%);
+                --ui-border: var(--color-border);
+                --ui-border-quiet: color-mix(in oklab, var(--color-border) 70%, transparent);
+                --ui-border-strong: color-mix(in oklab, var(--color-primary) 55%, black 40%);
+                --ui-glow: color-mix(in oklab, var(--color-primary), white 30%);
+
+                --color-grid: color-mix(in oklab, var(--accent-600) 16%, transparent);
+                --color-axis: color-mix(in oklab, var(--accent-400) 60%, transparent);
+
+                --shadow-sm: 0 1px 1.5px rgba(0, 0, 0, .5);
+                --shadow-md: 0 6px 18px rgba(0, 0, 0, .45);
+            }
+        }
+
+        /* B3) Theme fallback for “Auto” on systems that prefer light */
+        @media (prefers-color-scheme: light) {
+            :root:not([data-theme]) {
+                --surface-0: #f6f8fb;
+                --surface-1: #eef2f7;
+                --surface-2: #e7edf5;
+
+                --color-bg: color-mix(in oklab, var(--surface-0) 96%, var(--accent-200));
+                --color-panel: color-mix(in oklab, var(--surface-1) 96%, var(--accent-200));
+                --color-input: color-mix(in oklab, var(--surface-2) 96%, var(--accent-200));
+                --color-control-bg: transparent;
+
+                --color-text: color-mix(in oklab, var(--accent-900) 90%, transparent);
+                --color-text-heading: var(--accent-800);
+
+                --color-border: color-mix(in oklab, var(--accent-700) 20%, #b7c4d6);
+                --color-primary: var(--accent-700);
+                --color-primary-strong: var(--accent-800);
+                --color-secondary: var(--accent-500);
+
+                --ui-surface: var(--color-panel);
+                --ui-surface-hover: color-mix(in oklab, var(--ui-surface), black 4%);
+                --ui-surface-active: color-mix(in oklab, var(--color-primary), white 30%);
+                --ui-border: var(--color-border);
+                --ui-border-quiet: color-mix(in oklab, var(--color-border) 70%, transparent);
+                --ui-border-strong: color-mix(in oklab, var(--color-primary) 55%, black 20%);
+                --ui-glow: color-mix(in oklab, var(--color-primary), white 30%);
+
+                --color-grid: color-mix(in oklab, var(--accent-700) 14%, transparent);
+                --color-axis: color-mix(in oklab, var(--accent-700) 42%, transparent);
+
+                --shadow-sm: 0 1px 1px rgba(0, 0, 0, .06);
+                --shadow-md: 0 4px 14px rgba(0, 0, 0, .08);
+            }
+        }
+
+
+        /* 3) Base */
         html,
         body {
             margin: 0;
@@ -87,6 +287,11 @@
             font-family: var(--font-ui);
         }
 
+        canvas {
+            display: block;
+        }
+
+        /* 4) Panels */
         #settings,
         #hud,
         #pinListPanel {
@@ -94,7 +299,6 @@
             background: var(--color-panel);
             border-radius: var(--panel-radius);
             font-size: var(--font-md);
-            gap: var(--space-md);
         }
 
         #settings {
@@ -102,11 +306,14 @@
             top: var(--space-md);
             right: var(--space-md);
             z-index: 100;
+            max-width: 100%;
+            min-width: 0;
             max-height: 95vh;
             overflow-y: auto;
             width: 260px;
             display: flex;
             flex-direction: column;
+            gap: var(--space-md);
         }
 
         #hud {
@@ -132,9 +339,10 @@
             color: var(--color-text);
             z-index: 300;
             overflow: hidden;
+            gap: var(--space-md);
         }
 
-        /* ===== Menu bar ===== */
+        /* 5) Menu */
         .menu-bar {
             display: flex;
             align-items: center;
@@ -166,63 +374,55 @@
             min-width: 220px;
             background: var(--color-panel);
             border: 1px solid var(--color-border);
-            border-radius: var(--panel-radius);
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-            padding: 6px 0;
+            padding: 0;
             z-index: 10000;
             display: none;
-            /* toggled to block by JS */
         }
 
         .menu.open .menu-dropdown {
             display: block;
             background: var(--color-panel);
-
         }
 
         .menu-item {
             display: block;
             width: 100%;
             text-align: left;
+            background: transparent;
+            border: 1px solid transparent;
             padding: 6px 10px;
-            background: var(--color-control-bg);
-            border: 0;
             cursor: pointer;
             font-size: var(--font-md);
         }
 
         .menu-item[disabled] {
-            opacity: 0.5;
+            opacity: .5;
             cursor: default;
         }
 
         .menu-item:hover:not([disabled]) {
-            background: var(--color-hover-highlight);
+            background: var(--color-hover-highlight, var(--ui-surface-hover));
         }
 
         .menu-separator {
-            height: 1px;
             background: var(--color-border);
             margin: 6px 0;
         }
 
-        .map-header select {
-            flex-grow: 1;
-        }
-
-        .pin-panel-header {
+        /* 6) Pin panel footer */
+        .pin-panel-footer {
             padding: var(--space-sm);
             background: var(--bg-header);
-            border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
-            gap: 0.5em;
+            gap: .5em;
             flex-wrap: wrap;
             flex-shrink: 0;
         }
 
-        .pin-list-header {
-            justify-content: space-between;
+        .pin-list-footer {
+            justify-content: right;
         }
 
         #hidePinListBtn {
@@ -232,24 +432,24 @@
             z-index: 11;
         }
 
-        .pin-header-left {
+        .pin-footer-right {
             display: flex;
-            align-items: center;
-            gap: 0.3em;
+            align-items: right;
+            gap: .3em;
         }
 
         .pin-filters {
             display: flex;
-            gap: 0.3em;
+            gap: .3em;
         }
 
+        /* 7) Pin list & cards */
         .scrollable-pin-list {
             overflow-y: auto;
             flex-grow: 1;
             padding: none;
             border: 1px solid var(--color-border);
             flex-direction: column;
-
         }
 
         .pin-card {
@@ -260,19 +460,15 @@
             font-size: var(--font-md);
         }
 
-        .pin-card:hover {
-            border: 1px solid var(--color-primary);
-            background-color: var(--color-hover-highlight);
-
-        }
-
+        .pin-card:hover,
         .pin-card.hovered {
             border: 1px solid var(--color-primary);
-            background-color: var(--color-hover-highlight);
+            background-color: var(--color-hover-highlight, var(--ui-surface-hover));
         }
 
+        /* FIX: outline follows theme primary (replaces hardcoded orange) */
         .pin-card.selected {
-            outline: 2px solid orange;
+            outline: 2px solid var(--color-primary);
             background-color: var(--bg-selected);
         }
 
@@ -288,7 +484,7 @@
             flex-direction: row;
             justify-content: space-between;
             font-size: var(--font-md);
-            opacity: 0.75;
+            opacity: .75;
         }
 
         .pin-card-body {
@@ -324,7 +520,7 @@
 
         .pin-tag {
             font-size: var(--font-sm);
-            opacity: 0.8;
+            opacity: .8;
         }
 
         .pin-date-footer {
@@ -332,86 +528,295 @@
             right: var(--space-sm);
             bottom: var(--space-sm);
             font-size: var(--font-sm);
-            opacity: 0.75;
+            opacity: .75;
         }
 
+        /* Pin-card inline controls */
         .pin-controls {
             position: absolute;
             top: var(--space-xs);
             right: var(--space-xs);
             display: flex;
-            gap: 0px;
+            gap: 0;
             opacity: 0;
-            /* hidden until hover/focus */
             pointer-events: none;
-            /* avoid stray clicks when hidden */
             transition: opacity 120ms ease;
             margin-top: 0;
-            /* remove old bottom spacing */
             justify-content: flex-end;
         }
 
-        /* Reveal controls when user hovers the card OR focuses inside (keyboard-friendly) */
         .pin-card:hover .pin-controls,
         .pin-card:focus-within .pin-controls {
             opacity: 1;
             pointer-events: auto;
         }
 
-        /* Borderless pill buttons by default… */
+        /* 8) Buttons (ghost baseline) */
+        button,
+        .menu-button,
+        .menu-item {
+            appearance: none;
+            background: transparent;
+            border: 1px solid var(--ui-border-quiet);
+            color: var(--color-text);
+            padding: 6px 10px;
+            border-radius: var(--panel-radius);
+            line-height: 1.1;
+            cursor: pointer;
+            transition: background .15s ease, border-color .15s ease, box-shadow .15s ease;
+        }
+
+        /* Hover = subtle surface + “glow-ish” border (matches pin cards) */
+        button:hover,
+        .pin-controls button:hover,
+        .menu-button:hover,
+        .menu-item:hover:not([disabled]) {
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+            background: none;
+        }
+
+        /* Focus-visible = clear ring, subtle fill */
+        button:focus-visible,
+        .pin-controls button:focus-visible,
+        .menu-button:focus-visible,
+        .menu-item:focus-visible {
+            outline: none;
+            background: var(--ui-surface-hover);
+            border-color: var(--ui-border-strong);
+            box-shadow: 0 0 0 2px color-mix(in srgb, var(--ui-glow), transparent 60%), 0 0 0 1px var(--ui-border-strong) inset;
+        }
+
+        /* Disabled */
+        button[disabled],
+        .menu-item[disabled] {
+            opacity: .55;
+            cursor: default;
+        }
+
+        /* Active/toggled */
+        button[aria-pressed="true"],
+        .btn--active {
+            background: var(--ui-surface-active);
+            border-color: var(--ui-border-strong);
+            box-shadow: 0 0 0 2px color-mix(in srgb, var(--ui-glow), transparent 30%), 0 0 0 1px var(--ui-border-strong) inset;
+        }
+
+        /* Tiny icon buttons */
         .pin-controls button {
             background: none;
             border: 1px solid transparent;
-            /* transparent until hovered */
             border-radius: var(--panel-radius);
             color: inherit;
             cursor: pointer;
             font-weight: bold;
             font-size: var(--font-sm);
             padding: var(--space-xs);
-            /* a bit tighter */
         }
 
-        /* …gain a border on hover for affordance */
-        .pin-controls button:hover {
-            border-color: var(--color-primary);
-            color: var(--color-primary);
-            background: none;
-            /* keep transparent feel */
-        }
-
-        #pinEditorPanel {
-            position: absolute;
-            background: var(--color-panel);
-            border: 1px solid var(--color-border);
-            border-radius: var(--input-radius);
-            padding: var(--space-md);
-            display: none;
-            z-index: 200;
-            width: 240px;
-            font-size: var(--font-base);
-        }
-
-        #pinEditorPanel .grid-form {
+        /* 9) Forms & inputs */
+        .grid-form {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: var(--space-sm);
+            grid-template-columns: 50% 1fr;
+            gap: var(--space-md) var(--space-sm);
             align-items: center;
+            margin-bottom: var(--space-sm);
         }
 
-        #pinEditorPanel input,
-        #pinEditorPanel select,
-        #pinEditorPanel textarea {
+        .grid-form label {
+            margin: 0;
+            font-size: var(--font-md);
+        }
+
+        .grid-form input,
+        .grid-form select,
+        .grid-form textarea {
             width: 100%;
-            margin-bottom: var(--space-sm);
             padding: var(--input-padding);
+            border-radius: var(--input-radius);
+            border: 1px solid var(--color-border);
+            background-color: var(--color-input);
+            color: var(--color-text);
+            box-sizing: border-box;
+        }
+
+        .grid-form input[type="range"] {
+            background-color: var(--color-input);
+        }
+
+        .input-group {
+            display: flex;
+            gap: var(--space-sm);
+            width: 100%;
+            justify-content: right;
+        }
+
+        .input-group input {
+            flex: 1;
+        }
+
+        .is-hidden {
+            display: none !important;
+        }
+
+        select {
             background-color: var(--color-input);
             color: var(--color-text);
             border: 1px solid var(--color-border);
             border-radius: var(--input-radius);
-            box-sizing: border-box;
+            padding: var(--input-padding);
+            width: 100%;
+            height: 32px;
         }
 
+        fieldset {
+            border: 1px solid var(--color-border);
+            padding: var(--space-md);
+            gap: var(--space-sm);
+            display: flex;
+            flex-direction: column;
+        }
+
+        legend {
+            font-weight: bold;
+            color: var(--color-text-heading);
+            font-size: var(--space-lg);
+        }
+
+        /* Color input */
+        input[type="color"] {
+            inline-size: 100%;
+            block-size: 32px;
+            padding: 0;
+            background: transparent;
+            border: 1px solid var(--ui-border-quiet);
+            border-radius: var(--panel-radius);
+            transition: background .15s, border-color .15s, box-shadow .15s;
+        }
+
+        input[type="color"]:hover {
+            background: var(--ui-surface-hover);
+            border-color: var(--ui-border);
+        }
+
+        input[type="color"]:focus-visible {
+            outline: none;
+            background: var(--ui-surface-hover);
+            border-color: var(--ui-border-strong);
+            box-shadow: 0 0 0 2px color-mix(in srgb, var(--ui-glow), transparent 60%), 0 0 0 1px var(--ui-border-strong) inset;
+        }
+
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: calc(var(--panel-radius) - 2px);
+        }
+
+        /* Range slider (WebKit) */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: var(--ui-surface);
+            border: 1px solid var(--ui-border-quiet);
+            border-radius: 999px;
+            transition: background .15s, border-color .15s, box-shadow .15s;
+        }
+
+        input[type="range"]:hover {
+            background: var(--ui-surface-hover);
+            border-color: var(--ui-border);
+        }
+
+        input[type="range"]:focus-visible {
+            outline: none;
+            border-color: var(--ui-border-strong);
+            box-shadow: 0 0 0 2px color-mix(in srgb, var(--ui-glow), transparent 60%), 0 0 0 1px var(--ui-border-strong) inset;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            inline-size: 14px;
+            block-size: 14px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            border: 1px solid var(--color-text);
+            cursor: pointer;
+            transition: transform .1s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.05);
+        }
+
+        /* Range slider (Firefox) */
+        input[type="range"]::-moz-range-track,
+        input[type="range"]::-moz-range-progress {
+            height: 6px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--accent-700), var(--accent-500));
+            border: 1px solid color-mix(in oklab, var(--accent-600) 40%, rgba(255, 255, 255, .12));
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-200);
+            border: 2px solid var(--accent-600);
+            box-shadow: 0 0 8px color-mix(in oklab, var(--accent-500) 50%, transparent);
+        }
+
+        /* Checkbox */
+        input[type="checkbox"] {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            display: inline-block;
+            vertical-align: middle;
+            margin: 0;
+            padding: 0;
+            border: 1px solid var(--ui-border-quiet);
+            border-radius: var(--panel-radius);
+            background: transparent;
+            cursor: pointer;
+            position: relative;
+            transition: background .15s, border-color .15s, box-shadow .15s;
+        }
+
+        input[type="checkbox"]:hover {
+            background: var(--ui-surface-hover);
+            border-color: var(--ui-border);
+        }
+
+        input[type="checkbox"]:focus-visible {
+            outline: none;
+            background: var(--ui-surface-hover);
+            border-color: var(--ui-border-strong);
+            box-shadow: 0 0 0 2px color-mix(in srgb, var(--ui-glow), transparent 60%), 0 0 0 1px var(--ui-border-strong) inset;
+        }
+
+        input[type="checkbox"]:checked {
+            background: var(--ui-surface-active);
+            border-color: var(--ui-border-strong);
+        }
+
+        input[type="checkbox"]:checked::after {
+            content: '✔';
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            font-size: 12px;
+            line-height: 1;
+            color: var(--color-primary);
+            pointer-events: none;
+        }
+
+        /* 10) Minimap */
         .minimap-wrapper {
             position: relative;
             display: inline-block;
@@ -477,8 +882,6 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            /* distributes rows evenly down edge */
-
             align-items: flex-end;
         }
 
@@ -489,7 +892,6 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            /* distributes rows evenly down edge */
             align-items: flex-start;
         }
 
@@ -505,13 +907,11 @@
             font-weight: bold;
         }
 
+        /* 11) Overlays & context menu */
         #noMapOverlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--bg-overlay, rgba(0, 0, 0, 0.85));
+            inset: 0;
+            background: var(--bg-overlay, rgba(0, 0, 0, .85));
             color: white;
             display: flex;
             justify-content: center;
@@ -525,7 +925,7 @@
             background: var(--card-bg, #222);
             padding: 2rem;
             border-radius: var(--panel-radius);
-            box-shadow: 0 0 1rem rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 1rem rgba(0, 0, 0, .5);
         }
 
         .context-menu {
@@ -533,29 +933,28 @@
             display: none;
             background: var(--color-panel);
             border: 1px solid var(--color-border);
-            padding: 0.25em 0;
+            padding: .25em 0;
             border-radius: var(--panel-radius);
             z-index: 1000;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, .25);
             min-width: 160px;
         }
 
         .context-menu li {
-            padding: 0.5em 1em;
+            padding: .5em 1em;
             cursor: pointer;
             white-space: nowrap;
             color: var(--color-text);
-
         }
 
         .context-menu li:hover {
-            background-color: var(--color-hover-highlight);
+            background-color: var(--color-hover-highlight, var(--ui-surface-hover));
         }
 
         .context-menu button {
             display: block;
             width: 100%;
-            padding: 0.25em 0.5em;
+            padding: .25em .5em;
             text-align: left;
             background: none;
             border: none;
@@ -564,9 +963,10 @@
         }
 
         .context-menu button:hover {
-            background: var(--color-hover-highlight);
+            background: var(--color-hover-highlight, var(--ui-surface-hover));
         }
 
+        /* 12) Cursor label */
         #cursorLabel {
             position: absolute;
             color: lime;
@@ -579,143 +979,40 @@
             z-index: 10;
         }
 
-        canvas {
-            display: block;
-        }
-
-        fieldset {
-            border: 1px solid var(--color-border);
-            padding: var(--space-md);
-            gap: var(--space-sm);
-            display: flex;
-            flex-direction: column;
-        }
-
-        legend {
-            font-weight: bold;
-            color: var(--color-text-heading);
-            font-size: var(--space-lg);
-        }
-
-        select {
-            background-color: var(--color-input);
-            color: var(--color-text);
-            border: 1px solid var(--color-border);
-            border-radius: var(--input-radius);
-            padding: var(--input-padding);
-            width: 100%;
-            height: 32px;
-        }
-
-        button,
-        .btn {
-            font-size: var(--font-md);
-            background-color: var(--color-control-bg);
-            color: var(--color-text);
-            border: 1px solid var(--color-primary);
-            border-radius: var(--input-radius);
-            padding: var(--space-sm);
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        button:hover,
-        .btn:hover {
-            background-color: var(--color-primary);
-            color: black;
-        }
-
-        input[type="checkbox"] {
-            appearance: none;
-            /* Reset everything, even browser quirks */
-            width: 18px;
-            height: 18px;
-            display: inline-block;
-            vertical-align: middle;
-            margin: 0;
-            padding: 0;
-            border: 2px solid var(--color-primary);
-            border-radius: var(--input-radius);
-            background-color: var(--color-control-bg);
-            cursor: pointer;
-            position: relative;
-            justify-self: end;
-            box-sizing: border-box;
-
-        }
-
-        input[type="checkbox"]:checked::after {
-            content: '✔';
+        /* 13) Pin editor panel */
+        #pinEditorPanel {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 12px;
-            line-height: 1;
-            color: var(--color-primary);
-            pointer-events: none;
-        }
-
-        input[type="range"] {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 4px;
-            background: var(--color-grid);
-            border-radius: var(--input-radius);
-            outline: none;
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: var(--color-primary);
-            cursor: pointer;
-            border: 1px solid var(--color-text);
-        }
-
-        .grid-form {
-            display: grid;
-            grid-template-columns: 50% 1fr;
-            gap: var(--space-md) var(--space-sm);
-            align-items: center;
-            margin-bottom: var(--space-sm);
-        }
-
-        .grid-form label {
-            margin: 0;
-            font-size: var(--font-md);
-        }
-
-        .grid-form input,
-        .grid-form select,
-        .grid-form textarea {
-            width: 100%;
-            padding: var(--input-padding);
-            border-radius: var(--input-radius);
+            background: var(--color-panel);
             border: 1px solid var(--color-border);
+            border-radius: var(--input-radius);
+            padding: var(--space-md);
+            display: none;
+            z-index: 200;
+            width: 240px;
+            font-size: var(--font-base);
+        }
+
+        #pinEditorPanel .grid-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-sm);
+            align-items: center;
+        }
+
+        #pinEditorPanel input,
+        #pinEditorPanel select,
+        #pinEditorPanel textarea {
+            width: 100%;
+            margin-bottom: var(--space-sm);
+            padding: var(--input-padding);
             background-color: var(--color-input);
             color: var(--color-text);
+            border: 1px solid var(--color-border);
+            border-radius: var(--input-radius);
             box-sizing: border-box;
         }
 
-        .grid-form input[type="range"] {
-            background-color: var(--color-input);
-        }
-
-        .input-group {
-            display: flex;
-            gap: var(--space-sm);
-            width: 100%;
-            justify-content: right;
-        }
-
-        .input-group input {
-            flex: 1;
-        }
-
+        /* 14) Scrollbars */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -734,24 +1031,85 @@
             background-color: var(--color-text-heading);
             cursor: grab;
         }
+
+        /* 15) Stage (from Bonsai-inspired block you carried over) */
+        #stageWrap {
+            grid-area: stage;
+            position: relative;
+        }
+
+        #bgOverlay {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+        }
+
+        #stage {
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+        }
+
+        /* keep z-index mapping clear for canvas/HUD */
+
+        /* 16) Segmented control (Bonsai-style, tokenized) */
+        .segmented {
+            display: inline-grid;
+            grid-auto-flow: column;
+            gap: 6px;
+            padding: 6px;
+            border-radius: 10px;
+            background: color-mix(in oklab, var(--surface-2) 85%, var(--accent-900));
+            border: 1px solid color-mix(in oklab, var(--accent-600) 25%, var(--color-border));
+        }
+
+        .segmented .seg {
+            padding: .35rem .6rem;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--color-text);
+            border: 1px dashed color-mix(in oklab, var(--accent-600) 35%, var(--color-border));
+            cursor: pointer;
+            user-select: none;
+            transition: background .22s cubic-bezier(.17, .67, .2, 1), border-color .22s cubic-bezier(.17, .67, .2, 1);
+        }
+
+        .segmented .seg[aria-pressed="true"],
+        .segmented .seg.is-active {
+            background: color-mix(in oklab, var(--accent-600) 40%, var(--surface-1) 60%);
+            border: 1px solid color-mix(in oklab, var(--accent-600) 60%, var(--color-border));
+            color: var(--accent-on);
+        }
     </style>
 </head>
 
-<body data-theme="dark">
+<body>
 
     <!-- =================== 🌐 GLOBAL UI PANELS =================== -->
     <!-- UI: Settings Sidebar -->
     <div id="settings">
+        <!-- Appearance ---------------------------------------------------------- -->
         <fieldset>
             <legend>INTERFACE</legend>
             <div class="grid-form">
-                <label for="themeSelector">Theme</label>
-                <select id="themeSelector">
-                    <option value="dark" selected>Dark</option>
+                <label for="themeModeSelect">Mode</label>
+                <select id="themeModeSelect">
+                    <option value="auto">Auto (system)</option>
                     <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                </select>
+                <label for="accentSelect">Accent</label>
+                <select id="accentSelect">
+                    <option value="cyan">Cyan</option>
+                    <option value="magenta">Magenta</option>
+                    <option value="amber">Amber</option>
+                    <option value="lime">Lime</option>
+                    <option value="black">Black</option>
+                    <option value="white">White</option>
                 </select>
             </div>
         </fieldset>
+
 
         <fieldset>
             <legend>MAP SETTINGS</legend>
@@ -810,14 +1168,14 @@
 
     <!-- HUD: Top Toolbar -->
     <div id="hud">
-        <small>Current Map: <strong id="currentMapName">default</strong></small>
+        <label>Current Map: <strong id="currentMapName">default</strong></label>
         <button id="toggleCrosshair">🞔 Crosshair</button>
         <button onclick="hideSettings()">⚙️</button>
         <button onclick="hideMinimap()">🗺</button>
         <button onclick="hidePinList()">📌</button>
     </div>
 
-    <!-- Pin List: Right Sidebar -->
+    <!-- Pin List: Sidebar -->
     <div id="pinListPanel">
         <!-- ===== File menu (Pin Panel header) ===== -->
         <div class="menu-bar">
@@ -834,35 +1192,30 @@
                     <button class="menu-item" data-cmd="export">📤 Export Copy…</button>
                 </div>
             </div>
-
+            <!-- Tools Row -->
+            <div class="map-tools">
+                <button id="createNewMapBtn">+</button>
+                <button id="renameMapBtn" title="Rename map">✏️</button>
+                <button id="copyMapPath" title="Copy Map Key to Clipboard">📋</button>
+                <button id="deleteMapBtn" title="Delete map">🗑️</button>
+            </div>
             <!-- Keep the hidden Import input (used by Import menu item) -->
             <input id="importJsonInput" type="file" accept="application/json" style="display:none;">
         </div>
-        <div class="input-group">
-            <select id="mapSelector"></select>
-            <button id="createNewMapBtn">+</button>
-            <button id="renameMapBtn" title="Rename map">✏️</button>
-            <button id="copyMapPath" title="Copy Map Key to Clipboard">📋</button>
-            <button id="deleteMapBtn" title="Delete map">🗑️</button>
-        </div>
-
-        <!-- 📌 Pins Header -->
-        <div class="pin-panel-header pin-list-header">
-            <div class="pin-header-left">
-                <strong>PINS:</strong> <span id="pinCount">0</span>
-            </div>
-            <div class="pin-filters">
-                <!-- Placeholder for future filters -->
-                <!-- Example:
-      <select id="filterType">
-        <option value="">All Types</option>
-      </select> -->
-            </div>
+        <!-- Map Title Row -->
+        <div class="map-row">
+            <select id="mapSelector" title="Select a map"></select>
         </div>
 
         <!-- 📜 Scrollable Pin List -->
         <div id="pinList" class="scrollable-pin-list">
             <!-- Pins will render here -->
+        </div>
+        <!-- 📌 Pins footer -->
+        <div class="pin-panel-footer pin-list-footer">
+            <div class="pin-footer-right">
+                <strong>PINS:</strong> <span id="pinCount">0</span>
+            </div>
         </div>
     </div>
 
@@ -1124,10 +1477,6 @@
         });
 
         // =================== 🔁 DOM INITIALIZATION ===================
-        // Theme selector, canvas/context setup, resizeCanvas call, initial draw
-        document.getElementById("themeSelector").addEventListener("change", (e) => {
-            document.body.setAttribute("data-theme", e.target.value);
-        });
 
         // ===== File menu wiring =====
         (function setupFileMenu() {
@@ -2058,20 +2407,22 @@
 
         // =================== 📑 UI HELPERS + TOGGLES ===================
         // hidePinList(), resetView(), focusNextInput(), hideContextMenu()
-        function hidePinList() {
-            const panel = document.getElementById('pinListPanel');
-            panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
-            renderPinList();
-        }
-
         function hideSettings() {
-            const panel = document.getElementById('settings');
-            panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
+            const el = document.getElementById('settings');
+            if (!el) return;
+            el.classList.toggle('is-hidden');
         }
 
         function hideMinimap() {
-            const panel = document.getElementById('minimapContainer');
-            panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
+            const el = document.getElementById('minimapContainer');
+            if (!el) return;
+            el.classList.toggle('is-hidden');
+        }
+
+        function hidePinList() {
+            const el = document.getElementById('pinListPanel');
+            if (!el) return;
+            el.classList.toggle('is-hidden');
         }
 
         function resetView() {
@@ -2317,8 +2668,20 @@
                 currentMapName = importedName;
                 currentFileHandle = handle;
 
-                // Also save to localStorage so the map shows in your selector
-                saveMapAs(importedName, importedPins); // this updates selector & loads map name label
+                // ✅ keep a library entry so it appears in the selector, but DO NOT switch pins or break the link
+                localStorage.setItem(mapKey(importedName), JSON.stringify(importedPins));
+                setMapMeta(importedName, { source: 'disk', fileName: file.name });
+
+                // reflect the name & link
+                currentMapName = importedName;
+                document.getElementById("currentMapName").textContent = importedName;
+
+                // refresh selector without calling loadMap (we already set pins above)
+                loadMapNames({ autoLoadFirst: false });
+
+                // enable “Save” now that we’re linked
+                if (window.__refreshSaveState) window.__refreshSaveState();
+
                 if (importedSettings && typeof applySettingsSnapshot === "function") {
                     applySettingsSnapshot(importedSettings);
                 }
@@ -2362,14 +2725,24 @@
                 });
                 if (!handle) return;
 
+                // ✅ update link + visible name
                 currentFileHandle = handle;
-                setMapMeta(currentMapName, { source: 'disk', fileName: currentFileHandle?.name || '' });
+                const newName = handle.name.replace(/\.json$/i, '');
+                currentMapName = newName;
+                document.getElementById("currentMapName").textContent = newName;
+
+                // ✅ write/update the local library entry so the selector matches what’s on disk
+                localStorage.setItem(mapKey(newName), JSON.stringify(pins));
+                setMapMeta(newName, { source: 'disk', fileName: handle.name });
                 loadMapNames({ autoLoadFirst: false });
 
+                // state of menu buttons
                 if (window.__refreshSaveState) window.__refreshSaveState();
 
-                await saveMapToDisk(); // writes using the new handle
-            } catch (err) {
+                // finally write the file
+                await saveMapToDisk();
+            }
+            catch (err) {
                 console.warn(err);
             }
         }
@@ -2750,6 +3123,146 @@
 
         window.addEventListener("DOMContentLoaded", initApp);
 
+        (() => {
+            const html = document.documentElement;
+            const STORAGE_KEYS = {
+                mode: 'mapitmine.themeMode',   // 'auto' | 'light' | 'dark'
+                accent: 'mapitmine.accent',      // 'cyan' | 'magenta' | ...
+            };
+
+            // --- Apply functions ---------------------------------------------------
+            function applyMode(mode) {
+                if (mode === 'auto') {
+                    html.removeAttribute('data-theme');   // lets CSS @media (prefers-color-scheme) decide
+                } else {
+                    html.setAttribute('data-theme', mode); // 'light' or 'dark'
+                }
+                localStorage.setItem(STORAGE_KEYS.mode, mode);
+                reflectControls();
+            }
+
+            function applyAccent(accent) {
+                html.setAttribute('data-accent', accent);
+                localStorage.setItem(STORAGE_KEYS.accent, accent);
+                reflectControls();
+            }
+
+            // --- UI binding --------------------------------------------------------
+            function reflectControls() {
+                const mode = getCurrentMode();
+                const accent = getCurrentAccent();
+
+                // Update pressed state on segmented buttons
+                document.querySelectorAll('#themeMode .seg').forEach(btn => {
+                    btn.setAttribute('aria-pressed', String(btn.dataset.mode === mode));
+                });
+                document.querySelectorAll('#accentPick .seg').forEach(btn => {
+                    btn.setAttribute('aria-pressed', String(btn.dataset.accent === accent));
+                });
+            }
+
+            function getCurrentMode() {
+                return localStorage.getItem(STORAGE_KEYS.mode) || 'auto';
+            }
+            function getCurrentAccent() {
+                // Choose your default accent here:
+                return localStorage.getItem(STORAGE_KEYS.accent) || 'cyan';
+            }
+
+            function initThemeControls() {
+                // Click handlers for segmented controls
+                document.querySelectorAll('#themeMode .seg').forEach(btn => {
+                    btn.addEventListener('click', () => applyMode(btn.dataset.mode));
+                });
+                document.querySelectorAll('#accentPick .seg').forEach(btn => {
+                    btn.addEventListener('click', () => applyAccent(btn.dataset.accent));
+                });
+
+                // Initial state (restore from storage)
+                const savedMode = getCurrentMode();
+                const savedAccent = getCurrentAccent();
+                applyMode(savedMode);     // sets attribute + storage + reflects
+                applyAccent(savedAccent); // sets attribute + storage + reflects
+
+                // Optional: live update for system preference when in Auto
+                try {
+                    const media = window.matchMedia('(prefers-color-scheme: dark)');
+                    media.addEventListener('change', () => {
+                        if (getCurrentMode() === 'auto') applyMode('auto'); // re-apply to let CSS pick new scheme
+                    });
+                } catch (e) { /* older browsers */ }
+            }
+
+            // Kick off after DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initThemeControls);
+            } else {
+                initThemeControls();
+            }
+
+            // --- Optional: public API for your app code elsewhere ------------------
+            window.MapItTheme = {
+                setMode: applyMode,       // MapItTheme.setMode('light'|'dark'|'auto')
+                setAccent: applyAccent,   // MapItTheme.setAccent('cyan'|'amber'|...)
+                getMode: getCurrentMode,
+                getAccent: getCurrentAccent
+            };
+        })();
+
+    </script>
+    <script>
+        (function () {
+            const html = document.documentElement;
+
+            // Use the API if available (it is), otherwise write attributes directly.
+            const setMode = (m) => (window.MapItTheme ? window.MapItTheme.setMode(m) : html.setAttribute('data-theme', m === 'auto' ? '' : m));
+            const setAccent = (a) => (window.MapItTheme ? window.MapItTheme.setAccent(a) : html.setAttribute('data-accent', a));
+            const getMode = () => (window.MapItTheme ? window.MapItTheme.getMode() : (html.getAttribute('data-theme') || 'auto'));
+            const getAccent = () => (window.MapItTheme ? window.MapItTheme.getAccent() : (html.getAttribute('data-accent') || 'cyan'));
+
+            const modeSelect = document.getElementById('themeModeSelect');
+            const accentSelect = document.getElementById('accentSelect');
+            const legacyTheme = document.getElementById('themeSelector'); // optional
+
+            function reflectUI() {
+                if (modeSelect) modeSelect.value = getMode();
+                if (accentSelect) accentSelect.value = getAccent();
+                if (legacyTheme) {
+                    // When in Auto, show the system-computed result in the legacy dropdown
+                    const sysIsDark = matchMedia('(prefers-color-scheme: dark)').matches;
+                    legacyTheme.value = (getMode() === 'auto') ? (sysIsDark ? 'dark' : 'light') : getMode();
+                }
+            }
+
+            if (modeSelect) {
+                modeSelect.addEventListener('change', (e) => setMode(e.target.value));
+            }
+            if (accentSelect) {
+                accentSelect.addEventListener('change', (e) => setAccent(e.target.value));
+            }
+            if (legacyTheme) {
+                legacyTheme.addEventListener('change', (e) => {
+                    // If user flips legacy dropdown, treat it as Light/Dark (not Auto)
+                    const v = e.target.value;
+                    if (v === 'light' || v === 'dark') setMode(v);
+                });
+            }
+
+            // Initialize on load
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', reflectUI, { once: true });
+            } else {
+                reflectUI();
+            }
+
+            // Keep legacy dropdown visually in sync when Auto follows system
+            try {
+                const media = window.matchMedia('(prefers-color-scheme: dark)');
+                media.addEventListener('change', () => {
+                    if (getMode() === 'auto') reflectUI();
+                });
+            } catch (e) { }
+        })();
     </script>
 
 </body>
