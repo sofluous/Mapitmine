@@ -1,0 +1,3350 @@
+<!DOCTYPE html>
+<html lang="en" data-accent="cyan">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Minecraft Map Viewer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+        rel="stylesheet">
+    <style>
+        /* ============================================================================
+ MapItMine — Tokenized, Theme-Ready Styles (drop-in paste-over)
+ - Switch via [data-theme="light|dark"] and [data-accent="cyan|magenta|amber|lime|black|white"]
+ - Sizing/radii/layout preserved from your current CSS
+============================================================================ */
+
+        /* 0) App primitives (sizes/radii/fonts) — unchanged from your setup */
+        :root {
+            /* Spacing & type */
+            --space-xs: 4px;
+            --space-sm: 6px;
+            --space-md: 10px;
+            --space-lg: 16px;
+
+            --font-sm: 10px;
+            --font-base: 12px;
+            --font-md: 12px;
+
+            --font-ui: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Inter, "Noto Sans", "Helvetica Neue", Arial, sans-serif;
+
+            /* Radius / inputs */
+            --input-radius: 4px;
+            --panel-radius: 2px;
+            --input-padding: 6px;
+
+            /* Shadows */
+            --shadow-sm: 0 1px 1px rgba(0, 0, 0, .06);
+            --shadow-md: 0 4px 14px rgba(0, 0, 0, .08);
+
+            /* Back-compat aliases used by a few rules below */
+            --bg-header: var(--color-panel);
+            --border-color: var(--color-border);
+            --bg-selected: var(--ui-surface-active);
+        }
+
+        /* 1) Accent families (Bonsai-compatible) */
+        :root[data-accent="cyan"] {
+            --accent-100: #e4fff8;
+            --accent-200: #cafff1;
+            --accent-300: #a7ffe9;
+            --accent-400: #5df0c9;
+            --accent-500: #38ffd8;
+            --accent-600: #1ce3bf;
+            --accent-700: #12b69b;
+            --accent-800: #0b8d78;
+            --accent-900: #0a6d5d;
+            --accent-on: #021a16;
+        }
+
+        :root[data-accent="magenta"] {
+            --accent-100: #fff1fb;
+            --accent-200: #ffd5f5;
+            --accent-300: #ffc4f6;
+            --accent-400: #ff86f0;
+            --accent-500: #ff5bea;
+            --accent-600: #e544d1;
+            --accent-700: #c22eb1;
+            --accent-800: #97238a;
+            --accent-900: #701a67;
+            --accent-on: #180616;
+        }
+
+        :root[data-accent="amber"] {
+            --accent-100: #fff9e6;
+            --accent-200: #fff1cc;
+            --accent-300: #ffe8a1;
+            --accent-400: #ffd46a;
+            --accent-500: #ffcc4d;
+            --accent-600: #f2b83a;
+            --accent-700: #d19a25;
+            --accent-800: #a9791a;
+            --accent-900: #7f5914;
+            --accent-on: #0f0b02;
+        }
+
+        :root[data-accent="lime"] {
+            --accent-100: #f3ffe3;
+            --accent-200: #e7ffc8;
+            --accent-300: #e0ffb8;
+            --accent-400: #cdfb89;
+            --accent-500: #b7ff64;
+            --accent-600: #9deb49;
+            --accent-700: #79c52e;
+            --accent-800: #5a9a23;
+            --accent-900: #3f6f19;
+            --accent-on: #0b1304;
+        }
+
+        :root[data-accent="black"] {
+            --accent-100: #f5f5f5;
+            --accent-200: #e0e0e0;
+            --accent-300: #c2c2c2;
+            --accent-400: #9e9e9e;
+            --accent-500: #757575;
+            --accent-600: #555555;
+            --accent-700: #333333;
+            --accent-800: #1f1f1f;
+            --accent-900: #000000;
+            --accent-on: #ffffff;
+        }
+
+        :root[data-accent="white"] {
+            --accent-100: #ffffff;
+            --accent-200: #fafafa;
+            --accent-300: #f5f5f5;
+            --accent-400: #e0e0e0;
+            --accent-500: #cccccc;
+            --accent-600: #aaaaaa;
+            --accent-700: #888888;
+            --accent-800: #555555;
+            --accent-900: #222222;
+            --accent-on: #0b0f12;
+        }
+
+        /* 2) Theme surfaces/text/borders (maps to your role variables) */
+        :root[data-theme="dark"] {
+            /* Neutral surfaces with subtle accent tint */
+            --surface-0: #0e1115;
+            --surface-1: #0f141a;
+            --surface-2: #141a22;
+
+            --color-bg: color-mix(in oklab, var(--surface-0) 94%, var(--accent-900));
+            --color-panel: color-mix(in oklab, var(--surface-1) 94%, var(--accent-900));
+            --color-input: color-mix(in oklab, var(--surface-2) 96%, var(--accent-900));
+            --color-control-bg: transparent;
+
+            --color-text: color-mix(in oklab, var(--accent-600) 95%, transparent);
+            --color-text-heading: var(--accent-300);
+
+            --color-border: color-mix(in oklab, var(--accent-600) 18%, var(--color-panel));
+            --color-primary: var(--accent-600);
+            --color-primary-strong: var(--accent-700);
+            --color-secondary: var(--accent-400);
+
+            --ui-surface: var(--color-panel);
+            --ui-surface-hover: color-mix(in oklab, var(--ui-surface), white 4%);
+            --ui-surface-active: color-mix(in oklab, var(--color-primary), black 12%);
+            --ui-border: var(--color-border);
+            --ui-border-quiet: color-mix(in oklab, var(--color-border) 70%, transparent);
+            --ui-border-strong: color-mix(in oklab, var(--color-primary) 55%, black 40%);
+            --ui-glow: color-mix(in oklab, var(--color-primary), white 30%);
+
+            --color-grid: color-mix(in oklab, var(--accent-600) 16%, transparent);
+            --color-axis: color-mix(in oklab, var(--accent-400) 60%, transparent);
+
+            --shadow-sm: 0 1px 1.5px rgba(0, 0, 0, .5);
+            --shadow-md: 0 6px 18px rgba(0, 0, 0, .45);
+        }
+
+        :root[data-theme="light"] {
+            --surface-0: #f6f8fb;
+            --surface-1: #eef2f7;
+            --surface-2: #e7edf5;
+
+            --color-bg: color-mix(in oklab, var(--surface-0) 96%, var(--accent-200));
+            --color-panel: color-mix(in oklab, var(--surface-1) 96%, var(--accent-200));
+            --color-input: color-mix(in oklab, var(--surface-2) 96%, var(--accent-200));
+            --color-control-bg: transparent;
+
+            --color-text: color-mix(in oklab, var(--accent-900) 90%, transparent);
+            --color-text-heading: var(--accent-800);
+
+            --color-border: color-mix(in oklab, var(--accent-700) 20%, #b7c4d6);
+            --color-primary: var(--accent-700);
+            --color-primary-strong: var(--accent-800);
+            --color-secondary: var(--accent-500);
+
+            --ui-surface: var(--color-panel);
+            --ui-surface-hover: color-mix(in oklab, var(--ui-surface), black 4%);
+            --ui-surface-active: color-mix(in oklab, var(--color-primary), white 30%);
+            --ui-border: var(--color-border);
+            --ui-border-quiet: color-mix(in oklab, var(--color-border) 70%, transparent);
+            --ui-border-strong: color-mix(in oklab, var(--color-primary) 55%, black 20%);
+            --ui-glow: color-mix(in oklab, var(--color-primary), white 30%);
+
+            --color-grid: color-mix(in oklab, var(--accent-700) 14%, transparent);
+            --color-axis: color-mix(in oklab, var(--accent-700) 42%, transparent);
+
+            --shadow-sm: 0 1px 1px rgba(0, 0, 0, .06);
+            --shadow-md: 0 4px 14px rgba(0, 0, 0, .08);
+        }
+
+        /* B1) Accent fallback — if no [data-accent] is set, default to 'cyan' */
+        :root:not([data-accent]) {
+            --accent-100: #e4fff8;
+            --accent-200: #cafff1;
+            --accent-300: #a7ffe9;
+            --accent-400: #5df0c9;
+            --accent-500: #38ffd8;
+            --accent-600: #1ce3bf;
+            --accent-700: #12b69b;
+            --accent-800: #0b8d78;
+            --accent-900: #0a6d5d;
+            --accent-on: #021a16;
+        }
+
+        /* B2) Theme fallback for “Auto” on systems that prefer dark */
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme]) {
+                --surface-0: #0e1115;
+                --surface-1: #0f141a;
+                --surface-2: #141a22;
+
+                --color-bg: color-mix(in oklab, var(--surface-0) 94%, var(--accent-900));
+                --color-panel: color-mix(in oklab, var(--surface-1) 94%, var(--accent-900));
+                --color-input: color-mix(in oklab, var(--surface-2) 96%, var(--accent-900));
+                --color-control-bg: transparent;
+
+                --color-text: color-mix(in oklab, var(--accent-100) 88%, transparent);
+                --color-text-heading: var(--accent-300);
+
+                --color-border: color-mix(in oklab, var(--accent-600) 18%, var(--color-panel));
+                --color-primary: var(--accent-600);
+                --color-primary-strong: var(--accent-700);
+                --color-secondary: var(--accent-400);
+
+                --ui-surface: var(--color-panel);
+                --ui-surface-hover: color-mix(in oklab, var(--ui-surface), white 4%);
+                --ui-surface-active: color-mix(in oklab, var(--color-primary), black 12%);
+                --ui-border: var(--color-border);
+                --ui-border-quiet: color-mix(in oklab, var(--color-border) 70%, transparent);
+                --ui-border-strong: color-mix(in oklab, var(--color-primary) 55%, black 40%);
+                --ui-glow: color-mix(in oklab, var(--color-primary), white 30%);
+
+                --color-grid: color-mix(in oklab, var(--accent-600) 16%, transparent);
+                --color-axis: color-mix(in oklab, var(--accent-400) 60%, transparent);
+
+                --shadow-sm: 0 1px 1.5px rgba(0, 0, 0, .5);
+                --shadow-md: 0 6px 18px rgba(0, 0, 0, .45);
+            }
+        }
+
+        /* B3) Theme fallback for “Auto” on systems that prefer light */
+        @media (prefers-color-scheme: light) {
+            :root:not([data-theme]) {
+                --surface-0: #f6f8fb;
+                --surface-1: #eef2f7;
+                --surface-2: #e7edf5;
+
+                --color-bg: color-mix(in oklab, var(--surface-0) 96%, var(--accent-200));
+                --color-panel: color-mix(in oklab, var(--surface-1) 96%, var(--accent-200));
+                --color-input: color-mix(in oklab, var(--surface-2) 96%, var(--accent-200));
+                --color-control-bg: transparent;
+
+                --color-text: color-mix(in oklab, var(--accent-900) 90%, transparent);
+                --color-text-heading: var(--accent-800);
+
+                --color-border: color-mix(in oklab, var(--accent-700) 20%, #b7c4d6);
+                --color-primary: var(--accent-700);
+                --color-primary-strong: var(--accent-800);
+                --color-secondary: var(--accent-500);
+
+                --ui-surface: var(--color-panel);
+                --ui-surface-hover: color-mix(in oklab, var(--ui-surface), black 4%);
+                --ui-surface-active: color-mix(in oklab, var(--color-primary), white 30%);
+                --ui-border: var(--color-border);
+                --ui-border-quiet: color-mix(in oklab, var(--color-border) 70%, transparent);
+                --ui-border-strong: color-mix(in oklab, var(--color-primary) 55%, black 20%);
+                --ui-glow: color-mix(in oklab, var(--color-primary), white 30%);
+
+                --color-grid: color-mix(in oklab, var(--accent-700) 14%, transparent);
+                --color-axis: color-mix(in oklab, var(--accent-700) 42%, transparent);
+
+                --shadow-sm: 0 1px 1px rgba(0, 0, 0, .06);
+                --shadow-md: 0 4px 14px rgba(0, 0, 0, .08);
+            }
+        }
+
+
+        /* 3) Base */
+        html,
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: var(--color-bg);
+            color: var(--color-text);
+            font-family: var(--font-ui);
+        }
+
+        canvas {
+            display: block;
+        }
+
+        /* 4) Panels */
+        #settings,
+        #hud,
+        #pinListPanel {
+            padding: var(--space-md);
+            background: var(--color-panel);
+            border-radius: var(--panel-radius);
+            font-size: var(--font-md);
+        }
+
+        #settings {
+            position: fixed;
+            top: var(--space-md);
+            right: var(--space-md);
+            z-index: 100;
+            max-width: 100%;
+            min-width: 0;
+            max-height: 95vh;
+            overflow-y: auto;
+            width: 260px;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+
+        #hud {
+            position: fixed;
+            top: var(--space-md);
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--color-text);
+            z-index: 200;
+            display: flex;
+            gap: var(--space-md);
+            align-items: center;
+        }
+
+        #pinListPanel {
+            position: fixed;
+            top: var(--space-md);
+            left: var(--space-md);
+            display: flex;
+            flex-direction: column;
+            height: 95vh;
+            width: 300px;
+            color: var(--color-text);
+            z-index: 300;
+            overflow: hidden;
+            gap: var(--space-md);
+        }
+
+        /* 5) Menu */
+        .menu-bar {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .menu {
+            position: relative;
+        }
+
+        .menu-button {
+            background: var(--color-control-bg);
+            border: 1px solid var(--color-border);
+            padding: 4px 8px;
+            border-radius: var(--panel-radius);
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .menu-button:hover {
+            border-color: var(--color-primary);
+        }
+
+        .menu-dropdown {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            min-width: 220px;
+            background: var(--color-panel);
+            border: 1px solid var(--color-border);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+            padding: 0;
+            z-index: 10000;
+            display: none;
+        }
+
+        .menu.open .menu-dropdown {
+            display: block;
+            background: var(--color-panel);
+        }
+
+        .menu-item {
+            display: block;
+            width: 100%;
+            text-align: left;
+            background: transparent;
+            border: 1px solid transparent;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: var(--font-md);
+        }
+
+        .menu-item[disabled] {
+            opacity: .5;
+            cursor: default;
+        }
+
+        .menu-item:hover:not([disabled]) {
+            background: var(--color-hover-highlight, var(--ui-surface-hover));
+        }
+
+        .menu-separator {
+            background: var(--color-border);
+            margin: 6px 0;
+        }
+
+        /* 6) Pin panel footer */
+        .pin-panel-footer {
+            padding: var(--space-sm);
+            background: var(--bg-header);
+            display: flex;
+            align-items: center;
+            gap: .5em;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+
+        .pin-list-footer {
+            justify-content: right;
+        }
+
+        #hidePinListBtn {
+            position: absolute;
+            top: var(--space-md);
+            right: calc(260px + var(--space-lg));
+            z-index: 11;
+        }
+
+        .pin-footer-right {
+            display: flex;
+            align-items: right;
+            gap: .3em;
+        }
+
+        .pin-filters {
+            display: flex;
+            gap: .3em;
+        }
+
+        /* 7) Pin list & cards */
+        .scrollable-pin-list {
+            overflow-y: auto;
+            flex-grow: 1;
+            padding: none;
+            border: 1px solid var(--color-border);
+            flex-direction: column;
+        }
+
+        .pin-card {
+            position: relative;
+            padding: var(--space-sm);
+            background-color: var(--color-control-bg);
+            border: 1px solid var(--color-border);
+            font-size: var(--font-md);
+        }
+
+        .pin-card:hover,
+        .pin-card.hovered {
+            border: 1px solid var(--color-primary);
+            background-color: var(--color-hover-highlight, var(--ui-surface-hover));
+        }
+
+        /* FIX: outline follows theme primary (replaces hardcoded orange) */
+        .pin-card.selected {
+            outline: 2px solid var(--color-primary);
+            background-color: var(--bg-selected);
+        }
+
+        .pin-card-content {
+            display: flex;
+            flex-direction: column;
+            align-items: left;
+            gap: 8px;
+        }
+
+        .pin-card-header {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            font-size: var(--font-md);
+            opacity: .75;
+        }
+
+        .pin-card-body {
+            display: flex;
+            flex-direction: row;
+            gap: var(--space-sm);
+            justify-content: left;
+            line-height: 1.2;
+        }
+
+        .pin-card-row {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .pin-icon {
+            display: flex;
+            font-size: 24px;
+            align-self: stretch;
+            line-height: 1;
+        }
+
+        .pin-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .pin-label {
+            font-weight: bold;
+        }
+
+        .pin-tag {
+            font-size: var(--font-sm);
+            opacity: .8;
+        }
+
+        .pin-date-footer {
+            position: absolute;
+            right: var(--space-sm);
+            bottom: var(--space-sm);
+            font-size: var(--font-sm);
+            opacity: .75;
+        }
+
+        /* Pin-card inline controls */
+        .pin-controls {
+            position: absolute;
+            top: var(--space-xs);
+            right: var(--space-xs);
+            display: flex;
+            gap: 0;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 120ms ease;
+            margin-top: 0;
+            justify-content: flex-end;
+        }
+
+        .pin-card:hover .pin-controls,
+        .pin-card:focus-within .pin-controls {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* 8) Buttons (ghost baseline) */
+        button,
+        .menu-button,
+        .menu-item {
+            appearance: none;
+            background: transparent;
+            border: 1px solid var(--ui-border-quiet);
+            color: var(--color-text);
+            padding: 6px 10px;
+            border-radius: var(--panel-radius);
+            line-height: 1.1;
+            cursor: pointer;
+            transition: background .15s ease, border-color .15s ease, box-shadow .15s ease;
+        }
+
+        /* Hover = subtle surface + “glow-ish” border (matches pin cards) */
+        button:hover,
+        .pin-controls button:hover,
+        .menu-button:hover,
+        .menu-item:hover:not([disabled]) {
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+            background: none;
+        }
+
+        /* Focus-visible = clear ring, subtle fill */
+        button:focus-visible,
+        .pin-controls button:focus-visible,
+        .menu-button:focus-visible,
+        .menu-item:focus-visible {
+            outline: none;
+            background: var(--ui-surface-hover);
+            border-color: var(--ui-border-strong);
+            box-shadow: 0 0 0 2px color-mix(in srgb, var(--ui-glow), transparent 60%), 0 0 0 1px var(--ui-border-strong) inset;
+        }
+
+        /* Disabled */
+        button[disabled],
+        .menu-item[disabled] {
+            opacity: .55;
+            cursor: default;
+        }
+
+        /* Active/toggled */
+        button[aria-pressed="true"],
+        .btn--active {
+            background: var(--ui-surface-active);
+            border-color: var(--ui-border-strong);
+            box-shadow: 0 0 0 2px color-mix(in srgb, var(--ui-glow), transparent 30%), 0 0 0 1px var(--ui-border-strong) inset;
+        }
+
+        /* Tiny icon buttons */
+        .pin-controls button {
+            background: none;
+            border: 1px solid transparent;
+            border-radius: var(--panel-radius);
+            color: inherit;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: var(--font-sm);
+            padding: var(--space-xs);
+        }
+
+        /* 9) Forms & inputs */
+        .grid-form {
+            display: grid;
+            grid-template-columns: 50% 1fr;
+            gap: var(--space-md) var(--space-sm);
+            align-items: center;
+            margin-bottom: var(--space-sm);
+        }
+
+        .grid-form label {
+            margin: 0;
+            font-size: var(--font-md);
+        }
+
+        .grid-form input,
+        .grid-form select,
+        .grid-form textarea {
+            width: 100%;
+            padding: var(--input-padding);
+            border-radius: var(--input-radius);
+            border: 1px solid var(--color-border);
+            background-color: var(--color-input);
+            color: var(--color-text);
+            box-sizing: border-box;
+        }
+
+        .grid-form input[type="range"] {
+            background-color: var(--color-input);
+        }
+
+        .input-group {
+            display: flex;
+            gap: var(--space-sm);
+            width: 100%;
+            justify-content: right;
+        }
+
+        .input-group input {
+            flex: 1;
+        }
+
+        .is-hidden {
+            display: none !important;
+        }
+
+        select {
+            background-color: var(--color-input);
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+            border-radius: var(--input-radius);
+            padding: var(--input-padding);
+            width: 100%;
+            height: 32px;
+        }
+
+        fieldset {
+            border: 1px solid var(--color-border);
+            padding: var(--space-md);
+            gap: var(--space-sm);
+            display: flex;
+            flex-direction: column;
+        }
+
+        legend {
+            font-weight: bold;
+            color: var(--color-text-heading);
+            font-size: var(--space-lg);
+        }
+
+        /* Color input */
+        input[type="color"] {
+            inline-size: 100%;
+            block-size: 32px;
+            padding: 0;
+            background: transparent;
+            border: 1px solid var(--ui-border-quiet);
+            border-radius: var(--panel-radius);
+            transition: background .15s, border-color .15s, box-shadow .15s;
+        }
+
+        input[type="color"]:hover {
+            background: var(--ui-surface-hover);
+            border-color: var(--ui-border);
+        }
+
+        input[type="color"]:focus-visible {
+            outline: none;
+            background: var(--ui-surface-hover);
+            border-color: var(--ui-border-strong);
+            box-shadow: 0 0 0 2px color-mix(in srgb, var(--ui-glow), transparent 60%), 0 0 0 1px var(--ui-border-strong) inset;
+        }
+
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: calc(var(--panel-radius) - 2px);
+        }
+
+        /* Range slider (WebKit) */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: var(--ui-surface);
+            border: 1px solid var(--ui-border-quiet);
+            border-radius: 999px;
+            transition: background .15s, border-color .15s, box-shadow .15s;
+        }
+
+        input[type="range"]:hover {
+            background: var(--ui-surface-hover);
+            border-color: var(--ui-border);
+        }
+
+        input[type="range"]:focus-visible {
+            outline: none;
+            border-color: var(--ui-border-strong);
+            box-shadow: 0 0 0 2px color-mix(in srgb, var(--ui-glow), transparent 60%), 0 0 0 1px var(--ui-border-strong) inset;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            inline-size: 14px;
+            block-size: 14px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            border: 1px solid var(--color-text);
+            cursor: pointer;
+            transition: transform .1s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.05);
+        }
+
+        /* Range slider (Firefox) */
+        input[type="range"]::-moz-range-track,
+        input[type="range"]::-moz-range-progress {
+            height: 6px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--accent-700), var(--accent-500));
+            border: 1px solid color-mix(in oklab, var(--accent-600) 40%, rgba(255, 255, 255, .12));
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-200);
+            border: 2px solid var(--accent-600);
+            box-shadow: 0 0 8px color-mix(in oklab, var(--accent-500) 50%, transparent);
+        }
+
+        /* Checkbox */
+        input[type="checkbox"] {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            display: inline-block;
+            vertical-align: middle;
+            margin: 0;
+            padding: 0;
+            border: 1px solid var(--ui-border-quiet);
+            border-radius: var(--panel-radius);
+            background: transparent;
+            cursor: pointer;
+            position: relative;
+            transition: background .15s, border-color .15s, box-shadow .15s;
+        }
+
+        input[type="checkbox"]:hover {
+            background: var(--ui-surface-hover);
+            border-color: var(--ui-border);
+        }
+
+        input[type="checkbox"]:focus-visible {
+            outline: none;
+            background: var(--ui-surface-hover);
+            border-color: var(--ui-border-strong);
+            box-shadow: 0 0 0 2px color-mix(in srgb, var(--ui-glow), transparent 60%), 0 0 0 1px var(--ui-border-strong) inset;
+        }
+
+        input[type="checkbox"]:checked {
+            background: var(--ui-surface-active);
+            border-color: var(--ui-border-strong);
+        }
+
+        input[type="checkbox"]:checked::after {
+            content: '✔';
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            font-size: 12px;
+            line-height: 1;
+            color: var(--color-primary);
+            pointer-events: none;
+        }
+
+        /* 10) Minimap */
+        .minimap-wrapper {
+            position: relative;
+            display: inline-block;
+            margin: 20px;
+        }
+
+        #minimapContainer {
+            position: fixed;
+            bottom: var(--space-md);
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 200px;
+            border: 1px solid var(--color-border);
+            background-color: var(--color-panel);
+            box-shadow: var(--shadow-md);
+            z-index: 100;
+        }
+
+        #minimapCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        #minimapOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .minimap-label-group {
+            position: absolute;
+            display: flex;
+            gap: 6px;
+        }
+
+        .minimap-label-group.top {
+            top: -28px;
+            left: 0;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .minimap-label-group.bottom {
+            bottom: -28px;
+            left: 0;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .minimap-label-group.left {
+            left: -36px;
+            top: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .minimap-label-group.right {
+            right: -34px;
+            top: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .label-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 10px;
+            text-align: center;
+        }
+
+        .label-header {
+            font-weight: bold;
+        }
+
+        /* 11) Overlays & context menu */
+        #noMapOverlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-overlay, rgba(0, 0, 0, .85));
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            text-align: center;
+            backdrop-filter: blur(3px);
+        }
+
+        #noMapOverlay .overlay-content {
+            background: var(--card-bg, #222);
+            padding: 2rem;
+            border-radius: var(--panel-radius);
+            box-shadow: 0 0 1rem rgba(0, 0, 0, .5);
+        }
+
+        .context-menu {
+            position: fixed;
+            display: none;
+            background: var(--color-panel);
+            border: 1px solid var(--color-border);
+            padding: .25em 0;
+            border-radius: var(--panel-radius);
+            z-index: 1000;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, .25);
+            min-width: 160px;
+        }
+
+        .context-menu li {
+            padding: .5em 1em;
+            cursor: pointer;
+            white-space: nowrap;
+            color: var(--color-text);
+        }
+
+        .context-menu li:hover {
+            background-color: var(--color-hover-highlight, var(--ui-surface-hover));
+        }
+
+        .context-menu button {
+            display: block;
+            width: 100%;
+            padding: .25em .5em;
+            text-align: left;
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+        }
+
+        .context-menu button:hover {
+            background: var(--color-hover-highlight, var(--ui-surface-hover));
+        }
+
+        /* 12) Cursor label */
+        #cursorLabel {
+            position: absolute;
+            color: lime;
+            background: var(--color-panel);
+            padding: 2px 6px;
+            font-size: var(--font-md);
+            border-radius: 4px;
+            pointer-events: none;
+            display: none;
+            z-index: 10;
+        }
+
+        /* 13) Pin editor panel */
+        #pinEditorPanel {
+            position: absolute;
+            background: var(--color-panel);
+            border: 1px solid var(--color-border);
+            border-radius: var(--input-radius);
+            padding: var(--space-md);
+            display: none;
+            z-index: 200;
+            width: 240px;
+            font-size: var(--font-base);
+        }
+
+        #pinEditorPanel .grid-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-sm);
+            align-items: center;
+        }
+
+        #pinEditorPanel input,
+        #pinEditorPanel select,
+        #pinEditorPanel textarea {
+            width: 100%;
+            margin-bottom: var(--space-sm);
+            padding: var(--input-padding);
+            background-color: var(--color-input);
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+            border-radius: var(--input-radius);
+            box-sizing: border-box;
+        }
+
+        /* 14) Scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: transparent;
+            border: 1px solid var(--color-text-heading);
+            border-radius: var(--input-radius);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: var(--color-text-heading);
+            cursor: grab;
+        }
+
+        /* 15) Stage (from Bonsai-inspired block you carried over) */
+        #stageWrap {
+            grid-area: stage;
+            position: relative;
+        }
+
+        #bgOverlay {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+        }
+
+        #stage {
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+        }
+
+        /* keep z-index mapping clear for canvas/HUD */
+
+        /* 16) Segmented control (Bonsai-style, tokenized) */
+        .segmented {
+            display: inline-grid;
+            grid-auto-flow: column;
+            gap: 6px;
+            padding: 6px;
+            border-radius: 10px;
+            background: color-mix(in oklab, var(--surface-2) 85%, var(--accent-900));
+            border: 1px solid color-mix(in oklab, var(--accent-600) 25%, var(--color-border));
+        }
+
+        .segmented .seg {
+            padding: .35rem .6rem;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--color-text);
+            border: 1px dashed color-mix(in oklab, var(--accent-600) 35%, var(--color-border));
+            cursor: pointer;
+            user-select: none;
+            transition: background .22s cubic-bezier(.17, .67, .2, 1), border-color .22s cubic-bezier(.17, .67, .2, 1);
+        }
+
+        .segmented .seg[aria-pressed="true"],
+        .segmented .seg.is-active {
+            background: color-mix(in oklab, var(--accent-600) 40%, var(--surface-1) 60%);
+            border: 1px solid color-mix(in oklab, var(--accent-600) 60%, var(--color-border));
+            color: var(--accent-on);
+        }
+
+        .map-status {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-top: 6px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            border: 1px solid var(--ui-border);
+            background: var(--ui-surface);
+        }
+
+        .badge--linked {
+            border-color: color-mix(in oklab, var(--color-primary) 50%, var(--ui-border));
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- =================== 🌐 GLOBAL UI PANELS =================== -->
+    <!-- UI: Settings Sidebar -->
+    <div id="settings">
+        <!-- Appearance ---------------------------------------------------------- -->
+        <fieldset>
+            <legend>INTERFACE</legend>
+            <div class="grid-form">
+                <label for="themeModeSelect">Mode</label>
+                <select id="themeModeSelect">
+                    <option value="auto">Auto (system)</option>
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                </select>
+                <label for="accentSelect">Accent</label>
+                <select id="accentSelect">
+                    <option value="cyan">Cyan</option>
+                    <option value="magenta">Magenta</option>
+                    <option value="amber">Amber</option>
+                    <option value="lime">Lime</option>
+                    <option value="black">Black</option>
+                    <option value="white">White</option>
+                </select>
+            </div>
+        </fieldset>
+
+
+        <fieldset>
+            <legend>MAP</legend>
+            <div class="grid-form">
+                <label for="zoom">Zoom</label>
+                <input type="range" id="zoom" min="0.25" max="5" step="0.01" value="1">
+                <label for="textScale">Scale Text</label>
+                <div class="input-group">
+                    <input type="checkbox" id="useTextScale"></label>
+                    <input type="range" id="textScale" min="0.5" max="5" step="0.1" value="1">
+                </div>
+                <label for="minX">X Range</label>
+                <div class="input-group">
+                    <input type="number" id="minX" placeholder="Min">
+                    <input type="number" id="maxX" placeholder="Max">
+                </div>
+                <label for="minZ">Z Range</label>
+                <div class="input-group">
+                    <input type="number" id="minZ" placeholder="Min">
+                    <input type="number" id="maxZ" placeholder="Max">
+                </div>
+                <label for="bgColor">Background</label>
+                <input type="color" id="bgColor" value="#0a0f0a">
+                <label for="gridColor">Grid Color</label>
+                <input type="color" id="gridColor" value="#19241C">
+                <label for="gridSpacing">Grid Spacing</label>
+                <input type="number" id="gridSpacing" value="100" step="10">
+                <label for="showAxes">Show Axis</label>
+                <input type="checkbox" id="showAxes" checked>
+                <label for="showLabelBackground">Label BG</label>
+                <input type="checkbox" id="showLabelBackground">
+            </div>
+            <button onclick="resetView()">Reset View</button>
+        </fieldset>
+
+        <fieldset>
+            <legend>LABELS</legend>
+            <div class="grid-form">
+                <label for="showGrid">Grid</label>
+                <input type="checkbox" id="showGrid" checked>
+                <label for="showMiniGrid">Minimap Grid</label>
+                <input type="checkbox" id="showMiniGrid" checked />
+                <label for="showIcons">Icons</label>
+                <input type="checkbox" id="showIcons" checked>
+                <label for="showText">Text</label>
+                <input type="checkbox" id="showText" checked>
+                <label for="showCoords">Coordinates</label>
+                <input type="checkbox" id="showCoords" checked>
+                <label for="showDescription">Description</label>
+                <input type="checkbox" id="showDescription" checked>
+                <label for="showTags">Tags</label>
+                <input type="checkbox" id="showTags" checked>
+            </div>
+        </fieldset>
+    </div>
+
+    <!-- HUD: Top Toolbar -->
+    <div id="hud">
+        <label>Current Map: <strong id="currentMapName">default</strong></label>
+        <button id="toggleCrosshair">🞔 Crosshair</button>
+        <button onclick="hideSettings()">⚙️</button>
+        <button onclick="hideMinimap()">🗺</button>
+        <button onclick="hidePinList()">📌</button>
+    </div>
+
+    <!-- Pin List: Sidebar -->
+    <div id="pinListPanel">
+        <!-- ===== File menu (Pin Panel header) ===== -->
+        <div class="menu-bar">
+            <div class="menu" id="fileMenu">
+                <button class="menu-button" id="fileMenuBtn">File ▾</button>
+                <div class="menu-dropdown" id="fileMenuDropdown" aria-labelledby="fileMenuBtn">
+                    <button class="menu-item" data-cmd="open">📂 Open…</button>
+                    <button class="menu-item" data-cmd="save" id="menuSave" disabled>💾 Save</button>
+                    <button class="menu-item" data-cmd="saveas" id="menuSaveAs" disabled>📝 Save As…</button>
+
+                    <div class="menu-separator"></div>
+
+                    <button class="menu-item" data-cmd="import">📥 Import Copy…</button>
+                    <button class="menu-item" data-cmd="export">📤 Export Copy…</button>
+                </div>
+            </div>
+            <!-- Tools Row -->
+            <div class="map-tools">
+                <button id="createNewMapBtn">+</button>
+                <button id="renameMapBtn" title="Rename map">✏️</button>
+                <button id="copyMapPath" title="Copy Map Key to Clipboard">📋</button>
+                <button id="deleteMapBtn" title="Delete map">🗑️</button>
+            </div>
+            <!-- Keep the hidden Import input (used by Import menu item) -->
+            <input id="importJsonInput" type="file" accept="application/json" style="display:none;">
+        </div>
+        <!-- Map Title Row -->
+        <div class="map-row">
+            <select id="mapSelector" title="Select a map"></select>
+        </div>
+        <!-- Map status row -->
+        <div id="mapStatus" class="map-status">
+            <span id="mapLinkBadge" class="badge">⚠️ Not Saved</span>
+            <button id="linkNowBtn" class="menu-button" title="Save this map to a file">Save As…</button>
+        </div>
+
+        <!-- 📜 Scrollable Pin List -->
+        <div id="pinList" class="scrollable-pin-list">
+            <!-- Pins will render here -->
+        </div>
+        <!-- 📌 Pins footer -->
+        <div class="pin-panel-footer pin-list-footer">
+            <div class="pin-footer-right">
+                <strong>PINS:</strong> <span id="pinCount">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pin Editor -->
+    <div id="pinEditorPanel">
+        <div class="grid-form">
+            <div class="input-group" style="grid-column: span 2;">
+                <select id="pinEditorID"></select>
+                <select id="pinEditorIcon"></select>
+                <input type="color" id="pinEditorColor" value="#ffcc00">
+            </div>
+            <div class="input-group" style="grid-column: span 2;">
+                <input type="number" id="pinEditorX" placeholder="X">
+                <input type="number" id="pinEditorY" placeholder="Y">
+                <input type="number" id="pinEditorZ" placeholder="Z">
+            </div>
+            <input type="text" id="pinEditorLabel" placeholder="Enter a label" style="grid-column: span 2;">
+            <textarea id="pinEditorDescription" placeholder="Enter details or notes"
+                style="grid-column: span 2;"></textarea>
+        </div>
+        <div class="input-group" style="grid-column: span 2;">
+            <button onclick="closePinEditor()">Cancel</button>
+            <button onclick="submitPinEditor()">Save</button>
+        </div>
+    </div>
+
+    <!-- Minimap and Labels -->
+    <div id="minimapContainer" class="minimap-wrapper">
+        <canvas id="minimapCanvas" width="200" height="200"></canvas>
+
+        <div class="minimap-label-group top">
+            <div class="label-column">
+                <span class="label-header">World</span>
+                <span id="worldMinX" class="label-value"></span>
+            </div>
+            <div class="label-column">
+                <span class="label-header">View</span>
+                <span id="viewMinX" class="label-value"></span>
+            </div>
+            <div class="label-column">
+                <span class="label-header">Crop</span>
+                <span id="cropMinX" class="label-value"></span>
+            </div>
+        </div>
+
+        <div class="minimap-label-group right">
+            <div class="label-column">
+                <span class="label-header">Crop</span>
+                <span id="cropMaxZ" class="label-value"></span>
+            </div>
+            <div class="label-column">
+                <span class="label-header">View</span>
+                <span id="viewMaxZ" class="label-value"></span>
+            </div>
+
+            <div class="label-column">
+                <span class="label-header">World</span>
+                <span id="worldMaxZ" class="label-value"></span>
+            </div>
+        </div>
+
+        <div class="minimap-label-group left">
+            <div class="label-column">
+                <span class="label-header">World</span>
+                <span id="worldMinZ" class="label-value"></span>
+            </div>
+            <div class="label-column">
+                <span class="label-header">View</span>
+                <span id="viewMinZ" class="label-value"></span>
+            </div>
+            <div class="label-column">
+                <span class="label-header">Crop</span>
+                <span id="cropMinZ" class="label-value"></span>
+            </div>
+
+        </div>
+
+        <div class="minimap-label-group bottom">
+            <div class="label-column">
+                <span class="label-header">Crop</span>
+                <span id="cropMaxX" class="label-value"></span>
+            </div>
+            <div class="label-column">
+                <span class="label-header">View</span>
+                <span id="viewMaxX" class="label-value"></span>
+            </div>
+            <div class="label-column">
+                <span class="label-header">World</span>
+                <span id="worldMaxX" class="label-value"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- No Map Overlay Screen -->
+    <div id="noMapOverlay" class="overlay" style="display: none;">
+        <div class="overlay-content">
+            <h2>No Maps Exist</h2>
+            <p>Create or import a map to get started.</p>
+            <button onclick="triggerNewMap()">+ Create New Map</button>
+            <button onclick="triggerImportMap()">📥 Import Map</button>
+        </div>
+    </div>
+
+    <!-- Context Menu -->
+    <div id="contextMenu" class="context-menu">
+        <ul id="contextMenuItems"></ul>
+    </div>
+
+    <!-- Canvas (Main Map) -->
+    <canvas id="mapCanvas"></canvas>
+    <div id="cursorLabel"></div>
+
+    <script>
+
+        // =================== 🌍 GLOBAL VARIABLES ===================
+        // canvas, context, zoom, offset, pins, pinTypes, minimap settings...
+        let currentFileHandle = null; // set when you use Open or Save As
+
+        let __dirty = false;
+        function markDirty() { __dirty = true; }
+        function clearDirty() { __dirty = false; }
+
+
+        const canvas = document.getElementById("mapCanvas");
+        const ctx = canvas.getContext("2d");
+
+        canvas.addEventListener("dblclick", (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+            pins.forEach((pin, i) => {
+                const sx = offsetX + pin.x * zoom;
+                const sy = offsetY + pin.z * zoom;
+                const dx = mx - sx, dy = my - sy;
+                if (Math.sqrt(dx * dx + dy * dy) < 10) {
+                    selectedPinIndex = i;
+                    updatePinListHighlight();
+                    editPin(i);
+                }
+            });
+        });
+
+        let textScale = 1;
+
+        let width = 0;
+        let height = 0;
+        let offsetX = 0;
+        let offsetY = 0;
+        let zoom = 1;
+        let initializedCamera = false;
+
+        let contextWorldX = 0;
+        let contextWorldZ = 0;
+
+        let panStart = {}, isPanning = false;
+
+        let pins = [
+            { x: 0, z: 0, y: 64, id: "spawn", label: "Spawn Point", description: "Where you begin.", icon: "" },
+        ];
+        let currentEditIndex = null;
+        let isPlacingPin = false;
+        let tempPin = null;
+        let tempPinScreenX = 0;
+        let tempPinScreenY = 0;
+        let hoveredPinIndex = null;
+        let selectedPinIndex = null;
+        let crosshairMode = false;
+
+        let contextMenuPinIndex = null;
+        let lastCursor = { x: 0, z: 0 };
+
+        let crosshairX = 0;
+        let crosshairY = 0;
+
+
+        const minimapCanvas = document.getElementById("minimapCanvas");
+        const minimapCtx = minimapCanvas.getContext("2d");
+        const minimapSize = 200;
+
+        const worldMinX = -30000;
+        const worldMaxX = 30000;
+        const worldMinZ = -30000;
+        const worldMaxZ = 30000;
+
+        const pinTypes = [
+            { id: 'spawn', label: 'Spawn', icon: '⭐', category: 'Special' },
+            { id: 'bed', label: 'Bed', icon: '🛏️', category: 'Special' },
+            { id: 'home', label: 'Home Base', icon: '🏡', category: 'Settlements' },
+            { id: 'village', label: 'Village', icon: '🏘️', category: 'Settlements' },
+            { id: 'farm', label: 'Farm', icon: '🌾', category: 'Settlements' },
+            { id: 'mine', label: 'Mine Entrance', icon: '⛏️', category: 'Structures' },
+            { id: 'portal', label: 'Nether Portal', icon: '🌀', category: 'Structures' },
+            { id: 'stronghold', label: 'Stronghold', icon: '🏰', category: 'Structures' },
+            { id: 'ruins', label: 'Ruins', icon: '⚰️', category: 'Structures' },
+            { id: 'tower', label: 'Tower', icon: '🗼', category: 'Structures' },
+            { id: 'beacon', label: 'Beacon', icon: '💎', category: 'Special' },
+            { id: 'sign', label: 'Signpost', icon: '🪧', category: 'Special' },
+            { id: 'danger', label: 'Danger', icon: '☠️', category: 'Warnings' },
+            { id: 'treasure', label: 'Treasure', icon: '🪙', category: 'Warnings' }
+        ];
+        const quickPinContextItems = pinTypes.map(pt => ({
+            label: `${pt.icon} ${pt.label}`,
+            action: () => startPinPlacement(pt.id)
+        }));
+
+        let currentMapName = "default";
+        let mapData = {};
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'p') {
+                isPlacingPin = true;
+                document.body.style.cursor = 'crosshair';
+            }
+        });
+
+        document.getElementById("renameMapBtn").addEventListener("click", () => {
+            if (!currentMapName) return alert("No map selected.");
+
+            const newName = prompt("Enter a new name for the map:", currentMapName);
+            if (!newName || newName.trim() === "") return;
+
+            const trimmed = newName.trim();
+            if (localStorage.getItem(`map:${trimmed}`)) {
+                alert("A map with that name already exists.");
+                return;
+            }
+
+            if (currentMapName === "__new__" || !currentMapName) {
+                alert("Please select a valid map to rename.");
+                return;
+            }
+
+            // Copy and delete old map
+            const data = localStorage.getItem(`map:${currentMapName}`);
+            localStorage.setItem(`map:${trimmed}`, data);
+            localStorage.removeItem(`map:${currentMapName}`);
+            currentMapName = trimmed;
+            loadMapNames({ autoLoadFirst: false });
+            loadMap(currentMapName);
+        });
+
+        document.getElementById("deleteMapBtn").addEventListener("click", () => {
+            if (!currentMapName) return;
+
+            const confirmDelete = confirm(`Delete "${currentMapName}"?`);
+            if (!confirmDelete) return;
+
+            localStorage.removeItem(`map:${currentMapName}`);
+
+            const remaining = Object.keys(localStorage)
+                .filter(k => k.startsWith("map:"))
+                .map(k => k.slice(4));
+
+            if (remaining.length > 0) {
+                currentMapName = remaining[0];
+                loadMapNames();
+                loadMap(currentMapName);
+            } else {
+                currentMapName = null;
+                pins = [];
+                loadMapNames();
+                updateOverlayVisibility();
+            }
+        });
+
+        // =================== 🔁 DOM INITIALIZATION ===================
+
+        // ===== File menu wiring =====
+        (function setupFileMenu() {
+            const menu = document.getElementById('fileMenu');
+            const btn = document.getElementById('fileMenuBtn');
+            const dd = document.getElementById('fileMenuDropdown');
+            const saveBtn = document.getElementById('menuSave');
+            const saveAsBtn = document.getElementById('menuSaveAs');
+
+            if (!menu || !btn || !dd) return;
+
+            // Toggle dropdown
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                menu.classList.toggle('open');
+            });
+
+            // Close on outside click / Esc
+            window.addEventListener('click', () => menu.classList.remove('open'));
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') menu.classList.remove('open');
+            });
+
+            // Command dispatch
+            dd.addEventListener('click', (e) => {
+                const item = e.target.closest('.menu-item');
+                if (!item || item.disabled) return;
+
+                const cmd = item.dataset.cmd;
+                menu.classList.remove('open'); // close after click
+
+                switch (cmd) {
+                    case 'open':
+                        openMapFromDisk();
+                        break;
+                    case 'save':
+                        saveMapToDisk();
+                        break;
+                    case 'saveas':
+                        saveAsMapToDisk();
+                        break;
+                    case 'import': {
+                        const input = document.getElementById('importJsonInput');
+                        if (input) input.click();
+                        break;
+                    }
+                    case 'export':
+                        exportCurrentMap();
+                        break;
+                }
+            });
+
+            // Keep Save/Save As enabled state in sync with file link
+            function refreshSaveState() {
+                const linked = (typeof currentFileHandle !== 'undefined') && !!currentFileHandle;
+                saveBtn.disabled = !linked;
+                saveAsBtn.disabled = !window.showSaveFilePicker;
+                if (window.__reflectLinkUI) window.__reflectLinkUI();
+            }
+
+            // Expose a hook you can call elsewhere (after Open/Save As)
+            window.__refreshSaveState = refreshSaveState;
+            refreshSaveState();
+        })();
+
+        // ===== Linked/Unlinked status UI =====
+        function reflectLinkUI() {
+            const badge = document.getElementById('mapLinkBadge');
+            const saveBtn = document.getElementById('menuSave');     // in File menu
+            const saveAsBtn = document.getElementById('menuSaveAs'); // in File menu
+            const linked = !!currentFileHandle;
+
+            if (badge) {
+                if (linked) {
+                    badge.textContent = `📂 Linked: ${currentFileHandle.name || (currentMapName + '.json')}`;
+                    badge.classList.add('badge--linked');
+                } else {
+                    badge.textContent = '⚠️ Not Saved';
+                    badge.classList.remove('badge--linked');
+                }
+            }
+
+            // keep File menu buttons in sync too
+            if (saveBtn) saveBtn.disabled = !linked;
+            if (saveAsBtn) saveAsBtn.disabled = !window.showSaveFilePicker;
+        }
+
+        // Click → Save As…
+        const linkBtn = document.getElementById('linkNowBtn');
+        if (linkBtn) linkBtn.addEventListener('click', () => saveAsMapToDisk());
+
+        // make this callable from elsewhere
+        window.__reflectLinkUI = reflectLinkUI;
+
+        // =================== 📦 LOCAL STORAGE: MAP LOADING & SAVING ===================
+        // saveCurrentMap, loadMap, loadMapNames, triggerNewMap
+        let _diskSaveTimer = null;
+        function queueDiskSave() {
+            if (!currentFileHandle) return; // only if a file is open
+            clearTimeout(_diskSaveTimer);
+            _diskSaveTimer = setTimeout(() => { saveMapToDisk(); }, 800); // debounce ~0.8s
+        }
+        // Overlay button → create new map (opens the same flow as the + button)
+        function triggerNewMap() {
+            createNewMapFlow();
+        }
+
+        // Overlay button → import (clicks the hidden file input)
+        function triggerImportMap() {
+            const input = document.getElementById("importJsonInput");
+            if (input) input.click();
+        }
+
+        function mapKey(name) {
+            return `map:${name}`;
+        }
+
+        function mapExists(name) {
+            return localStorage.getItem(mapKey(name)) !== null;
+        }
+
+        function dedupeMapName(baseName) {
+            let name = baseName || "imported";
+            if (!mapExists(name)) return name;
+            let i = 2;
+            while (mapExists(`${name}-${i}`)) i++;
+            return `${name}-${i}`;
+        }
+
+        function saveMapAs(name, pinsArray) {
+            const finalName = dedupeMapName(name);
+            localStorage.setItem(mapKey(finalName), JSON.stringify(pinsArray || []));
+            currentMapName = finalName;
+            document.getElementById("currentMapName").textContent = finalName;
+            loadMapNames({ autoLoadFirst: false });
+            loadMap(finalName);
+            return finalName;
+        }
+
+        function mapMetaKey(name) { return `mapmeta:${name}`; }
+        function getMapMeta(name) {
+            try { return JSON.parse(localStorage.getItem(mapMetaKey(name)) || 'null'); }
+            catch { return null; }
+        }
+        function setMapMeta(name, meta) {
+            try { localStorage.setItem(mapMetaKey(name), JSON.stringify(meta || {})); }
+            catch (e) { console.warn('Failed to set map meta', e); }
+        }
+
+        function saveCurrentMap() {
+            if (!currentMapName) return; // skip saving if no valid name
+            localStorage.setItem(`map:${currentMapName}`, JSON.stringify(pins));
+            queueDiskSave();
+        }
+
+        function loadMap(name) {
+            currentFileHandle = null;
+            if (window.__refreshSaveState) window.__refreshSaveState();
+            if (window.__reflectLinkUI) window.__reflectLinkUI();
+
+            if (!name || !localStorage.getItem(`map:${name}`)) {
+                currentMapName = null;
+                pins = [];
+                hoveredPinIndex = null;
+                selectedPinIndex = null;
+                renderPinList();
+                updateOverlayVisibility();
+                draw();
+                return;
+            }
+
+            const data = localStorage.getItem(`map:${name}`);
+            try {
+                pins = JSON.parse(data);
+            } catch {
+                alert("Error loading map data.");
+                pins = [];
+            }
+
+            currentMapName = name;
+            document.getElementById("currentMapName").textContent = name;
+            renderPinList();
+            updateOverlayVisibility();
+            draw();
+        }
+
+        function loadMapNames({ autoLoadFirst = false } = {}) {
+            const sel = document.getElementById('mapSelector');
+            if (!sel) return;
+
+            const names = Object.keys(localStorage)
+                .filter(k => k.startsWith('map:'))
+                .map(k => k.slice(4))
+                .sort((a, b) => a.localeCompare(b));
+
+            sel.innerHTML = '';
+
+            // Optional placeholder if none
+            if (names.length === 0) {
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = '(no maps)';
+                sel.appendChild(opt);
+            }
+
+            names.forEach(name => {
+                const meta = getMapMeta(name);
+                const icon = (meta && meta.source === 'disk') ? '📂' : '🗄️';
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = `${icon} ${name}`;
+                sel.appendChild(opt);
+            });
+
+            // Select current map if available
+            if (currentMapName && names.includes(currentMapName)) {
+                sel.value = currentMapName;
+            } else if (autoLoadFirst && names[0]) {
+                sel.value = names[0];
+                loadMap(names[0]);
+            }
+
+            // Update overlay visibility
+            updateOverlayVisibility?.();
+        }
+
+
+        // =================== 🗺️ DRAW FUNCTIONS ===================
+        // draw(), drawMinimap()
+
+        function draw() {
+            const bgColor = document.getElementById("bgColor").value;
+            const gridColor = document.getElementById("gridColor").value;
+            const gridSpacing = parseInt(document.getElementById("gridSpacing").value);
+            const showAxes = document.getElementById("showAxes").checked;
+
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, width, height);
+
+            const showGrid = document.getElementById("showGrid").checked;
+            const showIcons = document.getElementById("showIcons").checked;
+            const showText = document.getElementById("showText").checked;
+            const showCoords = document.getElementById("showCoords").checked;
+            const showDescription = document.getElementById("showDescription").checked;
+            const showTags = document.getElementById("showTags").checked;
+            const minX = parseInt(document.getElementById("minX").value);
+            const maxX = parseInt(document.getElementById("maxX").value);
+            const minZ = parseInt(document.getElementById("minZ").value);
+            const maxZ = parseInt(document.getElementById("maxZ").value);
+            const visibleMinX = Math.floor(-offsetX / zoom);
+            const visibleMaxX = Math.ceil((width - offsetX) / zoom);
+            const visibleMinZ = Math.floor(-offsetY / zoom);
+            const visibleMaxZ = Math.ceil((height - offsetY) / zoom);
+            const startX = Math.floor(visibleMinX / gridSpacing) * gridSpacing;
+            const endX = Math.ceil(visibleMaxX / gridSpacing) * gridSpacing;
+            const startZ = Math.floor(visibleMinZ / gridSpacing) * gridSpacing;
+            const endZ = Math.ceil(visibleMaxZ / gridSpacing) * gridSpacing;
+
+            const maxLines = 1000;
+
+            if ((endX - startX) / gridSpacing > maxLines) return; // skip draw
+            if (zoom < 0.1) return; // skip grid when zoomed out too far
+
+            if (showGrid && gridSpacing > 0) {
+                ctx.save();
+                ctx.strokeStyle = gridColor;
+                ctx.lineWidth = 1;
+
+                for (let x = startX; x <= endX; x += gridSpacing) {
+                    const sx = offsetX + x * zoom;
+                    ctx.beginPath();
+                    ctx.moveTo(sx, 0);
+                    ctx.lineTo(sx, height);
+                    ctx.stroke();
+                }
+
+                for (let z = startZ; z <= endZ; z += gridSpacing) {
+                    const sz = offsetY + z * zoom;
+                    ctx.beginPath();
+                    ctx.moveTo(0, sz);
+                    ctx.lineTo(width, sz);
+                    ctx.stroke();
+                }
+                ctx.restore();
+            }
+
+            if (showAxes) {
+                ctx.strokeStyle = "#ffffff88";
+                ctx.beginPath();
+                ctx.moveTo(offsetX + 0 * zoom, 0);
+                ctx.lineTo(offsetX + 0 * zoom, height);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(0, offsetY + 0 * zoom);
+                ctx.lineTo(width, offsetY + 0 * zoom);
+                ctx.stroke();
+            }
+
+            for (const p of pins) {
+                if (p.x < minX || p.x > maxX || p.z < minZ || p.z > maxZ) continue;
+                const sx = offsetX + p.x * zoom;
+                const sy = offsetY + p.z * zoom;
+
+                const useTextScale = document.getElementById("useTextScale").checked;
+                const fontSize = useTextScale ? (12 * textScale) : Math.max(10, 12 * zoom);
+                const labelOffsetX = 8 * zoom;
+                const labelOffsetY = 0;
+
+                if (showIcons && p.icon) {
+                    const iconSize = Math.max(10, 12 * zoom); // match your scaling
+                    ctx.font = `${iconSize}px monospace`;
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "bottom";
+                    ctx.fillStyle = "white";
+
+                    ctx.fillText(p.icon, sx, sy - 8); // just above the pin
+                }
+
+                ctx.font = `${fontSize}px monospace`;
+                ctx.textAlign = "left";
+                ctx.textBaseline = "bottom";
+
+                pins.forEach((pin, i) => {
+                    if (i !== hoveredPinIndex) drawPin(ctx, pin, i);
+                });
+
+                if (hoveredPinIndex !== null && pins[hoveredPinIndex]) {
+                    drawPin(ctx, pins[hoveredPinIndex], hoveredPinIndex);
+                }
+
+                // 🟨 Background box (must come before text)
+                if (document.getElementById("showLabelBackground").checked) {
+                    const text = p.label;
+                    const metrics = ctx.measureText(text);
+                    const padding = 4;
+                    const bgWidth = metrics.width + padding * 2;
+                    const bgHeight = fontSize + padding * 2;
+                    const bgX = sx + labelOffsetX - padding;
+                    const bgY = sy - bgHeight / 2;
+
+                    ctx.fillStyle = "#000000cc"; // semi-transparent black
+                    ctx.fillRect(bgX, bgY, bgWidth, bgHeight);
+                }
+
+                if (showText) {
+                    const yText = (p.y === undefined || p.y === null || p.y === '' || Number.isNaN(p.y)) ? '—' : p.y;
+                    ctx.fillStyle = "lime";
+                    if (showTags && p.id) ctx.fillText(`[${p.id}]`, sx + labelOffsetX, sy);
+                    if (showCoords) ctx.fillText(`(${p.x}, ${yText}, ${p.z})`, sx + labelOffsetX, sy + fontSize * 1.2);
+                    ctx.fillText(p.label, sx + labelOffsetX, sy + fontSize * 2.4);
+                    if (showDescription && p.description) ctx.fillText(p.description, sx + labelOffsetX, sy + fontSize * 3.6);
+                }
+
+            }
+            if (tempPin) {
+                const px = tempPin.x * zoom + offsetX;
+                const pz = tempPin.z * zoom + offsetY;
+
+                // Draw placeholder pin
+                ctx.beginPath();
+                ctx.arc(px, pz, 6, 0, Math.PI * 2);
+                ctx.fillStyle = 'lime';
+                ctx.fill();
+
+                // Draw line from panel to placeholder
+                ctx.beginPath();
+                ctx.moveTo(tempPinScreenX, tempPinScreenY);
+                ctx.lineTo(px, pz);
+                ctx.strokeStyle = 'lime';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+
+            if (crosshairMode) {
+                ctx.strokeStyle = "white";
+                ctx.lineWidth = 1;
+                ctx.setLineDash([4, 4]);
+
+                ctx.beginPath();
+                ctx.moveTo(crosshairX, 0);
+                ctx.lineTo(crosshairX, height);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(0, crosshairY);
+                ctx.lineTo(width, crosshairY);
+                ctx.stroke();
+
+                ctx.setLineDash([]);
+            }
+            drawScaleRuler();
+            drawMinimap();
+        }
+
+        function drawPin(ctx, pin, i) {
+            const screenX = offsetX + pin.x * zoom;
+            const screenY = offsetY + pin.z * zoom;
+
+            ctx.beginPath();
+            ctx.arc(screenX, screenY, 6, 0, Math.PI * 2);
+            ctx.fillStyle = pin.color || "#ffcc00";
+            ctx.fill();
+
+            if (i === hoveredPinIndex) {
+                ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-primary');
+                ctx.lineWidth = 2.5;
+            } else if (i === selectedPinIndex) {
+                ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-secondary');
+                ctx.lineWidth = 2.5;
+            } else {
+                ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-text');
+                ctx.lineWidth = 1;
+            }
+
+            ctx.stroke();
+
+        }
+
+        function drawScaleRuler() {
+            const showGridEl = document.getElementById("showGrid");
+            const gridSpacingEl = document.getElementById("gridSpacing");
+            if (!showGridEl || !gridSpacingEl) return;
+            if (!showGridEl.checked) return;
+
+            const spacing = parseInt(gridSpacingEl.value || "16", 10);
+            if (!Number.isFinite(spacing) || spacing <= 0) return;
+
+            const px = spacing * zoom;                 // screen length of one grid cell
+            const label = `${spacing} blocks`;
+
+            const pad = 10;
+            const y = canvas.height - pad - 18;        // baseline y
+            const minLen = 24, maxLen = 180;           // keep it readable
+            const len = Math.max(minLen, Math.min(px, maxLen));
+            const x0 = pad;
+            const x1 = x0 + len;
+
+            ctx.save();
+            ctx.strokeStyle = "#86f7a2";
+            ctx.fillStyle = "#86f7a2";
+            ctx.lineWidth = 2;
+
+            // baseline
+            ctx.beginPath();
+            ctx.moveTo(x0, y);
+            ctx.lineTo(x1, y);
+            ctx.stroke();
+
+            // end ticks
+            ctx.beginPath();
+            ctx.moveTo(x0, y - 4); ctx.lineTo(x0, y + 4);
+            ctx.moveTo(x1, y - 4); ctx.lineTo(x1, y + 4);
+            ctx.stroke();
+
+            // label
+            ctx.font = "12px monospace";
+            ctx.textBaseline = "top";
+            ctx.fillText(label, x0, y + 6);
+
+            ctx.restore();
+        }
+
+        function drawMiniGrid() {
+            const spacing = Math.max(1000, Math.floor((worldMaxX - worldMinX) / 20));
+            minimapCtx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+            minimapCtx.lineWidth = 1;
+
+            const worldWidth = worldMaxX - worldMinX;
+            const worldHeight = worldMaxZ - worldMinZ;
+            const scale = Math.min(minimapSize / worldWidth, minimapSize / worldHeight);
+
+            const offsetX = -worldMinX * scale;
+            const offsetZ = -worldMinZ * scale;
+
+            for (let x = worldMinX; x <= worldMaxX; x += spacing) {
+                const sx = offsetX + x * scale;
+                minimapCtx.beginPath();
+                minimapCtx.moveTo(sx, 0);
+                minimapCtx.lineTo(sx, minimapSize);
+                minimapCtx.stroke();
+            }
+
+            for (let z = worldMinZ; z <= worldMaxZ; z += spacing) {
+                const sz = offsetZ + z * scale;
+                minimapCtx.beginPath();
+                minimapCtx.moveTo(0, sz);
+                minimapCtx.lineTo(minimapSize, sz);
+                minimapCtx.stroke();
+            }
+        }
+
+        function drawMinimap() {
+            minimapCtx.clearRect(0, 0, minimapSize, minimapSize);
+
+            // 1. Compute total world range
+            const worldWidth = worldMaxX - worldMinX;
+            const worldHeight = worldMaxZ - worldMinZ;
+
+            // 2. Compute scale factor to fit world into minimap canvas
+            const scale = Math.min(minimapSize / worldWidth, minimapSize / worldHeight);
+
+            // Read crop bounds
+            let minX = parseInt(document.getElementById("minX").value);
+            let maxX = parseInt(document.getElementById("maxX").value);
+            let minZ = parseInt(document.getElementById("minZ").value);
+            let maxZ = parseInt(document.getElementById("maxZ").value);
+
+            if (isNaN(minX)) minX = -1000;
+            if (isNaN(maxX)) maxX = 1000;
+            if (isNaN(minZ)) minZ = -1000;
+            if (isNaN(maxZ)) maxZ = 1000;
+
+            const cropWidth = maxX - minX;
+            const cropHeight = maxZ - minZ;
+
+            // 3. Offset = world origin → canvas origin
+            const worldOffsetX = -worldMinX * scale;
+            const worldOffsetZ = -worldMinZ * scale;
+
+            const showMiniGrid = document.getElementById('showMiniGrid')?.checked;
+            if (showMiniGrid) drawMiniGrid();
+
+            // 📦 Draw crop bounds
+            minimapCtx.strokeStyle = "orange"; // or use a token color
+            minimapCtx.lineWidth = 1;
+            minimapCtx.strokeRect(
+                worldOffsetX + minX * scale,
+                worldOffsetZ + minZ * scale,
+                (maxX - minX) * scale,
+                (maxZ - minZ) * scale
+            );
+
+            // 🎥 Draw current camera viewport
+            // 🎥 Correctly calculate the visible viewport
+            const topLeftWorldX = (-offsetX) / zoom;
+            const topLeftWorldZ = (-offsetY) / zoom;
+            const bottomRightWorldX = (width - offsetX) / zoom;
+            const bottomRightWorldZ = (height - offsetY) / zoom;
+
+            const viewX = topLeftWorldX * scale + worldOffsetX;
+            const viewZ = topLeftWorldZ * scale + worldOffsetZ;
+            const viewWidth = (bottomRightWorldX - topLeftWorldX) * scale;
+            const viewHeight = (bottomRightWorldZ - topLeftWorldZ) * scale;
+
+            // 📍 Draw all pins except hovered one
+            for (let i = 0; i < pins.length; i++) {
+                if (i === hoveredPinIndex) continue;
+
+                const p = pins[i];
+                const px = worldOffsetX + p.x * scale;
+                const pz = worldOffsetZ + p.z * scale;
+
+                if (!isFinite(px) || !isFinite(pz)) continue;
+
+                minimapCtx.beginPath();
+                minimapCtx.arc(px, pz, 2, 0, Math.PI * 2);
+
+                if (i === selectedPinIndex) {
+                    minimapCtx.fillStyle = "orange";
+                } else {
+                    minimapCtx.fillStyle = p.color || "yellow";
+                }
+
+                minimapCtx.fill();
+            }
+
+            // ✅ Draw hovered pin on top
+            if (hoveredPinIndex !== null && pins[hoveredPinIndex]) {
+                const p = pins[hoveredPinIndex];
+                const px = worldOffsetX + p.x * scale;
+                const pz = worldOffsetZ + p.z * scale;
+
+                if (isFinite(px) && isFinite(pz)) {
+                    minimapCtx.beginPath();
+                    minimapCtx.arc(px, pz, 2, 0, Math.PI * 2);
+                    minimapCtx.fillStyle = "lime";
+                    minimapCtx.strokeStyle = "black";
+                    minimapCtx.lineWidth = 1;
+                    minimapCtx.stroke();
+                    minimapCtx.fill();
+                }
+            }
+
+            // ✅ Draw current view window (draw once, not per pin)
+            minimapCtx.strokeStyle = "lime";
+            minimapCtx.lineWidth = 1;
+            minimapCtx.strokeRect(viewX, viewZ, viewWidth, viewHeight);
+
+            drawMinimapLabels(minimapCtx, minimapCanvas.width, minimapCanvas.height);
+
+            // World limits
+            document.getElementById("worldMinX").textContent = worldMinX;
+            document.getElementById("worldMaxX").textContent = worldMaxX;
+            document.getElementById("worldMinZ").textContent = worldMinZ;
+            document.getElementById("worldMaxZ").textContent = worldMaxZ;
+
+            // Crop limits
+            document.getElementById("cropMinX").textContent = minX;
+            document.getElementById("cropMaxX").textContent = maxX;
+            document.getElementById("cropMinZ").textContent = minZ;
+            document.getElementById("cropMaxZ").textContent = maxZ;
+
+            // Viewport (based on offset)
+            const viewMinX = Math.round(-offsetX / zoom);
+            const viewMaxX = Math.round((width - offsetX) / zoom);
+            const viewMinZ = Math.round(-offsetY / zoom);
+            const viewMaxZ = Math.round((height - offsetY) / zoom);
+
+            document.getElementById("viewMinX").textContent = viewMinX;
+            document.getElementById("viewMaxX").textContent = viewMaxX;
+            document.getElementById("viewMinZ").textContent = viewMinZ;
+            document.getElementById("viewMaxZ").textContent = viewMaxZ;
+        }
+
+        function resizeCanvas() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+
+            if (!initializedCamera) {
+                offsetX = -width / 2;
+                offsetY = -height / 2;
+                initializedCamera = true;
+            }
+
+            draw();
+        }
+        function drawMinimapLabels(ctxMini, canvasWidth, canvasHeight) {
+            const padding = 8;
+            ctxMini.fillStyle = "#fff";
+            ctxMini.font = "12px sans-serif";
+            ctxMini.textAlign = "center";
+            ctxMini.textBaseline = "middle";
+
+            // Top
+            ctxMini.fillText("North", canvasWidth / 2, padding);
+
+            // Bottom
+            ctxMini.fillText("South", canvasWidth / 2, canvasHeight - padding);
+
+            // Left (rotated)
+            ctxMini.save();
+            ctxMini.translate(padding, canvasHeight / 2);
+            ctxMini.rotate(-Math.PI / 2);
+            ctxMini.fillText("West", 0, 0);
+            ctxMini.restore();
+
+            // Right (rotated)
+            ctxMini.save();
+            ctxMini.translate(canvasWidth - padding, canvasHeight / 2);
+            ctxMini.rotate(Math.PI / 2);
+            ctxMini.fillText("East", 0, 0);
+            ctxMini.restore();
+        }
+
+        function initApp() {
+            // 1. Zoom level
+            zoom = 4;
+
+            // 2. Setup canvas to full size first
+            resizeCanvas();
+
+            // 3. THEN center camera on (0,0)
+            offsetX = canvas.width / 2;
+            offsetY = canvas.height / 2;
+
+            // 4. Initial draw
+            draw();
+
+            // 5. Setup pin dropdowns
+            populateTypeAndIconDropdowns();
+
+            // 6. Load maps and overlays
+            updateOverlayVisibility();
+            loadMapNames({ autoLoadFirst: true });
+        }
+
+
+
+        // =================== 🖼️ UI RENDERING ===================
+        // renderPinList(), centerOnPin(), updateOverlayVisibility()
+
+        function renderPinList() {
+            const container = document.getElementById('pinList');
+            container.innerHTML = '';
+
+            // ✅ Always update pin count even if 0
+            const pinCountEl = document.getElementById("pinCount");
+            if (pinCountEl) pinCountEl.textContent = `(${pins.length})`;
+
+            if (!Array.isArray(pins) || pins.length === 0) {
+                container.innerHTML = '<p>No pins yet.</p>';
+                return;
+            }
+
+            pins.forEach((pin, index) => {
+                const item = document.createElement('div');
+                item.className = 'pin-card';
+                item.dataset.index = index;  // 📌 for matching
+                item.tabIndex = 0;           // enables :focus-within to show controls
+
+                const yStr = (pin.y === undefined || pin.y === null || pin.y === '' || Number.isNaN(pin.y)) ? '—' : pin.y;
+                const time = pin.timestamp
+                    ? new Date(pin.timestamp).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+                    : '';
+
+                // Card markup (coords header; icon+text stack; footer date)
+                item.innerHTML = `
+                    <div class="pin-card-content">
+                        <div class="pin-card-header">
+                        <medium>x:${pin.x} y:${yStr} z:${pin.z}</medium>
+                        </div>
+
+                        <div class="pin-card-body">
+                        <span class="pin-icon">${pin.icon || "📍"}</span>
+                        <div class="pin-text">
+                            <div class="pin-label">${pin.label || "(no label)"}</div>
+                            <div class="pin-tag">${pin.id ? `[${pin.id}]` : ""}</div>
+                        </div>
+                        </div>
+
+                        <div class="pin-date-footer">${time}</div>
+                    </div>
+                `;
+
+                // Whole row centers on pin
+                item.onclick = () => centerOnPin(pin);
+
+                // 🔄 Hover effect (list → canvas)
+                item.addEventListener("mouseenter", () => { hoveredPinIndex = index; draw(); });
+                item.addEventListener("mouseleave", () => { hoveredPinIndex = null; draw(); });
+
+                // === TOP-RIGHT CONTROLS (hidden until hover/focus) ===
+                const controls = document.createElement('div');
+                controls.className = 'pin-controls'; // CSS positions this at top-right and hides by default
+
+                // Buttons (NO listeners here — we delegate later)
+                const btnCopy = document.createElement('button');
+                btnCopy.className = 'btn-copy-coords';
+                btnCopy.title = 'Copy coordinates';
+                btnCopy.textContent = '📋';
+                btnCopy.dataset.action = 'copy';
+                btnCopy.dataset.index = String(index);
+
+                const btnCenter = document.createElement('button');
+                btnCenter.className = 'btn-center';
+                btnCenter.title = 'Center on pin';
+                btnCenter.textContent = '🎯';
+                btnCenter.dataset.action = 'center';
+                btnCenter.dataset.index = String(index);
+
+                const btnEdit = document.createElement('button');
+                btnEdit.className = 'btn-edit';
+                btnEdit.title = 'Edit';
+                btnEdit.textContent = '✏️';
+                btnEdit.dataset.action = 'edit';
+                btnEdit.dataset.index = String(index);
+
+                const btnDelete = document.createElement('button');
+                btnDelete.className = 'btn-delete';
+                btnDelete.title = 'Delete';
+                btnDelete.textContent = '🗑️';
+                btnDelete.dataset.action = 'delete';
+                btnDelete.dataset.index = String(index);
+
+                controls.appendChild(btnCopy);
+                controls.appendChild(btnCenter);
+                controls.appendChild(btnEdit);
+                controls.appendChild(btnDelete);
+                item.appendChild(controls);
+
+                container.appendChild(item);
+            });
+
+            // ✅ re-sync count at end (kept from your version)
+            document.getElementById("pinCount").textContent = `(${pins.length})`;
+        }
+
+
+        function centerOnPin(pin) {
+            if (!pin) return;
+            offsetX = canvas.width / 2 - pin.x * zoom;
+            offsetY = canvas.height / 2 - pin.z * zoom;
+            draw();
+        }
+        function updatePinListHighlight() {
+            const pinCards = document.querySelectorAll('.pin-card');
+            pinCards.forEach((card, i) => {
+                if (i === hoveredPinIndex) {
+                    card.classList.add("hovered");
+                } else {
+                    card.classList.remove("hovered");
+                }
+            });
+            draw();         // redraw canvas
+            drawMinimap();  // redraw minimap too
+        }
+
+        function updateOverlayVisibility() {
+            const overlay = document.getElementById("noMapOverlay");
+            const hasMaps = Object.keys(localStorage).some(k => k.startsWith("map:"));
+            overlay.style.display = hasMaps && currentMapName ? "none" : "flex";
+        }
+
+        // =================== 📌 PIN MANAGEMENT ===================
+        // openPinEditor(), submitPinEditor(), closePinEditor(), editPin(), addPin()
+        function openPinEditor(_, __, worldX, worldZ, typeID = "", icon = "", label = "") {
+            const panel = document.getElementById('pinEditorPanel');
+
+            // Convert world → canvas → screen position
+            const px = offsetX + worldX * zoom;
+            const pz = offsetY + worldZ * zoom;
+            const rect = canvas.getBoundingClientRect();
+            let screenX = rect.left + px;
+            let screenY = rect.top + pz;
+
+            // Prevent panel from overflowing the viewport
+            const panelWidth = 240;
+            const panelHeight = 200;
+            const padding = 10;
+
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+
+            if (screenX + panelWidth + padding > vw) {
+                screenX = vw - panelWidth - padding;
+            }
+            if (screenY + panelHeight + padding > vh) {
+                screenY = vh - panelHeight - padding;
+            }
+
+            panel.style.left = `${screenX}px`;
+            panel.style.top = `${screenY}px`;
+            panel.style.display = 'block';
+
+            // Save for drawing line
+            tempPin = { x: worldX, z: worldZ };
+            tempPinScreenX = px;
+            tempPinScreenY = pz;
+
+            // Clear or prepare inputs
+            document.getElementById('pinEditorX').value = worldX;
+            document.getElementById('pinEditorY').value = '';
+            document.getElementById('pinEditorZ').value = worldZ;
+            document.getElementById('pinEditorID').value = typeID;
+            document.getElementById('pinEditorLabel').value = label || typeID;
+            document.getElementById('pinEditorDescription').value = '';
+            document.getElementById('pinEditorIcon').value = icon;
+
+            const fields = document.querySelectorAll('#pinEditorPanel input, #pinEditorPanel textarea');
+            fields.forEach(field => {
+                field.onkeydown = (e) => {
+                    if (e.key === 'Enter') {
+                        if (e.ctrlKey || e.metaKey) {
+                            e.preventDefault();
+                            submitPinEditor();
+                        } else {
+                            e.preventDefault();
+                            focusNextInput(e.target);
+                        }
+                    }
+                };
+            });
+
+            setTimeout(() => {
+                document.getElementById('pinEditorLabel').focus();
+            }, 0);
+
+            draw();
+        }
+
+        function startPinPlacement(typeID) {
+            const pinType = pinTypes.find(p => p.id === typeID);
+            if (!pinType) return;
+            openPinEditor(lastCursor.x, lastCursor.z, lastCursor.x, lastCursor.z, typeID, pinType.icon);
+        }
+
+        function deletePin(index) {
+            if (confirm("Delete this pin?")) {
+                pins.splice(index, 1);
+                markDirty()
+                saveCurrentMap();
+                renderPinList();
+                draw();
+            }
+        }
+
+        function closePinEditor() {
+            isPlacingPin = false;
+            document.getElementById('pinEditorPanel').style.display = 'none';
+            document.body.style.cursor = 'default';
+            tempPin = null;
+            draw();
+        }
+        function editPin(index) {
+            const pin = pins[index];
+            currentEditIndex = index;
+            centerOnPin(pin);
+
+            const screenX = canvas.width / 2;
+            const screenY = canvas.height / 2;
+
+            openPinEditor(screenX, screenY, pin.x, pin.z);
+
+            document.getElementById('pinEditorX').value = pin.x;
+            document.getElementById('pinEditorY').value = pin.y ?? '';
+            document.getElementById('pinEditorZ').value = pin.z;
+            document.getElementById('pinEditorID').value = pin.id ?? '';
+            document.getElementById('pinEditorLabel').value = pin.label ?? '';
+            document.getElementById('pinEditorDescription').value = pin.description ?? '';
+            document.getElementById('pinEditorIcon').value = pin.icon ?? '';
+
+            selectedPinIndex = index;
+            draw();
+            drawMinimap();
+        }
+
+        function addPin() {
+            const x = parseInt(document.getElementById("pinX").value);
+            const y = parseInt(document.getElementById("pinY").value) || null;
+            const z = parseInt(document.getElementById("pinZ").value);
+            const id = document.getElementById("pinType").value || "custom";
+            const label = document.getElementById("pinLabel").value || "(no label)";
+            const description = document.getElementById("pinDescription").value;
+            const icon = document.getElementById("pinIcon").value;
+            if (isNaN(x) || isNaN(z)) return alert("X and Z are required.");
+            pins.push({ x, y, z, id, label, description: description, icon });
+            draw();
+            renderPinList();
+            markDirty()
+            saveCurrentMap();
+        }
+
+        function submitPinEditor() {
+            const x = parseInt(document.getElementById('pinEditorX').value);
+            const y = parseInt(document.getElementById('pinEditorY').value);
+            const z = parseInt(document.getElementById('pinEditorZ').value);
+            const id = document.getElementById('pinEditorID').value;
+            const label = document.getElementById('pinEditorLabel').value;
+            const description = document.getElementById('pinEditorDescription').value;
+            const icon = document.getElementById('pinEditorIcon').value;
+            const color = document.getElementById('pinEditorColor').value;
+            const pinData = {
+                x, y, z, id, label, description, icon, color,
+            };
+
+            if (currentEditIndex !== null) {
+                pinData.createdAt = pins[currentEditIndex].createdAt ?? pinData.createdAt;
+                pins[currentEditIndex] = pinData;
+            } else {
+                if (!pinData.timestamp) {
+                    pinData.timestamp = new Date().toISOString();
+                }
+                pins.push(pinData);
+            }
+            renderPinList();
+            closePinEditor();
+            currentEditIndex = null;
+            tempPin = null;
+            markDirty()
+            saveCurrentMap();
+            draw();
+        }
+
+        // =================== 📑 UI HELPERS + TOGGLES ===================
+        // hidePinList(), resetView(), focusNextInput(), hideContextMenu()
+        function hideSettings() {
+            const el = document.getElementById('settings');
+            if (!el) return;
+            el.classList.toggle('is-hidden');
+        }
+
+        function hideMinimap() {
+            const el = document.getElementById('minimapContainer');
+            if (!el) return;
+            el.classList.toggle('is-hidden');
+        }
+
+        function hidePinList() {
+            const el = document.getElementById('pinListPanel');
+            if (!el) return;
+            el.classList.toggle('is-hidden');
+        }
+
+        function resetView() {
+            zoom = 1;
+            offsetX = width / 2;
+            offsetY = height / 2;
+            document.getElementById("zoom").value = zoom;
+            draw();
+        }
+
+        function focusNextInput(current) {
+            const inputs = Array.from(
+                document.querySelectorAll('#pinEditorPanel input, #pinEditorPanel textarea')
+            );
+            const index = inputs.indexOf(current);
+            if (index >= 0 && index < inputs.length - 1) {
+                inputs[index + 1].focus();
+            }
+        }
+
+        function populateTypeAndIconDropdowns() {
+            const idSelect = document.getElementById("pinEditorID");
+            const iconSelect = document.getElementById("pinEditorIcon");
+            idSelect.innerHTML = '';
+            iconSelect.innerHTML = '';
+
+            pinTypes.forEach(pin => {
+                const opt1 = document.createElement("option");
+                opt1.value = pin.id;
+                opt1.textContent = pin.label;
+                idSelect.appendChild(opt1);
+
+                const opt2 = document.createElement("option");
+                opt2.value = pin.icon;
+                opt2.textContent = pin.icon;
+                iconSelect.appendChild(opt2);
+            });
+
+            idSelect.addEventListener("change", () => {
+                const selectedType = idSelect.value;
+                const match = pinTypes.find(p => p.id === selectedType);
+                if (match) iconSelect.value = match.icon;
+            });
+        }
+        // ===== IMPORT / EXPORT JSON =====
+
+        // Optional: snapshot a few UI settings (safe to remove if you want pins-only)
+        function collectSettingsSnapshot() {
+            return {
+                bgColor: document.getElementById("bgColor")?.value,
+                gridColor: document.getElementById("gridColor")?.value,
+                gridSpacing: parseInt(document.getElementById("gridSpacing")?.value || "16", 10),
+                showGrid: !!document.getElementById("showGrid")?.checked,
+                showIcons: !!document.getElementById("showIcons")?.checked,
+                showText: !!document.getElementById("showText")?.checked,
+                showCoords: !!document.getElementById("showCoords")?.checked,
+                showDescription: !!document.getElementById("showDescription")?.checked,
+                showTags: !!document.getElementById("showTags")?.checked,
+                zoom,
+                offsetX,
+                offsetY
+            };
+        }
+
+        // Optional: apply settings if present in imported file
+        function applySettingsSnapshot(s) {
+            if (!s) return;
+            const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+            const check = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+
+            if (s.bgColor) set("bgColor", s.bgColor);
+            if (s.gridColor) set("gridColor", s.gridColor);
+            if (Number.isFinite(s.gridSpacing)) set("gridSpacing", s.gridSpacing);
+            if ("showGrid" in s) check("showGrid", s.showGrid);
+            if ("showIcons" in s) check("showIcons", s.showIcons);
+            if ("showText" in s) check("showText", s.showText);
+            if ("showCoords" in s) check("showCoords", s.showCoords);
+            if ("showDescription" in s) check("showDescription", s.showDescription);
+            if ("showTags" in s) check("showTags", s.showTags);
+            if (Number.isFinite(s.zoom)) zoom = s.zoom;
+            if (Number.isFinite(s.offsetX)) offsetX = s.offsetX;
+            if (Number.isFinite(s.offsetY)) offsetY = s.offsetY;
+        }
+
+        // Export current map (pins + optional settings) to a file
+        function exportCurrentMap() {
+            const mapName = currentMapName || "unnamed";
+            const payload = {
+                version: 1,
+                name: mapName,
+                createdAt: new Date().toISOString(),
+                pins: Array.isArray(pins) ? pins : [],
+                settings: collectSettingsSnapshot()
+            };
+
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = `${mapName}.json`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(a.href);
+        }
+
+        // Import map JSON (supports array-of-pins or object-with-pins)
+        async function importMapFromFile(file) {
+            const text = await file.text();
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch {
+                alert("Invalid JSON file.");
+                return;
+            }
+
+            // Accept either: [pins]  OR  { pins, name, settings }
+            let importedPins = [];
+            let importedName = file.name.replace(/\.json$/i, "");
+            let importedSettings = null;
+
+            if (Array.isArray(data)) {
+                importedPins = data;
+            } else if (data && typeof data === "object") {
+                if (Array.isArray(data.pins)) importedPins = data.pins;
+                if (data.name) importedName = String(data.name);
+                if (data.settings) importedSettings = data.settings;
+            } else {
+                alert("Unsupported JSON format.");
+                return;
+            }
+
+            // Normalize pins a bit
+            importedPins = importedPins.map(p => ({
+                x: Number(p.x) || 0,
+                z: Number(p.z) || 0,
+                y: Number.isFinite(p.y) ? Number(p.y) : undefined,
+                id: (p.id ?? "").toString(),
+                label: (p.label ?? "").toString(),
+                description: (p.description ?? "").toString(),
+                icon: (p.icon ?? "").toString(),
+                color: (p.color ?? "").toString(),
+                tags: Array.isArray(p.tags) ? p.tags.map(String) : undefined,
+                timestamp: p.timestamp || new Date().toISOString()
+            }));
+
+            // ✅ IMPORT semantics: create a new saved map (unlinked copy)
+            const finalName = saveMapAs(importedName, importedPins);
+
+            // Apply settings if provided (optional)
+            if (importedSettings) {
+                applySettingsSnapshot(importedSettings);
+            }
+
+            setMapMeta(finalName, { source: 'local' });
+            loadMapNames({ autoLoadFirst: false });
+
+            // Refresh UI
+            renderPinList();
+            draw();
+
+            alert(`Imported as new map: "${finalName}"`);
+        }
+
+        // Wire up the buttons/inputs
+        (function setupImportExportUI() {
+            const exportBtn = document.getElementById("exportJsonBtn");
+            const importInput = document.getElementById("importJsonInput");
+
+            if (exportBtn) exportBtn.addEventListener("click", exportCurrentMap);
+            if (importInput) {
+                importInput.addEventListener("change", () => {
+                    const file = importInput.files && importInput.files[0];
+                    if (!file) return;
+                    importMapFromFile(file).finally(() => { importInput.value = ""; });
+                });
+            }
+        })();
+
+        // =================== 📁 FILE SYSTEM ACCESS (Open / Save / Save As) ===================
+
+        function getMapPayloadForDisk() {
+            // what you want written to disk; keep it simple & compatible with your importer
+            return {
+                version: 1,
+                name: currentMapName || "unnamed",
+                createdAt: new Date().toISOString(),
+                pins: Array.isArray(pins) ? pins : [],
+                settings: typeof collectSettingsSnapshot === "function" ? collectSettingsSnapshot() : undefined
+            };
+        }
+
+        async function openMapFromDisk() {
+            if (!window.showOpenFilePicker) {
+                alert("Your browser doesn’t support 'Open'. Use Import instead.");
+                return;
+            }
+            try {
+                const [handle] = await showOpenFilePicker({
+                    types: [{ description: "JSON files", accept: { "application/json": [".json"] } }],
+                    excludeAcceptAllOption: false,
+                    multiple: false
+                });
+                if (!handle) return;
+
+                const file = await handle.getFile();
+                const text = await file.text();
+
+                let data;
+                try { data = JSON.parse(text); } catch { alert("Invalid JSON file."); return; }
+
+                // Accept either [pins] or {pins, settings, name}
+                let importedPins = [];
+                let importedSettings = null;
+                let importedName = file.name.replace(/\.json$/i, "");
+
+                if (Array.isArray(data)) {
+                    importedPins = data;
+                } else if (data && typeof data === "object") {
+                    if (Array.isArray(data.pins)) importedPins = data.pins;
+                    if (data.settings) importedSettings = data.settings;
+                    if (data.name) importedName = String(data.name);
+                } else {
+                    alert("Unsupported JSON format."); return;
+                }
+
+                // normalize a bit
+                importedPins = importedPins.map(p => ({
+                    x: Number(p.x) || 0,
+                    z: Number(p.z) || 0,
+                    y: Number.isFinite(p.y) ? Number(p.y) : undefined,
+                    id: (p.id ?? "").toString(),
+                    label: (p.label ?? "").toString(),
+                    description: (p.description ?? "").toString(),
+                    icon: (p.icon ?? "").toString(),
+                    color: (p.color ?? "").toString(),
+                    tags: Array.isArray(p.tags) ? p.tags.map(String) : undefined,
+                    timestamp: p.timestamp || new Date().toISOString()
+                }));
+
+                // Set app state
+                pins = importedPins;
+                currentMapName = importedName;
+                currentFileHandle = handle;
+
+                // ✅ keep a library entry so it appears in the selector, but DO NOT switch pins or break the link
+                localStorage.setItem(mapKey(importedName), JSON.stringify(importedPins));
+                setMapMeta(importedName, { source: 'disk', fileName: file.name });
+
+                // reflect the name & link
+                currentMapName = importedName;
+                document.getElementById("currentMapName").textContent = importedName;
+
+                // refresh selector without calling loadMap (we already set pins above)
+                loadMapNames({ autoLoadFirst: false });
+
+                // enable “Save” now that we’re linked
+                if (window.__refreshSaveState) window.__refreshSaveState();
+                if (window.__reflectLinkUI) window.__reflectLinkUI();
+
+
+                if (importedSettings && typeof applySettingsSnapshot === "function") {
+                    applySettingsSnapshot(importedSettings);
+                }
+
+                setMapMeta(importedName, { source: 'disk', fileName: currentFileHandle?.name || '' });
+                loadMapNames({ autoLoadFirst: false });
+                if (window.__refreshSaveState) window.__refreshSaveState();
+
+                renderPinList();
+                draw();
+                updateOverlayVisibility?.();
+
+            } catch (err) {
+                // user canceled or permissions issue
+                console.warn(err);
+            }
+        }
+
+        async function saveMapToDisk() {
+            try {
+                if (!currentFileHandle) return saveAsMapToDisk(); // fallback to Save As
+                const writable = await currentFileHandle.createWritable();
+                await writable.write(JSON.stringify(getMapPayloadForDisk(), null, 2));
+                await writable.close();
+                clearDirty();
+                if (typeof showToast === "function") showToast("Saved to disk");
+            } catch (err) {
+                console.warn(err);
+                alert("Could not save to disk.");
+            }
+        }
+
+        async function saveAsMapToDisk() {
+            if (!window.showSaveFilePicker) {
+                alert("Your browser doesn’t support 'Save As'. Use Export instead.");
+                return;
+            }
+            try {
+                const handle = await showSaveFilePicker({
+                    suggestedName: `${currentMapName || "map"}.json`,
+                    types: [{ description: "JSON files", accept: { "application/json": [".json"] } }]
+                });
+                if (!handle) return;
+
+                // ✅ update link + visible name
+                currentFileHandle = handle;
+                const newName = handle.name.replace(/\.json$/i, '');
+                currentMapName = newName;
+                document.getElementById("currentMapName").textContent = newName;
+
+                // ✅ write/update the local library entry so the selector matches what’s on disk
+                localStorage.setItem(mapKey(newName), JSON.stringify(pins));
+                setMapMeta(newName, { source: 'disk', fileName: handle.name });
+                loadMapNames({ autoLoadFirst: false });
+
+                // state of menu buttons
+                if (window.__refreshSaveState) window.__refreshSaveState();
+                if (window.__reflectLinkUI) window.__reflectLinkUI();
+
+
+                // finally write the file
+                await saveMapToDisk();
+            }
+            catch (err) {
+                console.warn(err);
+            }
+        }
+
+        /* =================== ⚙️ CONTEXT MENU SYSTEM =================== */
+        /* Signature: showContextMenu(items, x, y) */
+
+        function showContextMenu(items, x, y) {
+            const menu = document.getElementById("contextMenu");
+            const list = document.getElementById("contextMenuItems"); // <ul> inside the menu
+            if (!menu || !list) return;
+
+            // Build items
+            list.innerHTML = "";
+            items.forEach(({ label, action }) => {
+                const li = document.createElement("li");
+                li.textContent = label;
+                li.onclick = (ev) => {
+                    ev.stopPropagation();
+                    try { action && action(); } finally {
+                        hideContextMenu();
+                    }
+                };
+                list.appendChild(li);
+            });
+
+            // Position near cursor, then clamp to viewport
+            menu.style.left = `${x}px`;
+            menu.style.top = `${y}px`;
+            menu.style.display = "block";
+
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            const r = menu.getBoundingClientRect();
+
+            const left = (x + r.width > vw) ? (x - r.width) : x;
+            const top = (y + r.height > vh) ? (y - r.height) : y;
+
+            menu.style.left = `${Math.max(0, left)}px`;
+            menu.style.top = `${Math.max(0, top)}px`;
+        }
+
+        function hideContextMenu() {
+            const menu = document.getElementById("contextMenu");
+            if (menu) menu.style.display = "none";
+        }
+
+        window.addEventListener("click", hideContextMenu);
+        window.addEventListener("keydown", (e) => { if (e.key === "Escape") hideContextMenu(); });
+
+        /* Right-click on the canvas */
+        canvas.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+
+            const worldX = Math.floor((mx - offsetX) / zoom);
+            const worldZ = Math.floor((my - offsetY) / zoom);
+            lastCursor = { x: worldX, z: worldZ };
+
+            const found = pins.find(pin => {
+                const sx = offsetX + pin.x * zoom;
+                const sy = offsetY + pin.z * zoom;
+                return Math.hypot(mx - sx, my - sy) < 10;
+            });
+
+            if (found) {
+                const index = pins.indexOf(found);
+                showContextMenu([
+                    { label: "✏️ Edit Pin", action: () => editPin(index) },
+                    { label: "🗑️ Delete Pin", action: () => deletePin(index) }
+                ], e.clientX, e.clientY);
+            } else {
+                // quickPinContextItems must be an array of {label, action}
+                showContextMenu(quickPinContextItems, e.clientX, e.clientY);
+            }
+        });
+
+        function getHoveredPinIndex(e) {
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+
+            for (let i = 0; i < pins.length; i++) {
+                const pin = pins[i];
+                const sx = offsetX + pin.x * zoom;
+                const sy = offsetY + pin.z * zoom;
+                const dx = mx - sx;
+                const dy = my - sy;
+                if (Math.sqrt(dx * dx + dy * dy) < 10) return i;
+            }
+            return null;
+        }
+
+        // =================== 🧭 INTERACTION: ZOOM, PAN, CLICK ===================
+        // mouse event listeners for panning, zoom, placing pins, hover cursor
+        canvas.addEventListener("mousedown", (e) => {
+            isPanning = true;
+            panStart = { x: e.clientX, y: e.clientY };
+        });
+        canvas.addEventListener("mouseup", () => isPanning = false);
+
+        canvas.addEventListener("mousemove", (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+
+            let found = null;
+            pins.forEach((pin, i) => {
+                const sx = offsetX + pin.x * zoom;
+                const sy = offsetY + pin.z * zoom;
+                const dx = mx - sx;
+                const dy = my - sy;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 10) found = i;
+            });
+
+            if (found !== hoveredPinIndex) {
+                hoveredPinIndex = found;
+                updatePinListHighlight();
+                draw();
+            }
+
+            if (!isPanning) return;
+            offsetX += e.clientX - panStart.x;
+            offsetY += e.clientY - panStart.y;
+            panStart = { x: e.clientX, y: e.clientY };
+            draw();
+        });
+
+        canvas.addEventListener("wheel", (e) => {
+            e.preventDefault();
+            const scale = e.deltaY < 0 ? 1.1 : 0.9;
+            const mx = e.clientX;
+            const my = e.clientY;
+            const wx = (mx - offsetX) / zoom;
+            const wy = (my - offsetY) / zoom;
+            zoom *= scale;
+            zoom = Math.max(0.25, Math.min(5, zoom));
+            offsetX = mx - wx * zoom;
+            offsetY = my - wy * zoom;
+            document.getElementById("zoom").value = zoom;
+            draw();
+        }, { passive: false });
+
+        document.getElementById("zoom").addEventListener("input", (e) => {
+            zoom = parseFloat(e.target.value);
+            draw();
+        });
+
+        canvas.addEventListener("mousemove", (e) => {
+            if (!crosshairMode) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+
+            const worldX = Math.round((mx - offsetX) / zoom);
+            const worldZ = Math.round((my - offsetY) / zoom);
+
+            const label = document.getElementById("cursorLabel");
+            label.style.left = `${e.clientX + 10}px`;
+            label.style.top = `${e.clientY + 10}px`;
+            label.textContent = `${worldX}x, ${worldZ}z`;
+            label.style.display = "block";
+
+            crosshairX = mx;
+            crosshairY = my;
+
+            draw(); // so the crosshair line is drawn under mouse
+        });
+
+        canvas.addEventListener("mouseleave", () => {
+            document.getElementById("cursorLabel").style.display = "none";
+        });
+
+        canvas.addEventListener('click', (e) => {
+            if (!isPlacingPin) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+
+            const worldX = Math.round((mx - offsetX) / zoom);
+            const worldZ = Math.round((my - offsetY) / zoom);
+
+            openPinEditor(e.clientX, e.clientY, worldX, worldZ);
+
+            // If the click lands on an existing pin, select it
+            let found = null;
+            for (let i = 0; i < pins.length; i++) {
+                const sx = offsetX + pins[i].x * zoom;
+                const sy = offsetY + pins[i].z * zoom;
+                if (Math.hypot(mx - sx, my - sy) < 10) { found = i; break; }
+            }
+            if (found !== null) {
+                selectedPinIndex = found;
+                centerOnPin(pins[found]);
+                draw();
+            }
+        });
+
+
+        minimapCanvas.addEventListener("click", (e) => {
+            const rect = minimapCanvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+
+            const worldWidth = worldMaxX - worldMinX;
+            const worldHeight = worldMaxZ - worldMinZ;
+
+            const scale = Math.min(minimapSize / worldWidth, minimapSize / worldHeight);
+
+            const worldX = worldMinX + clickX / scale;
+            const worldZ = worldMinZ + clickY / scale;
+
+            // Center the canvas on that world coordinate
+            offsetX = width / 2 - worldX * zoom;
+            offsetY = height / 2 - worldZ * zoom;
+
+            draw();
+        });
+
+        minimapCanvas.addEventListener("wheel", (e) => {
+            e.preventDefault();
+
+            const delta = Math.sign(e.deltaY);
+            const zoomFactor = 1.1;
+            const oldZoom = zoom;
+
+            // Mouse position relative to minimap
+            const rect = minimapCanvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+
+            const worldWidth = worldMaxX - worldMinX;
+            const worldHeight = worldMaxZ - worldMinZ;
+            const scale = Math.min(minimapSize / worldWidth, minimapSize / worldHeight);
+
+            // Convert minimap pixel → world coordinate
+            const worldX = worldMinX + mx / scale;
+            const worldZ = worldMinZ + my / scale;
+
+            // Apply zoom
+            if (delta < 0) {
+                zoom *= zoomFactor;
+            } else {
+                zoom /= zoomFactor;
+            }
+
+            // Keep mouse over same world point (anchor zoom to cursor)
+            offsetX = width / 2 - worldX * zoom;
+            offsetY = height / 2 - worldZ * zoom;
+
+            draw();
+        }, { passive: false });
+
+        document.getElementById("toggleCrosshair").addEventListener("click", () => {
+            crosshairMode = !crosshairMode;
+            canvas.style.cursor = crosshairMode ? "crosshair" : "default";
+            draw(); // re-render to clear/add crosshair
+        });
+
+        document.getElementById("copyMapPath").addEventListener("click", () => {
+            if (!currentMapName) {
+                alert("No map is loaded.");
+                return;
+            }
+
+            const path = `localStorage key: map:${currentMapName}`;
+
+            navigator.clipboard.writeText(path).then(() => {
+                alert("Map storage path copied to clipboard:\n" + path);
+            }).catch(() => {
+                alert("Failed to copy to clipboard.");
+            });
+        });
+
+        // Delegated handlers for pin list buttons
+        document.getElementById('pinList').addEventListener('click', (e) => {
+            const btn = e.target.closest('button');
+            if (!btn || !btn.dataset.action) return;
+
+            e.stopPropagation();
+            const idx = Number(btn.dataset.index);
+            const p = pins[idx];
+            if (!p) return;
+
+            switch (btn.dataset.action) {
+                case 'copy': {
+                    const yStr = (p.y === undefined || p.y === null || p.y === '' || Number.isNaN(p.y)) ? '—' : p.y;
+                    navigator.clipboard.writeText(`${p.x} ${yStr} ${p.z}`);
+                    break;
+                }
+                case 'center': {
+                    centerOnPin(p);
+                    break;
+                }
+                case 'edit': {
+                    editPin(idx);
+                    break;
+                }
+                case 'delete': {
+                    pins.splice(idx, 1);
+                    renderPinList();
+                    draw();
+                    saveCurrentMap(); // autosave on delete
+                    break;
+                }
+            }
+        });
+
+        window.addEventListener('keydown', () => hideContextMenu());
+
+        // =================== 🧩 INPUT EVENT HOOKS ===================
+        // sliders, checkboxes, map selector change
+
+        document.getElementById("createNewMapBtn").addEventListener("click", createNewMapFlow);
+
+        function createNewMapFlow() {
+            let name = prompt("Enter a name for the new map:", "New Map");
+
+            if (name === null) {
+                // Cancel was pressed
+                updateOverlayVisibility();
+                return;
+            }
+
+            name = name.trim();
+            if (name === "") name = "New Map";
+
+            // Ensure uniqueness
+            const base = name;
+            const keys = Object.keys(localStorage).filter(k => k.startsWith("map:"));
+            const names = keys.map(k => k.slice(4));
+
+            let suffix = 1;
+            while (names.includes(name)) {
+                name = `${base} (${suffix++})`;
+            }
+
+            currentMapName = name;
+            pins = [];
+            saveCurrentMap();
+
+            setMapMeta(currentMapName, { source: 'local' });
+            loadMapNames({ autoLoadFirst: false });
+            loadMap(currentMapName);
+        }
+
+        document.getElementById("mapSelector").addEventListener("change", (e) => {
+            const selected = e.target.value;
+            loadMap(selected);
+        });
+
+        window.addEventListener("resize", resizeCanvas);
+
+        document.getElementById("textScale").addEventListener("input", (e) => {
+            textScale = parseFloat(e.target.value);
+            draw();
+        });
+
+        document.getElementById("useTextScale").addEventListener("input", () => {
+            const enabled = document.getElementById("useTextScale").checked;
+            document.getElementById("textScale").disabled = !enabled;
+            draw();
+        });
+
+        ["showGrid", "showIcons", "showText", "showCoords", "showDescription", "showTags", "bgColor", "gridColor", "gridSpacing", "showAxes"].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener("input", draw);
+        });
+
+        window.addEventListener('beforeunload', (e) => {
+            const risky = !currentFileHandle || __dirty;
+            if (risky) { e.preventDefault(); e.returnValue = ''; }
+        });
+
+        // =================== 11. 🔚 FINAL INIT CALLS ===================
+        // loadMapNames(), draw(), resizeCanvas()
+
+        window.addEventListener("DOMContentLoaded", initApp);
+
+        (() => {
+            const html = document.documentElement;
+            const STORAGE_KEYS = {
+                mode: 'mapitmine.themeMode',   // 'auto' | 'light' | 'dark'
+                accent: 'mapitmine.accent',      // 'cyan' | 'magenta' | ...
+            };
+
+            // --- Apply functions ---------------------------------------------------
+            function applyMode(mode) {
+                if (mode === 'auto') {
+                    html.removeAttribute('data-theme');   // lets CSS @media (prefers-color-scheme) decide
+                } else {
+                    html.setAttribute('data-theme', mode); // 'light' or 'dark'
+                }
+                localStorage.setItem(STORAGE_KEYS.mode, mode);
+                reflectControls();
+            }
+
+            function applyAccent(accent) {
+                html.setAttribute('data-accent', accent);
+                localStorage.setItem(STORAGE_KEYS.accent, accent);
+                reflectControls();
+            }
+
+            // --- UI binding --------------------------------------------------------
+            function reflectControls() {
+                const mode = getCurrentMode();
+                const accent = getCurrentAccent();
+
+                // Update pressed state on segmented buttons
+                document.querySelectorAll('#themeMode .seg').forEach(btn => {
+                    btn.setAttribute('aria-pressed', String(btn.dataset.mode === mode));
+                });
+                document.querySelectorAll('#accentPick .seg').forEach(btn => {
+                    btn.setAttribute('aria-pressed', String(btn.dataset.accent === accent));
+                });
+            }
+
+            function getCurrentMode() {
+                return localStorage.getItem(STORAGE_KEYS.mode) || 'auto';
+            }
+            function getCurrentAccent() {
+                // Choose your default accent here:
+                return localStorage.getItem(STORAGE_KEYS.accent) || 'cyan';
+            }
+
+            function initThemeControls() {
+                // Click handlers for segmented controls
+                document.querySelectorAll('#themeMode .seg').forEach(btn => {
+                    btn.addEventListener('click', () => applyMode(btn.dataset.mode));
+                });
+                document.querySelectorAll('#accentPick .seg').forEach(btn => {
+                    btn.addEventListener('click', () => applyAccent(btn.dataset.accent));
+                });
+
+                // Initial state (restore from storage)
+                const savedMode = getCurrentMode();
+                const savedAccent = getCurrentAccent();
+                applyMode(savedMode);     // sets attribute + storage + reflects
+                applyAccent(savedAccent); // sets attribute + storage + reflects
+
+                // Optional: live update for system preference when in Auto
+                try {
+                    const media = window.matchMedia('(prefers-color-scheme: dark)');
+                    media.addEventListener('change', () => {
+                        if (getCurrentMode() === 'auto') applyMode('auto'); // re-apply to let CSS pick new scheme
+                    });
+                } catch (e) { /* older browsers */ }
+            }
+
+            // Kick off after DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initThemeControls);
+            } else {
+                initThemeControls();
+            }
+
+            // --- Optional: public API for your app code elsewhere ------------------
+            window.MapItTheme = {
+                setMode: applyMode,       // MapItTheme.setMode('light'|'dark'|'auto')
+                setAccent: applyAccent,   // MapItTheme.setAccent('cyan'|'amber'|...)
+                getMode: getCurrentMode,
+                getAccent: getCurrentAccent
+            };
+        })();
+
+    </script>
+    <script>
+        (function () {
+            const html = document.documentElement;
+
+            // Use the API if available (it is), otherwise write attributes directly.
+            const setMode = (m) => (window.MapItTheme ? window.MapItTheme.setMode(m) : html.setAttribute('data-theme', m === 'auto' ? '' : m));
+            const setAccent = (a) => (window.MapItTheme ? window.MapItTheme.setAccent(a) : html.setAttribute('data-accent', a));
+            const getMode = () => (window.MapItTheme ? window.MapItTheme.getMode() : (html.getAttribute('data-theme') || 'auto'));
+            const getAccent = () => (window.MapItTheme ? window.MapItTheme.getAccent() : (html.getAttribute('data-accent') || 'cyan'));
+
+            const modeSelect = document.getElementById('themeModeSelect');
+            const accentSelect = document.getElementById('accentSelect');
+            const legacyTheme = document.getElementById('themeSelector'); // optional
+
+            function reflectUI() {
+                if (modeSelect) modeSelect.value = getMode();
+                if (accentSelect) accentSelect.value = getAccent();
+                if (legacyTheme) {
+                    // When in Auto, show the system-computed result in the legacy dropdown
+                    const sysIsDark = matchMedia('(prefers-color-scheme: dark)').matches;
+                    legacyTheme.value = (getMode() === 'auto') ? (sysIsDark ? 'dark' : 'light') : getMode();
+                }
+            }
+
+            if (modeSelect) {
+                modeSelect.addEventListener('change', (e) => setMode(e.target.value));
+            }
+            if (accentSelect) {
+                accentSelect.addEventListener('change', (e) => setAccent(e.target.value));
+            }
+            if (legacyTheme) {
+                legacyTheme.addEventListener('change', (e) => {
+                    // If user flips legacy dropdown, treat it as Light/Dark (not Auto)
+                    const v = e.target.value;
+                    if (v === 'light' || v === 'dark') setMode(v);
+                });
+            }
+
+            // Initialize on load
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', reflectUI, { once: true });
+            } else {
+                reflectUI();
+            }
+
+            // Keep legacy dropdown visually in sync when Auto follows system
+            try {
+                const media = window.matchMedia('(prefers-color-scheme: dark)');
+                media.addEventListener('change', () => {
+                    if (getMode() === 'auto') reflectUI();
+                });
+            } catch (e) { }
+        })();
+    </script>
+
+</body>
+
+</html>
