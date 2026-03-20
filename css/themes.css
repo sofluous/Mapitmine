@@ -54,10 +54,10 @@
   --ds-bg-raised: #1b1306;
   --ds-bg-soft: #251b0a;
   --ds-bg-overlay: rgba(12, 8, 2, 0.78);
-  --ds-body-bg-image: repeating-linear-gradient(0deg, rgba(255, 206, 124, 0.032) 0 1px, transparent 1px 6px),
-    radial-gradient(circle at 16% 10%, rgba(255, 170, 60, 0.16), transparent 28%),
-    linear-gradient(180deg, #0f0b03 0%, #130e04 50%, #0c0802 100%);
-  --ds-card-bg-image: linear-gradient(180deg, rgba(255, 190, 96, 0.08), rgba(0, 0, 0, 0.2));
+  --ds-body-bg-image: repeating-linear-gradient(0deg, color-mix(in oklab, var(--ds-accent) 6%, transparent) 0 1px, transparent 1px 6px),
+    radial-gradient(circle at 16% 10%, color-mix(in oklab, var(--ds-accent) 12%, transparent), transparent 28%),
+    linear-gradient(180deg, color-mix(in oklab, var(--ds-bg) 96%, black 4%) 0%, var(--ds-bg) 50%, color-mix(in oklab, var(--ds-bg) 93%, black 7%) 100%);
+  --ds-card-bg-image: linear-gradient(180deg, color-mix(in oklab, var(--ds-accent) 7%, transparent), rgba(0, 0, 0, 0.22));
 
   --ds-text: #ffc978;
   --ds-text-muted: #ffac4a;
@@ -89,21 +89,21 @@
   --ds-radius-pill: 4px;
   --ds-label-spacing: 0.12em;
   --ds-card-shadow: 0 0 0 1px color-mix(in oklab, var(--ds-accent) 28%, transparent) inset, 0 0 20px color-mix(in oklab, var(--ds-accent) 24%, transparent);
-  --ds-btn-bg: #1a1205;
-  --ds-btn-bg-hover: #211707;
-  --ds-btn-border: #6a4618;
-  --ds-btn-text: #ffc978;
+  --ds-btn-bg: color-mix(in oklab, var(--ds-bg-elevated) 90%, var(--ds-accent) 10%);
+  --ds-btn-bg-hover: color-mix(in oklab, var(--ds-bg-elevated) 84%, var(--ds-accent) 16%);
+  --ds-btn-border: color-mix(in oklab, var(--ds-border) 76%, var(--ds-accent) 24%);
+  --ds-btn-text: var(--ds-text);
   --ds-btn-shadow: inset 0 0 0 1px color-mix(in oklab, var(--ds-accent) 38%, transparent), 0 0 10px color-mix(in oklab, var(--ds-accent) 16%, transparent);
   --ds-btn-shadow-hover: inset 0 0 0 1px color-mix(in oklab, var(--ds-accent) 52%, transparent), 0 0 16px color-mix(in oklab, var(--ds-accent) 24%, transparent);
-  --ds-btn-primary-bg: linear-gradient(180deg, #ffbf59 0%, #ff9a2e 100%);
-  --ds-btn-primary-bg-hover: linear-gradient(180deg, #ffc96f 0%, #ffaa47 100%);
-  --ds-btn-primary-border: #f79a2a;
+  --ds-btn-primary-bg: linear-gradient(180deg, color-mix(in oklab, var(--ds-accent) 72%, white 28%) 0%, var(--ds-accent) 100%);
+  --ds-btn-primary-bg-hover: linear-gradient(180deg, color-mix(in oklab, var(--ds-accent) 62%, white 38%) 0%, color-mix(in oklab, var(--ds-accent) 88%, white 12%) 100%);
+  --ds-btn-primary-border: var(--ds-accent-strong);
   --ds-btn-primary-text: var(--ds-text);
   --ds-check-mark: var(--ds-btn-bg);
-  --ds-input-bg: #171005;
-  --ds-input-border: #6b4517;
-  --ds-input-text: #ffc978;
-  --ds-input-placeholder: #d49546;
+  --ds-input-bg: color-mix(in oklab, var(--ds-bg-elevated) 91%, var(--ds-accent) 9%);
+  --ds-input-border: color-mix(in oklab, var(--ds-border) 72%, var(--ds-accent) 28%);
+  --ds-input-text: var(--ds-text);
+  --ds-input-placeholder: var(--ds-text-muted);
   --ds-input-shadow: inset 0 0 0 1px color-mix(in oklab, var(--ds-accent) 34%, transparent), 0 0 10px color-mix(in oklab, var(--ds-accent) 14%, transparent);
 }
 
@@ -919,10 +919,10 @@
   --ds-btn-bg-hover: #1a1c20;
   --ds-btn-border: #111215;
   --ds-btn-text: #f7f7f4;
-  --ds-btn-primary-bg: linear-gradient(180deg, #ff6a14 0%, #d74c00 100%);
-  --ds-btn-primary-bg-hover: linear-gradient(180deg, #ff7a2b 0%, #e65a0e 100%);
-  --ds-btn-primary-border: #d74c00;
-  --ds-btn-primary-text: #101114;
+  --ds-btn-primary-bg: linear-gradient(180deg, color-mix(in oklab, var(--ds-accent) 74%, white 26%) 0%, var(--ds-accent) 100%);
+  --ds-btn-primary-bg-hover: linear-gradient(180deg, color-mix(in oklab, var(--ds-accent) 64%, white 36%) 0%, color-mix(in oklab, var(--ds-accent) 88%, white 12%) 100%);
+  --ds-btn-primary-border: var(--ds-accent-strong);
+  --ds-btn-primary-text: var(--ds-text);
   --ds-input-bg: #f7f7f4;
   --ds-input-border: #111215;
   --ds-input-text: #111215;
@@ -965,13 +965,13 @@
   --ds-label-transform: uppercase;
   --ds-label-spacing: 0.14em;
   --ds-card-shadow: 0 12px 24px rgba(0, 0, 0, 0.16);
-  --ds-btn-bg: linear-gradient(180deg, #ff6a14 0%, #d74c00 100%);
-  --ds-btn-bg-hover: linear-gradient(180deg, #ff7a2b 0%, #e65a0e 100%);
+  --ds-btn-bg: linear-gradient(180deg, color-mix(in oklab, var(--ds-accent) 74%, white 26%) 0%, var(--ds-accent) 100%);
+  --ds-btn-bg-hover: linear-gradient(180deg, color-mix(in oklab, var(--ds-accent) 64%, white 36%) 0%, color-mix(in oklab, var(--ds-accent) 88%, white 12%) 100%);
   --ds-btn-border: #111215;
   --ds-btn-text: #101114;
   --ds-btn-primary-bg: #111215;
-  --ds-btn-primary-bg-hover: #1a1c20;
-  --ds-btn-primary-border: #111215;
+  --ds-btn-primary-bg-hover: color-mix(in oklab, var(--ds-text) 88%, var(--ds-accent) 12%);
+  --ds-btn-primary-border: color-mix(in oklab, var(--ds-text) 72%, var(--ds-accent) 28%);
   --ds-btn-primary-text: #f7f7f4;
   --ds-input-bg: #f7f7f4;
   --ds-input-border: #111215;
