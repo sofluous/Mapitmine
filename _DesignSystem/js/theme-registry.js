@@ -22,7 +22,8 @@
       { id: "oilslick-nacre", label: "Oilslick Nacre", group: "Extended" },
       { id: "holo-nocturne", label: "Holo Nocturne", group: "Extended" },
       { id: "signal-poster", label: "Signal Poster", group: "Graphic" },
-      { id: "signal-diagram", label: "Signal Diagram", group: "Graphic" }
+      { id: "signal-diagram", label: "Signal Diagram", group: "Graphic" },
+      { id: "type-four-sprint", label: "Type Four Sprint", group: "Graphic" }
     ]
   };
 })(window);

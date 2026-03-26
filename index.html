@@ -16,9 +16,8 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/iconoir@latest/css/iconoir.css"
     />
-    <link rel="stylesheet" href="./css/tokens.css" />
-    <link rel="stylesheet" href="./css/themes.css" />
-    <link rel="stylesheet" href="./css/components.css" />
+    <link rel="stylesheet" href="./_DesignSystem/theme.css" />
+
     <style>
       /* ============================================================================
  MapItMine Design System token bridge
@@ -1883,7 +1882,10 @@
               <section class="control-section ds-card ds-stack">
                 <div class="control-section-head">
                   <div class="control-section-title">
-                    <span class="io iconoir-multiple-pages" aria-hidden="true"></span>
+                    <span
+                      class="io iconoir-multiple-pages"
+                      aria-hidden="true"
+                    ></span>
                     Map Library
                   </div>
                 </div>
@@ -1897,19 +1899,30 @@
                         title="Select a map"
                       ></select>
                       <div class="map-select-actions">
-                        <button id="createNewMapBtn" class="ds-btn" type="button">
-                          <span class="io iconoir-plus" aria-hidden="true"></span>
+                        <button
+                          id="createNewMapBtn"
+                          class="ds-btn"
+                          type="button"
+                        >
+                          <span
+                            class="io iconoir-plus"
+                            aria-hidden="true"
+                          ></span>
                           New
                         </button>
                         <button id="mapImportBtn" class="ds-btn" type="button">
-                          <span class="io iconoir-download" aria-hidden="true"></span>
+                          <span
+                            class="io iconoir-download"
+                            aria-hidden="true"
+                          ></span>
                           Import
                         </button>
                       </div>
                     </div>
                   </div>
                   <p class="section-note">
-                    Choose a local map, create a fresh one, or import JSON into your local library.
+                    Choose a local map, create a fresh one, or import JSON into
+                    your local library.
                   </p>
                 </div>
               </section>
@@ -1936,13 +1949,18 @@
                     <div class="map-meta-row">
                       <span class="map-meta-label">Source</span>
                       <span id="mapMetaSource" class="map-meta-value">
-                        <span class="io iconoir-hard-drive" aria-hidden="true"></span>
+                        <span
+                          class="io iconoir-hard-drive"
+                          aria-hidden="true"
+                        ></span>
                         <span id="mapMetaSourceText">Local</span>
                       </span>
                     </div>
                     <div class="map-meta-row">
                       <span class="map-meta-label">Details</span>
-                      <span id="mapMetaDetail" class="map-meta-detail">Not linked</span>
+                      <span id="mapMetaDetail" class="map-meta-detail"
+                        >Not linked</span
+                      >
                     </div>
                     <div class="map-meta-row">
                       <span class="map-meta-label">Pins</span>
@@ -1965,7 +1983,11 @@
                       <span class="io iconoir-copy" aria-hidden="true"></span>
                       Duplicate
                     </button>
-                    <button id="deleteMapBtn" class="ds-btn ds-btn-danger" type="button">
+                    <button
+                      id="deleteMapBtn"
+                      class="ds-btn ds-btn-danger"
+                      type="button"
+                    >
                       <span class="io iconoir-trash" aria-hidden="true"></span>
                       Delete
                     </button>
@@ -1986,15 +2008,22 @@
                       <span class="map-data-title">Linked Files</span>
                     </div>
                     <p class="map-data-copy">
-                      Open links a JSON file to the current workspace. Save writes back to that linked file.
+                      Open links a JSON file to the current workspace. Save
+                      writes back to that linked file.
                     </p>
                     <div class="map-action-row">
                       <button id="mapOpenBtn" class="ds-btn" type="button">
-                        <span class="io iconoir-folder" aria-hidden="true"></span>
+                        <span
+                          class="io iconoir-folder"
+                          aria-hidden="true"
+                        ></span>
                         Open File
                       </button>
                       <button id="mapSaveBtn" class="ds-btn" type="button">
-                        <span class="io iconoir-save-floppy-disk" aria-hidden="true"></span>
+                        <span
+                          class="io iconoir-save-floppy-disk"
+                          aria-hidden="true"
+                        ></span>
                         Save
                       </button>
                     </div>
@@ -2004,15 +2033,26 @@
                       <span class="map-data-title">Portable Copies</span>
                     </div>
                     <p class="map-data-copy">
-                      Save As creates a new linked file. Export downloads a standalone JSON copy without linking.
+                      Save As creates a new linked file. Export downloads a
+                      standalone JSON copy without linking.
                     </p>
                     <div class="map-action-row">
-                      <button id="linkNowBtn" class="ds-btn ds-btn-primary" type="button">
-                        <span class="io iconoir-save-floppy-disk" aria-hidden="true"></span>
+                      <button
+                        id="linkNowBtn"
+                        class="ds-btn ds-btn-primary"
+                        type="button"
+                      >
+                        <span
+                          class="io iconoir-save-floppy-disk"
+                          aria-hidden="true"
+                        ></span>
                         Save As
                       </button>
                       <button id="mapExportBtn" class="ds-btn" type="button">
-                        <span class="io iconoir-upload" aria-hidden="true"></span>
+                        <span
+                          class="io iconoir-upload"
+                          aria-hidden="true"
+                        ></span>
                         Export
                       </button>
                     </div>
@@ -2029,7 +2069,11 @@
           </div>
         </div>
 
-        <div id="pinListPanel" class="workspace-section" data-workspace-panel="pins">
+        <div
+          id="pinListPanel"
+          class="workspace-section"
+          data-workspace-panel="pins"
+        >
           <div class="workspace-section-body">
             <div class="pin-filter-shell">
               <div class="pin-toolbar">
@@ -2054,17 +2098,28 @@
                   </button>
                 </div>
                 <div class="pin-toolbar-row pin-toolbar-row--meta">
-                  <span id="pinFilterSummary" class="badge ds-chip">All types</span>
-                  <span id="pinResultSummary" class="badge ds-chip">0/0 shown</span>
+                  <span id="pinFilterSummary" class="badge ds-chip"
+                    >All types</span
+                  >
+                  <span id="pinResultSummary" class="badge ds-chip"
+                    >0/0 shown</span
+                  >
                 </div>
               </div>
-              <div id="pinFilterPopover" class="app-panel pin-filter-popover is-hidden">
+              <div
+                id="pinFilterPopover"
+                class="app-panel pin-filter-popover is-hidden"
+              >
                 <div class="pin-filter-popover-head">
                   <div class="control-section-title">
                     <span class="io iconoir-filter" aria-hidden="true"></span>
                     Type Filters
                   </div>
-                  <button id="pinFilterResetBtn" class="ds-btn ds-btn-sm" type="button">
+                  <button
+                    id="pinFilterResetBtn"
+                    class="ds-btn ds-btn-sm"
+                    type="button"
+                  >
                     Reset
                   </button>
                 </div>
@@ -2095,7 +2150,9 @@
                   <span class="io iconoir-map" aria-hidden="true"></span>
                   Map
                 </div>
-                <button class="ds-btn ds-btn-sm" onclick="resetView()">Reset View</button>
+                <button class="ds-btn ds-btn-sm" onclick="resetView()">
+                  Reset View
+                </button>
               </div>
               <div class="control-form">
                 <div class="control-field">
@@ -2137,27 +2194,63 @@
                 <div class="control-field inline-row">
                   <label for="minX">X Range</label>
                   <div class="control-inline">
-                    <input class="ds-input" type="number" id="minX" placeholder="Min" />
-                    <input class="ds-input" type="number" id="maxX" placeholder="Max" />
+                    <input
+                      class="ds-input"
+                      type="number"
+                      id="minX"
+                      placeholder="Min"
+                    />
+                    <input
+                      class="ds-input"
+                      type="number"
+                      id="maxX"
+                      placeholder="Max"
+                    />
                   </div>
                 </div>
                 <div class="control-field inline-row">
                   <label for="minZ">Z Range</label>
                   <div class="control-inline">
-                    <input class="ds-input" type="number" id="minZ" placeholder="Min" />
-                    <input class="ds-input" type="number" id="maxZ" placeholder="Max" />
+                    <input
+                      class="ds-input"
+                      type="number"
+                      id="minZ"
+                      placeholder="Min"
+                    />
+                    <input
+                      class="ds-input"
+                      type="number"
+                      id="maxZ"
+                      placeholder="Max"
+                    />
                   </div>
                 </div>
                 <div class="control-field inline-row">
                   <label for="bgColor">Surface</label>
                   <div class="control-inline">
-                    <input class="ds-input" type="color" id="bgColor" value="#0a0f0a" />
-                    <input class="ds-input" type="color" id="gridColor" value="#19241C" />
+                    <input
+                      class="ds-input"
+                      type="color"
+                      id="bgColor"
+                      value="#0a0f0a"
+                    />
+                    <input
+                      class="ds-input"
+                      type="color"
+                      id="gridColor"
+                      value="#19241C"
+                    />
                   </div>
                 </div>
                 <div class="control-field no-readout">
                   <label for="gridSpacing">Grid Spacing</label>
-                  <input class="ds-input" type="number" id="gridSpacing" value="100" step="10" />
+                  <input
+                    class="ds-input"
+                    type="number"
+                    id="gridSpacing"
+                    value="100"
+                    step="10"
+                  />
                 </div>
                 <div class="control-field switch-row">
                   <label for="showAxes">Axis Guides</label>
@@ -2265,7 +2358,10 @@
                       aria-pressed="false"
                       title="Top left"
                     >
-                      <span class="io iconoir-align-left" aria-hidden="true"></span>
+                      <span
+                        class="io iconoir-align-left"
+                        aria-hidden="true"
+                      ></span>
                     </button>
                     <button
                       type="button"
@@ -2274,7 +2370,10 @@
                       aria-pressed="false"
                       title="Top right"
                     >
-                      <span class="io iconoir-align-right" aria-hidden="true"></span>
+                      <span
+                        class="io iconoir-align-right"
+                        aria-hidden="true"
+                      ></span>
                     </button>
                     <button
                       type="button"
@@ -2283,7 +2382,10 @@
                       aria-pressed="false"
                       title="Bottom left"
                     >
-                      <span class="io iconoir-align-bottom-box" aria-hidden="true"></span>
+                      <span
+                        class="io iconoir-align-bottom-box"
+                        aria-hidden="true"
+                      ></span>
                     </button>
                     <button
                       type="button"
@@ -2292,7 +2394,11 @@
                       aria-pressed="true"
                       title="Bottom right"
                     >
-                      <span class="io iconoir-align-bottom-box" style="transform: scaleX(-1)" aria-hidden="true"></span>
+                      <span
+                        class="io iconoir-align-bottom-box"
+                        style="transform: scaleX(-1)"
+                        aria-hidden="true"
+                      ></span>
                     </button>
                   </div>
                   <select id="minimapPosition" class="ds-select is-hidden">
@@ -2348,7 +2454,11 @@
           </div>
         </div>
 
-        <div id="settings" class="workspace-section" data-workspace-panel="settings">
+        <div
+          id="settings"
+          class="workspace-section"
+          data-workspace-panel="settings"
+        >
           <div class="workspace-section-head">
             <div class="workspace-section-title">
               <span class="io iconoir-settings" aria-hidden="true"></span>
@@ -2493,7 +2603,9 @@
             <span class="io iconoir-map-pin" aria-hidden="true"></span>
             Pin Editor
           </div>
-          <div class="pin-editor-subtitle">Drag panel or drag pin on canvas</div>
+          <div class="pin-editor-subtitle">
+            Drag panel or drag pin on canvas
+          </div>
         </div>
         <button
           class="ds-btn ds-btn-icon ds-icon-action ds-btn-sm"
@@ -2509,7 +2621,11 @@
         <section class="control-section ds-card ds-stack">
           <div class="pin-editor-grid">
             <div class="control-field">
-              <select id="pinEditorID" class="ds-select" aria-label="Pin type"></select>
+              <select
+                id="pinEditorID"
+                class="ds-select"
+                aria-label="Pin type"
+              ></select>
             </div>
             <div class="control-field">
               <div class="pin-editor-mini-group">
@@ -2544,21 +2660,42 @@
             </div>
             <div class="control-field editor-span-2">
               <div class="control-inline control-inline-triple">
-                <input class="ds-input" type="number" id="pinEditorX" placeholder="X" aria-label="Pin X position" />
-                <input class="ds-input" type="number" id="pinEditorY" placeholder="Y" aria-label="Pin Y position" />
-                <input class="ds-input" type="number" id="pinEditorZ" placeholder="Z" aria-label="Pin Z position" />
+                <input
+                  class="ds-input"
+                  type="number"
+                  id="pinEditorX"
+                  placeholder="X"
+                  aria-label="Pin X position"
+                />
+                <input
+                  class="ds-input"
+                  type="number"
+                  id="pinEditorY"
+                  placeholder="Y"
+                  aria-label="Pin Y position"
+                />
+                <input
+                  class="ds-input"
+                  type="number"
+                  id="pinEditorZ"
+                  placeholder="Z"
+                  aria-label="Pin Z position"
+                />
               </div>
             </div>
           </div>
         </section>
       </div>
       <div class="pin-editor-actions">
-        <span class="pin-editor-hint">Enter to move fields, Ctrl/Cmd+Enter to save</span>
+        <span class="pin-editor-hint"
+          >Enter to move fields, Ctrl/Cmd+Enter to save</span
+        >
         <button class="ds-btn" onclick="closePinEditor()">Cancel</button>
-        <button class="ds-btn ds-btn-primary" onclick="submitPinEditor()">Save</button>
+        <button class="ds-btn ds-btn-primary" onclick="submitPinEditor()">
+          Save
+        </button>
       </div>
     </div>
-
 
     <!-- No Map Overlay Screen -->
     <div id="noMapOverlay" class="overlay" style="display: none">
@@ -2576,7 +2713,11 @@
       </div>
     </div>
 
-    <div id="toastStack" class="ds-toast-stack app-toast-stack" aria-live="polite"></div>
+    <div
+      id="toastStack"
+      class="ds-toast-stack app-toast-stack"
+      aria-live="polite"
+    ></div>
 
     <dialog id="confirmDialog" class="ds-modal">
       <div class="ds-modal-panel ds-stack">
@@ -2586,8 +2727,16 @@
           <p id="confirmDialogMessage"></p>
         </div>
         <div class="ds-toolbar">
-          <button id="confirmDialogCancel" class="ds-btn" type="button">Cancel</button>
-          <button id="confirmDialogOk" class="ds-btn ds-btn-danger" type="button">Confirm</button>
+          <button id="confirmDialogCancel" class="ds-btn" type="button">
+            Cancel
+          </button>
+          <button
+            id="confirmDialogOk"
+            class="ds-btn ds-btn-danger"
+            type="button"
+          >
+            Confirm
+          </button>
         </div>
       </div>
     </dialog>
@@ -2604,8 +2753,12 @@
           <input id="textPromptInput" class="ds-input" type="text" />
         </label>
         <div class="ds-toolbar">
-          <button id="textPromptCancel" class="ds-btn" type="button">Cancel</button>
-          <button id="textPromptOk" class="ds-btn ds-btn-primary" type="button">Save</button>
+          <button id="textPromptCancel" class="ds-btn" type="button">
+            Cancel
+          </button>
+          <button id="textPromptOk" class="ds-btn ds-btn-primary" type="button">
+            Save
+          </button>
         </div>
       </div>
     </dialog>
@@ -2648,7 +2801,8 @@
         </span>
       </div>
     </div>
-
+    <script src="./_DesignSystem/js/theme-registry.js"></script>
+    <script src="./_DesignSystem/js/theme-selector.js"></script>
     <script>
       // Global variables
       // canvas, context, zoom, offset, pins, pinTypes, minimap settings...
@@ -2857,8 +3011,12 @@
       const toastStack = document.getElementById("toastStack");
       const confirmDialog = document.getElementById("confirmDialog");
       const confirmDialogTitle = document.getElementById("confirmDialogTitle");
-      const confirmDialogMessage = document.getElementById("confirmDialogMessage");
-      const confirmDialogCancel = document.getElementById("confirmDialogCancel");
+      const confirmDialogMessage = document.getElementById(
+        "confirmDialogMessage",
+      );
+      const confirmDialogCancel = document.getElementById(
+        "confirmDialogCancel",
+      );
       const confirmDialogOk = document.getElementById("confirmDialogOk");
       const textPromptDialog = document.getElementById("textPromptDialog");
       const pinSearchInput = document.getElementById("pinSearchInput");
@@ -2869,10 +3027,14 @@
       const pinTypeChecklist = document.getElementById("pinTypeChecklist");
       const pinEditorPanel = document.getElementById("pinEditorPanel");
       const pinEditorHeader = document.getElementById("pinEditorHeader");
-      if (pinFilterPopover && pinFilterPopover.parentElement !== document.body) {
+      if (
+        pinFilterPopover &&
+        pinFilterPopover.parentElement !== document.body
+      ) {
         document.body.appendChild(pinFilterPopover);
       }
-      const minimapSizePresetSelect = document.getElementById("minimapSizePreset");
+      const minimapSizePresetSelect =
+        document.getElementById("minimapSizePreset");
       const useTextScaleBtn = document.getElementById("useTextScaleBtn");
       const mapMetaSource = document.getElementById("mapMetaSource");
       const mapMetaDetail = document.getElementById("mapMetaDetail");
@@ -2896,7 +3058,8 @@
       function showToast(message, kind = "success", ms = 2200) {
         if (!toastStack) return;
         const toast = document.createElement("div");
-        const tone = kind === "error" ? "danger" : kind === "warn" ? "warning" : "success";
+        const tone =
+          kind === "error" ? "danger" : kind === "warn" ? "warning" : "success";
         toast.className = `ds-toast ${tone}`;
         toast.textContent = message;
         toastStack.appendChild(toast);
@@ -2929,7 +3092,9 @@
           const onCancel = () => cleanup(false);
 
           confirmDialogOk.addEventListener("click", onConfirm, { once: true });
-          confirmDialogCancel.addEventListener("click", onCancel, { once: true });
+          confirmDialogCancel.addEventListener("click", onCancel, {
+            once: true,
+          });
           confirmDialog.addEventListener("cancel", onCancel, { once: true });
           confirmDialog.showModal();
         });
@@ -3056,52 +3221,56 @@
         });
       }
 
-      document.getElementById("deleteMapBtn").addEventListener("click", async () => {
-        if (!currentMapName) return;
+      document
+        .getElementById("deleteMapBtn")
+        .addEventListener("click", async () => {
+          if (!currentMapName) return;
 
-        const confirmDelete = await showConfirmDialog({
-          title: "Delete map?",
-          message: `This will permanently remove "${currentMapName}" from local storage.`,
-          confirmText: "Delete",
+          const confirmDelete = await showConfirmDialog({
+            title: "Delete map?",
+            message: `This will permanently remove "${currentMapName}" from local storage.`,
+            confirmText: "Delete",
+          });
+          if (!confirmDelete) return;
+          pushHistoryState("Delete Map");
+
+          localStorage.removeItem(`map:${currentMapName}`);
+
+          const remaining = Object.keys(localStorage)
+            .filter((k) => k.startsWith("map:"))
+            .map((k) => k.slice(4));
+
+          if (remaining.length > 0) {
+            currentMapName = remaining[0];
+            loadMapNames();
+            loadMap(currentMapName);
+          } else {
+            currentMapName = null;
+            setCurrentMapNameUI(null);
+            pins = [];
+            loadMapNames();
+            updateOverlayVisibility();
+          }
+          showToast("Map deleted.");
         });
-        if (!confirmDelete) return;
-        pushHistoryState("Delete Map");
 
-        localStorage.removeItem(`map:${currentMapName}`);
+      document
+        .getElementById("duplicateMapBtn")
+        .addEventListener("click", () => {
+          if (!currentMapName) {
+            showToast("No map selected.", "warn");
+            return;
+          }
 
-        const remaining = Object.keys(localStorage)
-          .filter((k) => k.startsWith("map:"))
-          .map((k) => k.slice(4));
-
-        if (remaining.length > 0) {
-          currentMapName = remaining[0];
+          const duplicateName = dedupeMapName(`${currentMapName} Copy`);
+          pushHistoryState("Duplicate Map");
+          localStorage.setItem(mapKey(duplicateName), JSON.stringify(pins));
+          setMapMeta(duplicateName, { source: "local" });
+          currentMapName = duplicateName;
           loadMapNames();
-          loadMap(currentMapName);
-        } else {
-          currentMapName = null;
-          setCurrentMapNameUI(null);
-          pins = [];
-          loadMapNames();
-          updateOverlayVisibility();
-        }
-        showToast("Map deleted.");
-      });
-
-      document.getElementById("duplicateMapBtn").addEventListener("click", () => {
-        if (!currentMapName) {
-          showToast("No map selected.", "warn");
-          return;
-        }
-
-        const duplicateName = dedupeMapName(`${currentMapName} Copy`);
-        pushHistoryState("Duplicate Map");
-        localStorage.setItem(mapKey(duplicateName), JSON.stringify(pins));
-        setMapMeta(duplicateName, { source: "local" });
-        currentMapName = duplicateName;
-        loadMapNames();
-        loadMap(duplicateName);
-        showToast(`Map duplicated as "${duplicateName}".`);
-      });
+          loadMap(duplicateName);
+          showToast(`Map duplicated as "${duplicateName}".`);
+        });
 
       // DOM initialization
 
@@ -3109,7 +3278,8 @@
         const mapSaveBtn = document.getElementById("mapSaveBtn");
         const linked =
           typeof currentFileHandle !== "undefined" && !!currentFileHandle;
-        if (mapSaveBtn) mapSaveBtn.disabled = !linked && !window.showSaveFilePicker;
+        if (mapSaveBtn)
+          mapSaveBtn.disabled = !linked && !window.showSaveFilePicker;
         if (window.__reflectLinkUI) window.__reflectLinkUI();
       }
 
@@ -3137,7 +3307,8 @@
           }
         }
 
-        if (mapSaveBtn) mapSaveBtn.disabled = !linked && !window.showSaveFilePicker;
+        if (mapSaveBtn)
+          mapSaveBtn.disabled = !linked && !window.showSaveFilePicker;
         syncMapMetaUI();
         updateStatusStrip();
       }
@@ -3905,7 +4076,9 @@
       }
 
       function getActiveWorkspaceTab() {
-        const active = document.querySelector("[data-workspace-panel].is-active");
+        const active = document.querySelector(
+          "[data-workspace-panel].is-active",
+        );
         return active?.dataset.workspacePanel || "maps";
       }
 
@@ -4017,14 +4190,19 @@
         let initialTab = "maps";
         let initialCollapsed = isMobileLayout();
         try {
-          initialTab = localStorage.getItem(WORKSPACE_TAB_STORAGE_KEY) || initialTab;
+          initialTab =
+            localStorage.getItem(WORKSPACE_TAB_STORAGE_KEY) || initialTab;
           const storedCollapse = localStorage.getItem(
             WORKSPACE_COLLAPSE_STORAGE_KEY,
           );
-          if (storedCollapse !== null) initialCollapsed = storedCollapse === "1";
+          if (storedCollapse !== null)
+            initialCollapsed = storedCollapse === "1";
         } catch (_) {}
 
-        setWorkspaceTab(initialTab, { openPanel: !initialCollapsed, persist: false });
+        setWorkspaceTab(initialTab, {
+          openPanel: !initialCollapsed,
+          persist: false,
+        });
         setWorkspaceCollapsed(initialCollapsed, false);
       }
 
@@ -4036,23 +4214,22 @@
           .forEach((btn) => {
             btn.addEventListener("click", () => {
               pushHistoryState("Move Minimap");
-              if (positionSelect) positionSelect.value = btn.dataset.minimapPositionBtn;
+              if (positionSelect)
+                positionSelect.value = btn.dataset.minimapPositionBtn;
               syncMinimapOverlay();
               draw();
             });
           });
-        document
-          .querySelectorAll("[data-minimap-size-btn]")
-          .forEach((btn) => {
-            btn.addEventListener("click", () => {
-              pushHistoryState("Resize Minimap");
-              if (sizeSelect) sizeSelect.value = btn.dataset.minimapSizeBtn;
-              minimapSizePreset = btn.dataset.minimapSizeBtn || "md";
-              syncMinimapSizeButtons();
-              resizeMinimapCanvas();
-              draw();
-            });
+        document.querySelectorAll("[data-minimap-size-btn]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            pushHistoryState("Resize Minimap");
+            if (sizeSelect) sizeSelect.value = btn.dataset.minimapSizeBtn;
+            minimapSizePreset = btn.dataset.minimapSizeBtn || "md";
+            syncMinimapSizeButtons();
+            resizeMinimapCanvas();
+            draw();
           });
+        });
         syncMinimapPositionButtons();
         syncMinimapSizeButtons();
       }
@@ -4067,10 +4244,7 @@
         if (crosshairBtn)
           crosshairBtn.setAttribute("aria-pressed", String(!!crosshairMode));
         if (collapseBtn && shell)
-          collapseBtn.setAttribute(
-            "aria-pressed",
-            String(!collapsed),
-          );
+          collapseBtn.setAttribute("aria-pressed", String(!collapsed));
         if (collapseBtn) {
           const label = collapsed
             ? "Expand workspace panel"
@@ -4099,7 +4273,9 @@
           const shell = getWorkspaceShell();
           const hasStoredCollapse = (() => {
             try {
-              return localStorage.getItem(WORKSPACE_COLLAPSE_STORAGE_KEY) !== null;
+              return (
+                localStorage.getItem(WORKSPACE_COLLAPSE_STORAGE_KEY) !== null
+              );
             } catch (_) {
               return false;
             }
@@ -4187,7 +4363,9 @@
           }
         });
 
-        return [...typeEntries.entries()].sort((a, b) => a[1].localeCompare(b[1]));
+        return [...typeEntries.entries()].sort((a, b) =>
+          a[1].localeCompare(b[1]),
+        );
       }
 
       function syncPinTypeFilterOptions() {
@@ -4248,7 +4426,9 @@
 
         const meta = getMapMeta(currentMapName);
         const linked = !!currentFileHandle || meta?.source === "disk";
-        const sourceIcon = linked ? "iconoir-cloud-check" : "iconoir-hard-drive";
+        const sourceIcon = linked
+          ? "iconoir-cloud-check"
+          : "iconoir-hard-drive";
         if (mapMetaSource) {
           mapMetaSource.innerHTML = `<span class="io ${sourceIcon}" aria-hidden="true"></span><span id="mapMetaSourceText">${linked ? "Linked" : "Local"}</span>`;
         }
@@ -4260,11 +4440,12 @@
               : linked
                 ? "Linked file"
                 : "Stored in browser";
-          const detailIcon = currentFileHandle?.name || meta?.fileName
-            ? "iconoir-page"
-            : linked
-              ? "iconoir-link"
-              : "iconoir-database";
+          const detailIcon =
+            currentFileHandle?.name || meta?.fileName
+              ? "iconoir-page"
+              : linked
+                ? "iconoir-link"
+                : "iconoir-database";
           mapMetaDetail.innerHTML = `<span class="io ${detailIcon}" aria-hidden="true"></span><span>${detailText}</span>`;
         }
       }
@@ -4275,8 +4456,13 @@
         const enabled = !!input?.checked;
         if (scaleInput) scaleInput.disabled = !enabled;
         if (useTextScaleBtn) {
-          useTextScaleBtn.setAttribute("aria-pressed", enabled ? "true" : "false");
-          useTextScaleBtn.title = enabled ? "Disable text scaling" : "Enable text scaling";
+          useTextScaleBtn.setAttribute(
+            "aria-pressed",
+            enabled ? "true" : "false",
+          );
+          useTextScaleBtn.title = enabled
+            ? "Disable text scaling"
+            : "Enable text scaling";
         }
       }
 
@@ -4330,7 +4516,10 @@
       function pushHistoryState(label = "Change") {
         const snapshot = captureHistoryState();
         const last = undoStack[undoStack.length - 1];
-        if (last && JSON.stringify(last.snapshot) === JSON.stringify(snapshot)) {
+        if (
+          last &&
+          JSON.stringify(last.snapshot) === JSON.stringify(snapshot)
+        ) {
           refreshHistoryButtons();
           return;
         }
@@ -4425,7 +4614,8 @@
       }
 
       function updateStatusStrip() {
-        if (statusMapName) statusMapName.textContent = currentMapName || "No map";
+        if (statusMapName)
+          statusMapName.textContent = currentMapName || "No map";
         if (statusSaveState) {
           const base = currentFileHandle ? "Linked" : "Local";
           statusSaveState.textContent = __dirty ? `${base} - Unsaved` : base;
@@ -4436,17 +4626,23 @@
           const redoLabel = redoStack.at(-1)?.label || "None";
           statusHistoryState.textContent = `U:${undoLabel} (${undoStack.length}) R:${redoLabel} (${redoStack.length})`;
         }
-        if (statusZoomValue) statusZoomValue.textContent = `${zoom.toFixed(2)}x`;
+        if (statusZoomValue)
+          statusZoomValue.textContent = `${zoom.toFixed(2)}x`;
         if (statusCursorCoords) {
-          const cursorX = Number.isFinite(lastCursor.x) ? Math.round(lastCursor.x) : 0;
-          const cursorZ = Number.isFinite(lastCursor.z) ? Math.round(lastCursor.z) : 0;
+          const cursorX = Number.isFinite(lastCursor.x)
+            ? Math.round(lastCursor.x)
+            : 0;
+          const cursorZ = Number.isFinite(lastCursor.z)
+            ? Math.round(lastCursor.z)
+            : 0;
           statusCursorCoords.textContent = `${cursorX}, ${cursorZ}`;
         }
         syncControlReadouts();
       }
 
       function resizeMinimapCanvas() {
-        minimapSize = MINIMAP_SIZE_PRESETS[minimapSizePreset] || MINIMAP_SIZE_PRESETS.md;
+        minimapSize =
+          MINIMAP_SIZE_PRESETS[minimapSizePreset] || MINIMAP_SIZE_PRESETS.md;
         minimapCanvas.width = minimapSize;
         minimapCanvas.height = minimapSize;
         minimapCanvas.style.width = `${minimapSize}px`;
@@ -4461,12 +4657,10 @@
       function syncMinimapSizeButtons() {
         const value = minimapSizePresetSelect?.value || minimapSizePreset;
         minimapSizePreset = value in MINIMAP_SIZE_PRESETS ? value : "md";
-        document
-          .querySelectorAll("[data-minimap-size-btn]")
-          .forEach((btn) => {
-            const active = btn.dataset.minimapSizeBtn === minimapSizePreset;
-            btn.setAttribute("aria-pressed", active ? "true" : "false");
-          });
+        document.querySelectorAll("[data-minimap-size-btn]").forEach((btn) => {
+          const active = btn.dataset.minimapSizeBtn === minimapSizePreset;
+          btn.setAttribute("aria-pressed", active ? "true" : "false");
+        });
       }
 
       function renderPinList() {
@@ -4639,11 +4833,13 @@
       }
 
       function clampPinEditorPosition(screenX, screenY) {
-        const panel = pinEditorPanel || document.getElementById("pinEditorPanel");
+        const panel =
+          pinEditorPanel || document.getElementById("pinEditorPanel");
         const panelWidth = panel?.offsetWidth || 340;
         const panelHeight = panel?.offsetHeight || 420;
         const hudHeight = document.getElementById("hud")?.offsetHeight || 0;
-        const statusHeight = document.getElementById("mapStatusStrip")?.offsetHeight || 0;
+        const statusHeight =
+          document.getElementById("mapStatusStrip")?.offsetHeight || 0;
         const padding = 12;
         const minX = padding;
         const maxX = Math.max(minX, window.innerWidth - panelWidth - padding);
@@ -4659,7 +4855,8 @@
       }
 
       function positionPinEditor(screenX, screenY) {
-        const panel = pinEditorPanel || document.getElementById("pinEditorPanel");
+        const panel =
+          pinEditorPanel || document.getElementById("pinEditorPanel");
         if (!panel) return;
         const clamped = clampPinEditorPosition(screenX, screenY);
         panel.style.left = `${clamped.x}px`;
@@ -4667,7 +4864,8 @@
       }
 
       function getPinEditorAnchorPoint(targetX, targetY) {
-        const panel = pinEditorPanel || document.getElementById("pinEditorPanel");
+        const panel =
+          pinEditorPanel || document.getElementById("pinEditorPanel");
         if (!panel || panel.style.display === "none") {
           return { x: targetX, y: targetY };
         }
@@ -4851,7 +5049,8 @@
         document.getElementById("pinEditorDescription").value =
           pin.description ?? "";
         document.getElementById("pinEditorIcon").value = pin.icon ?? "";
-        document.getElementById("pinEditorColor").value = pin.color ?? "#ffcc00";
+        document.getElementById("pinEditorColor").value =
+          pin.color ?? "#ffcc00";
 
         selectedPinIndex = index;
         draw();
@@ -5024,13 +5223,14 @@
             !!document.getElementById("showDescription")?.checked,
           showTags: !!document.getElementById("showTags")?.checked,
           showAxes: !!document.getElementById("showAxes")?.checked,
-          showLabelBackground:
-            !!document.getElementById("showLabelBackground")?.checked,
+          showLabelBackground: !!document.getElementById("showLabelBackground")
+            ?.checked,
           showMiniGrid: !!document.getElementById("showMiniGrid")?.checked,
           showMinimap: !!document.getElementById("showMinimap")?.checked,
           minimapPosition: document.getElementById("minimapPosition")?.value,
           minimapSizePreset:
-            document.getElementById("minimapSizePreset")?.value || minimapSizePreset,
+            document.getElementById("minimapSizePreset")?.value ||
+            minimapSizePreset,
           zoom,
           offsetX,
           offsetY,
@@ -5066,7 +5266,8 @@
         if (s.minimapPosition) set("minimapPosition", s.minimapPosition);
         if (s.minimapSizePreset) set("minimapSizePreset", s.minimapSizePreset);
         minimapSizePreset =
-          document.getElementById("minimapSizePreset")?.value || minimapSizePreset;
+          document.getElementById("minimapSizePreset")?.value ||
+          minimapSizePreset;
         if (Number.isFinite(s.zoom)) zoom = s.zoom;
         if (Number.isFinite(s.offsetX)) offsetX = s.offsetX;
         if (Number.isFinite(s.offsetY)) offsetY = s.offsetY;
@@ -5192,7 +5393,10 @@
 
       async function openMapFromDisk() {
         if (!window.showOpenFilePicker) {
-          showToast("This browser does not support Open. Use Import instead.", "warn");
+          showToast(
+            "This browser does not support Open. Use Import instead.",
+            "warn",
+          );
           return;
         }
         try {
@@ -5301,7 +5505,10 @@
 
       async function saveAsMapToDisk() {
         if (!window.showSaveFilePicker) {
-          showToast("This browser does not support Save As. Use Export instead.", "warn");
+          showToast(
+            "This browser does not support Save As. Use Export instead.",
+            "warn",
+          );
           return;
         }
         try {
@@ -5535,7 +5742,10 @@
         }
         if (pinCanvasDragState) {
           const world = getWorldCoordsFromClient(e.clientX, e.clientY);
-          if (pinCanvasDragState.mode === "existing" && currentEditIndex !== null) {
+          if (
+            pinCanvasDragState.mode === "existing" &&
+            currentEditIndex !== null
+          ) {
             const targetPin = pins[currentEditIndex];
             if (targetPin) {
               targetPin.x = world.x;
@@ -5944,7 +6154,8 @@
             id === "minimapSizePreset"
           ) {
             minimapSizePreset =
-              document.getElementById("minimapSizePreset")?.value || minimapSizePreset;
+              document.getElementById("minimapSizePreset")?.value ||
+              minimapSizePreset;
             syncMinimapOverlay();
           }
           draw();
@@ -6019,10 +6230,7 @@
       // loadMapNames(), draw(), resizeCanvas()
 
       window.addEventListener("DOMContentLoaded", initApp);
-
     </script>
-    <script src="./js/theme-registry.js"></script>
-    <script src="./js/theme-selector.js"></script>
     <script>
       (() => {
         const html = document.documentElement;
@@ -6050,7 +6258,9 @@
 
         function syncCanvasTheme() {
           const styles = getComputedStyle(html);
-          const bg = cssColorToHex(styles.getPropertyValue("--color-bg").trim());
+          const bg = cssColorToHex(
+            styles.getPropertyValue("--color-bg").trim(),
+          );
           const grid = cssColorToHex(
             styles.getPropertyValue("--color-grid").trim(),
           );
