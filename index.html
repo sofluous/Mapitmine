@@ -1,5 +1,5 @@
-﻿<!doctype html>
-<html lang="en" data-theme="tech-grid">
+<!doctype html>
+<html lang="en" data-theme="tech-grid" data-ds-theme-storage="mapitmine.dsTheme" data-ds-theme-default="tech-grid">
   <head>
     <meta charset="UTF-8" />
     <meta
@@ -2476,7 +2476,7 @@
               <div class="control-form">
                 <div class="control-field no-readout">
                   <label for="themeSelect">Theme</label>
-                  <select id="themeSelect" class="ds-select"></select>
+                  <select id="themeSelect" class="ds-select" data-ds-theme-select></select>
                 </div>
                 <div class="control-field no-readout">
                   <label for="glowIntensitySelect">Glow</label>
@@ -6292,29 +6292,23 @@
         }
 
         const selectorApi = window.DesignSystemThemeSelector;
-        const themeController =
-          selectorApi && themeSelect
-            ? selectorApi.initThemeSelector(themeSelect, {
-                root: html,
-                storageKey: STORAGE_KEY_THEME,
-                defaultTheme: DEFAULT_THEME,
-              })
-            : null;
-
         if (themeSelect) {
           themeSelect.addEventListener("ds-theme-change", syncCanvasTheme);
         }
-
         const savedGlow = localStorage.getItem(STORAGE_KEY_GLOW) || "standard";
         applyGlowPreset(savedGlow);
         syncCanvasTheme();
-
         window.MapItTheme = {
           setTheme: (themeId) => {
-            if (themeController) {
-              themeController.applyTheme(themeId);
+            if (selectorApi?.applyTheme) {
+              selectorApi.applyTheme(themeId || DEFAULT_THEME, {
+                root: html,
+                storageKey: STORAGE_KEY_THEME,
+                defaultTheme: DEFAULT_THEME,
+              });
             } else {
               html.setAttribute("data-theme", themeId || DEFAULT_THEME);
+              localStorage.setItem(STORAGE_KEY_THEME, themeId || DEFAULT_THEME);
             }
             syncCanvasTheme();
           },
@@ -6324,3 +6318,6 @@
     </script>
   </body>
 </html>
+
+
+

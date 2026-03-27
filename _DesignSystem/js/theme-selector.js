@@ -1,6 +1,9 @@
 (function (win, doc) {
   function getRegistry() {
-    return win.DesignSystemThemeRegistry || { themes: [], defaultTheme: "steel-night" };
+    return win.DesignSystemThemeRegistry || {
+      themes: [],
+      defaultTheme: "steel-night",
+    };
   }
 
   function getThemes() {
@@ -20,6 +23,27 @@
     if (fallbackId && map.has(fallbackId)) return fallbackId;
     if (themes.length) return themes[0].id;
     return fallbackId || "steel-night";
+  }
+
+  function rootElement(opts) {
+    return (opts && opts.root) || doc.documentElement;
+  }
+
+  function rootThemeConfig(root, opts) {
+    const registry = getRegistry();
+    return {
+      root,
+      storageKey:
+        (opts && opts.storageKey) ||
+        root.getAttribute("data-ds-theme-storage") ||
+        "ds-theme",
+      defaultTheme:
+        (opts && opts.defaultTheme) ||
+        root.getAttribute("data-ds-theme-default") ||
+        root.getAttribute("data-theme") ||
+        registry.defaultTheme ||
+        "steel-night",
+    };
   }
 
   function buildThemeOptions(select, selectedId) {
@@ -68,29 +92,43 @@
   }
 
   function applyTheme(themeId, opts) {
-    const root = (opts && opts.root) || doc.documentElement;
-    const storageKey = opts && opts.storageKey;
-    const resolved = resolveThemeId(themeId, root.getAttribute("data-theme"));
+    const root = rootElement(opts);
+    const settings = rootThemeConfig(root, opts);
+    const resolved = resolveThemeId(themeId, settings.defaultTheme);
     root.setAttribute("data-theme", resolved);
-    storeTheme(storageKey, resolved);
+    storeTheme(settings.storageKey, resolved);
     return resolved;
+  }
+
+  function autoApplyRootTheme(opts) {
+    const root = rootElement(opts);
+    const settings = rootThemeConfig(root, opts);
+    const nextTheme = resolveThemeId(
+      readStoredTheme(settings.storageKey) || root.getAttribute("data-theme"),
+      settings.defaultTheme,
+    );
+    root.setAttribute("data-theme", nextTheme);
+    storeTheme(settings.storageKey, nextTheme);
+    return {
+      root,
+      currentTheme: nextTheme,
+      storageKey: settings.storageKey,
+      defaultTheme: settings.defaultTheme,
+    };
   }
 
   function initThemeSelector(select, opts) {
     if (!select) return null;
-    const settings = opts || {};
-    const root = settings.root || doc.documentElement;
-    const registry = getRegistry();
+    const root = rootElement(opts);
+    const rootSettings = rootThemeConfig(root, opts);
     const storageKey =
-      settings.storageKey ||
+      (opts && opts.storageKey) ||
       select.getAttribute("data-ds-theme-storage") ||
-      "ds-theme";
+      rootSettings.storageKey;
     const defaultTheme =
-      settings.defaultTheme ||
+      (opts && opts.defaultTheme) ||
       select.getAttribute("data-ds-theme-default") ||
-      root.getAttribute("data-theme") ||
-      registry.defaultTheme ||
-      "steel-night";
+      rootSettings.defaultTheme;
     const currentTheme = resolveThemeId(
       readStoredTheme(storageKey) || root.getAttribute("data-theme"),
       defaultTheme,
@@ -106,6 +144,7 @@
         const nextTheme = applyTheme(select.value, {
           root,
           storageKey,
+          defaultTheme,
         });
         select.value = nextTheme;
         select.dispatchEvent(
@@ -125,8 +164,13 @@
       select,
       currentTheme,
       storageKey,
+      defaultTheme,
       applyTheme: function (themeId) {
-        const nextTheme = applyTheme(themeId, { root, storageKey });
+        const nextTheme = applyTheme(themeId, {
+          root,
+          storageKey,
+          defaultTheme,
+        });
         select.value = nextTheme;
         return nextTheme;
       },
@@ -134,15 +178,23 @@
   }
 
   function autoInitThemeSelectors() {
+    const boot = autoApplyRootTheme();
     doc.querySelectorAll("select[data-ds-theme-select]").forEach(function (select) {
-      initThemeSelector(select, {});
+      initThemeSelector(select, {
+        root: boot.root,
+        storageKey: select.getAttribute("data-ds-theme-storage") || boot.storageKey,
+        defaultTheme:
+          select.getAttribute("data-ds-theme-default") || boot.defaultTheme,
+      });
     });
+    return boot;
   }
 
   win.DesignSystemThemeSelector = {
     getThemes,
     initThemeSelector,
     applyTheme,
+    autoApplyRootTheme,
     autoInitThemeSelectors,
   };
 

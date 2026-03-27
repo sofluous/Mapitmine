@@ -1,5 +1,5 @@
 /* Design System package bundle */
-/* Generated: 2026-03-26 02:29:29 -07:00 */
+/* Generated: 2026-03-27 01:52:45 -07:00 */
 
 /* Source: css/tokens.css */
 :root {
@@ -1977,22 +1977,28 @@ p {
 .ds-btn-icon > i,
 .ds-btn-icon > svg {
   font-size: var(--ds-btn-icon-font-size);
-  width: var(--ds-btn-icon-font-size);
-  height: var(--ds-btn-icon-font-size);
+  width: calc(var(--ds-btn-icon-font-size) + 2px);
+  height: calc(var(--ds-btn-icon-font-size) + 2px);
   line-height: 1;
 }
 
 .ds-btn i,
 .ds-btn svg {
   color: currentColor;
-  fill: currentColor;
+  fill: none;
   stroke: currentColor;
   -webkit-text-fill-color: currentColor;
 }
 
 .ds-btn svg * {
-  fill: currentColor;
+  fill: none;
   stroke: currentColor;
+}
+
+.ds-btn svg [data-fill="true"],
+.ds-btn svg .is-fill {
+  fill: currentColor;
+  stroke: none;
 }
 
 .ds-btn-icon.ds-btn-sm {
@@ -3436,6 +3442,114 @@ textarea::-webkit-scrollbar-track {
   gap: var(--ds-space-3);
   padding: var(--ds-space-3);
   background: var(--ds-bg-elevated);
+}
+
+.ds-inspector-header-demo {
+  display: grid;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3);
+  border: var(--ds-border-w) var(--ds-border-style) var(--ds-border);
+  border-radius: var(--ds-radius-2);
+  background: var(--ds-bg-elevated);
+}
+
+.ds-utility-action-matrix {
+  display: grid;
+  gap: var(--ds-space-2);
+}
+
+.ds-utility-action-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--ds-space-2);
+  align-items: center;
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border: var(--ds-border-w) var(--ds-border-style) var(--ds-border);
+  border-radius: var(--ds-radius-2);
+  background: var(--ds-bg-soft);
+}
+
+.ds-utility-action-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ds-utility-action-copy strong {
+  font-size: var(--ds-fs-2);
+}
+
+.ds-utility-action-tools {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.ds-icon-glyph {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  vertical-align: middle;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.ds-icon-action-note {
+  margin: 0;
+  padding-left: var(--ds-space-3);
+  border-left: 3px solid var(--ds-accent);
+}
+
+.ds-utility-demo-list {
+  display: grid;
+  gap: var(--ds-space-2);
+}
+
+.ds-utility-demo-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--ds-space-2);
+  align-items: center;
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border: var(--ds-border-w) var(--ds-border-style) var(--ds-border);
+  border-radius: var(--ds-radius-2);
+  background: var(--ds-bg-soft);
+}
+
+.ds-utility-demo-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ds-utility-demo-tools {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: calc((var(--ds-btn-icon-size-sm) * 2) + 6px);
+}
+
+.ds-utility-toggle {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.96);
+  transition:
+    opacity var(--ds-dur-fast) var(--ds-ease-standard),
+    transform var(--ds-dur-fast) var(--ds-ease-standard);
+}
+
+.ds-utility-demo-item:hover .ds-utility-toggle,
+.ds-utility-demo-item:focus-within .ds-utility-toggle,
+.ds-utility-toggle[aria-pressed="true"] {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
 }
 
 .camera-pad-shell {
