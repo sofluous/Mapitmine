@@ -21,15 +21,17 @@
     <style>
       /* ============================================================================
  MapItMine Design System token bridge
- - Theme colors now come from the shared Design Systemizer files.
- - App-local variables remain as aliases so the existing map UI keeps working.
+ - Theme colors and common spacing come from the shared Design Systemizer files.
+ - App-local variables remain as one-way aliases so map-specific UI keeps working.
+ - Keep map/pin/canvas colors as content data unless they style shared UI chrome.
 ============================================================================ */
 
       :root {
         --space-xs: var(--ds-space-1, 4px);
-        --space-sm: var(--ds-space-2, 6px);
-        --space-md: var(--ds-space-3, 10px);
-        --space-lg: var(--ds-space-4, 16px);
+        --space-sm: var(--ds-field-row-gap, var(--ds-space-2, 6px));
+        --space-md: var(--ds-rhythm-content, var(--ds-space-3, 10px));
+        --space-lg: var(--ds-rhythm-section, var(--ds-space-4, 16px));
+        --space-toolbar: var(--ds-toolbar-compact-gap, var(--space-sm));
 
         --font-sm: var(--ds-fs-1, 10px);
         --font-base: var(--ds-fs-1, 12px);
@@ -60,9 +62,9 @@
           sans-serif
         );
 
-        --input-radius: var(--ds-radius-1, 4px);
-        --panel-radius: var(--ds-radius-1, 2px);
-        --input-padding: var(--ds-space-2, 6px);
+        --input-radius: var(--ds-input-radius, var(--ds-radius-1, 4px));
+        --panel-radius: var(--ds-card-radius, var(--ds-radius-1, 2px));
+        --input-padding: var(--ds-input-pad-y, var(--ds-space-2, 6px));
 
         --shadow-sm: var(--ds-shadow-sm, 0 1px 1px rgba(0, 0, 0, 0.2));
         --shadow-md: var(--ds-shadow-md, 0 6px 18px rgba(0, 0, 0, 0.3));
@@ -536,7 +538,7 @@
 
       .pin-filter-checklist {
         display: grid;
-        gap: 6px;
+        gap: var(--space-toolbar);
         max-height: 220px;
         overflow: auto;
       }
@@ -544,7 +546,7 @@
       .pin-filter-option {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: var(--space-sm);
         font-size: var(--font-md);
       }
 
@@ -552,7 +554,7 @@
       .scrollable-pin-list {
         display: grid;
         align-content: start;
-        gap: 6px;
+        gap: var(--space-toolbar);
         overflow-y: auto;
         flex: 1 1 auto;
         min-height: 0;
@@ -565,7 +567,7 @@
 
       .pin-card {
         position: relative;
-        padding: 9px 10px;
+        padding: var(--space-sm) var(--space-md);
         background: var(--ds-card-bg);
         background-image: var(--ds-card-texture-image), var(--ds-card-bg-image);
         background-blend-mode: var(--ds-texture-blend), normal;
@@ -589,14 +591,14 @@
       .pin-card-content {
         display: flex;
         flex-direction: column;
-        gap: 4px;
+        gap: var(--space-xs);
       }
 
       .pin-card-main {
         display: grid;
         grid-template-columns: auto minmax(0, 1fr) auto;
         align-items: center;
-        gap: 10px;
+        gap: var(--space-md);
       }
 
       .pin-icon {
@@ -609,7 +611,7 @@
       .pin-text {
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: var(--ds-space-1, 2px);
         min-width: 0;
       }
 
@@ -1830,6 +1832,7 @@
             data-workspace-tab="maps"
             aria-pressed="true"
             title="Maps"
+            aria-label="Maps"
           >
             <span class="io iconoir-folder" aria-hidden="true"></span>
           </button>
@@ -1839,6 +1842,7 @@
             data-workspace-tab="pins"
             aria-pressed="false"
             title="Pins"
+            aria-label="Pins"
           >
             <span class="io iconoir-map-pin" aria-hidden="true"></span>
           </button>
@@ -1848,6 +1852,7 @@
             data-workspace-tab="map-view"
             aria-pressed="false"
             title="Map View"
+            aria-label="Map View"
           >
             <span class="io iconoir-map" aria-hidden="true"></span>
           </button>
@@ -1859,6 +1864,7 @@
             data-workspace-tab="settings"
             aria-pressed="false"
             title="Settings"
+            aria-label="Settings"
           >
             <span class="io iconoir-settings" aria-hidden="true"></span>
           </button>
