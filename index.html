@@ -326,6 +326,13 @@
         border-bottom: 1px solid var(--ui-border-quiet);
       }
 
+      .toolbar-actions {
+        display: flex;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: var(--space-xs);
+      }
+
       .control-section-title {
         display: inline-flex;
         align-items: center;
@@ -490,7 +497,7 @@
 
       .pin-search-wrap {
         display: grid;
-        grid-template-columns: auto minmax(0, 1fr);
+        grid-template-columns: auto minmax(0, 1fr) auto;
         align-items: center;
         gap: var(--space-xs);
         flex: 1 1 220px;
@@ -510,6 +517,27 @@
       .pin-search-wrap .ds-input:focus {
         outline: none;
         box-shadow: none;
+      }
+
+      .pin-search-clear {
+        display: none;
+        inline-size: 26px;
+        block-size: 26px;
+        min-width: 26px;
+        min-height: 26px;
+        padding: 0;
+      }
+
+      .pin-search-wrap.has-value .pin-search-clear {
+        display: inline-flex;
+      }
+
+      .pin-toolbar-row--meta .badge {
+        min-width: 0;
+      }
+
+      #pinResultSummary {
+        color: color-mix(in oklab, var(--color-text-heading) 92%, transparent);
       }
 
       .pin-filter-shell {
@@ -596,12 +624,18 @@
 
       .pin-card-main {
         display: grid;
-        grid-template-columns: auto minmax(0, 1fr) auto;
-        align-items: center;
-        gap: var(--space-md);
+        grid-template-columns: auto minmax(0, 1fr);
+        grid-template-areas:
+          "icon date"
+          "icon bottom"
+          "description description";
+        align-items: start;
+        column-gap: var(--space-md);
+        row-gap: var(--ds-space-1, 2px);
       }
 
       .pin-icon {
+        grid-area: icon;
         display: flex;
         font-size: 20px;
         align-self: center;
@@ -609,9 +643,7 @@
       }
 
       .pin-text {
-        display: flex;
-        flex-direction: column;
-        gap: var(--ds-space-1, 2px);
+        display: contents;
         min-width: 0;
       }
 
@@ -626,7 +658,7 @@
         white-space: nowrap;
       }
 
-      .pin-line-primary,
+      .pin-card-date,
       .pin-line-secondary {
         display: flex;
         align-items: center;
@@ -634,11 +666,31 @@
         min-width: 0;
       }
 
+      .pin-card-date {
+        grid-area: date;
+        color: color-mix(in oklab, var(--color-text) 56%, transparent);
+        font-size: var(--font-sm);
+        min-height: 18px;
+      }
+
       .pin-line-secondary {
+        grid-area: bottom;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto minmax(max-content, 52%);
         color: color-mix(in oklab, var(--color-text) 78%, transparent);
         font-size: var(--font-sm);
       }
 
+      .pin-coord-label {
+        color: color-mix(in oklab, var(--color-text) 46%, transparent);
+      }
+
+      .pin-coord-value {
+        color: color-mix(in oklab, var(--color-text) 92%, transparent);
+      }
+
+      .pin-label,
+      .pin-tag,
       .pin-coords,
       .pin-description {
         white-space: nowrap;
@@ -646,15 +698,42 @@
         text-overflow: ellipsis;
       }
 
-      .pin-description {
-        max-width: 200px;
+      .pin-coords {
+        justify-self: end;
+        display: grid;
+        grid-template-columns: repeat(3, max-content);
+        gap: 10px;
+        max-width: 100%;
+        font-variant-numeric: tabular-nums;
+        text-align: right;
       }
 
-      .pin-card-meta {
+      .pin-coord {
+        display: grid;
+        grid-template-columns: 1ch minmax(3ch, max-content);
+        column-gap: 3px;
+        align-items: baseline;
+      }
+
+      .pin-description {
+        grid-area: description;
+        color: color-mix(in oklab, var(--color-text) 58%, transparent);
         font-size: var(--font-sm);
-        opacity: 0.75;
-        white-space: nowrap;
-        padding-left: 8px;
+        max-width: 100%;
+        padding-top: var(--ds-space-1, 2px);
+      }
+
+      .pin-empty-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-xs);
+        margin-top: var(--space-xs);
+      }
+
+      .pin-empty-title {
+        color: var(--color-text-heading);
+        font-weight: 700;
+        margin-bottom: var(--ds-space-1, 2px);
       }
 
       /* Pin-card inline controls */
@@ -1019,6 +1098,43 @@
         display: block;
       }
 
+      #mapScaleChip {
+        position: fixed;
+        top: var(--space-md);
+        right: var(--space-md);
+        z-index: 205;
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+        min-width: 132px;
+        pointer-events: none;
+      }
+
+      .scale-chip-rule {
+        position: relative;
+        flex: 1 1 72px;
+        min-width: 48px;
+        height: 10px;
+        border-left: 2px solid var(--color-primary);
+        border-right: 2px solid var(--color-primary);
+      }
+
+      .scale-chip-rule::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 4px;
+        border-top: 2px solid var(--color-primary);
+      }
+
+      .scale-chip-label {
+        color: var(--color-primary);
+        font-family: var(--font-mono, monospace);
+        font-size: var(--font-sm);
+        white-space: nowrap;
+      }
+
       #minimapOverlay {
         position: absolute;
         top: 0;
@@ -1076,12 +1192,31 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        font-size: 10px;
+        gap: 1px;
+        min-width: 34px;
+        padding: 2px 3px;
+        border-radius: 4px;
+        background: color-mix(in oklab, var(--ds-bg-raised) 72%, transparent);
+        border: 1px solid color-mix(in oklab, var(--ui-border) 72%, transparent);
         text-align: center;
       }
 
       .label-header {
-        font-weight: bold;
+        color: color-mix(in oklab, var(--color-text) 48%, transparent);
+        font-size: 8px;
+        font-weight: 700;
+        letter-spacing: 0;
+        line-height: 1;
+        text-transform: uppercase;
+      }
+
+      .label-value {
+        color: var(--color-text-heading);
+        font-family: var(--font-mono, monospace);
+        font-size: 10px;
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+        line-height: 1.1;
       }
 
       /* 11) Overlays & context menu */
@@ -1120,14 +1255,26 @@
         min-width: 160px;
       }
 
+      .context-menu ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
       .context-menu li {
+        display: flex;
+        align-items: center;
+        gap: 8px;
         padding: 0.5em 1em;
         cursor: pointer;
         white-space: nowrap;
         color: var(--color-text);
+        outline: none;
       }
 
-      .context-menu li:hover {
+      .context-menu li:hover,
+      .context-menu li:focus-visible,
+      .context-menu li.is-active {
         background-color: var(--color-hover-highlight, var(--ui-surface-hover));
       }
 
@@ -1195,15 +1342,12 @@
         background: color-mix(in oklab, var(--ds-card-bg) 92%, transparent);
       }
 
-      .pin-editor-header:active {
-        cursor: grabbing;
+      .pin-editor-heading {
+        min-width: 0;
       }
 
-      .pin-editor-subtitle {
-        font-size: var(--font-sm);
-        color: color-mix(in oklab, var(--color-text) 72%, transparent);
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
+      .pin-editor-header:active {
+        cursor: grabbing;
       }
 
       .pin-editor-body {
@@ -1233,6 +1377,11 @@
         grid-column: 1 / -1;
       }
 
+      .pin-editor-fields {
+        display: grid;
+        gap: var(--space-sm);
+      }
+
       .pin-editor-mini-group {
         display: grid;
         grid-template-columns: 72px 72px;
@@ -1251,7 +1400,7 @@
 
       .pin-editor-actions {
         display: flex;
-        justify-content: space-between;
+        justify-content: flex-end;
         align-items: center;
         gap: var(--space-sm);
         padding: var(--space-sm) var(--space-md);
@@ -1274,9 +1423,20 @@
         grid-template-columns: repeat(3, minmax(0, 1fr));
       }
 
+      .pin-editor-coords {
+        grid-template-columns: repeat(3, minmax(86px, 1fr));
+      }
+
+      .pin-editor-coords .ds-input {
+        inline-size: 100%;
+        width: 100%;
+        min-width: 0;
+        text-align: left;
+        font-variant-numeric: tabular-nums;
+      }
+
       .pin-editor-hint {
-        font-size: var(--font-sm);
-        color: color-mix(in oklab, var(--color-text) 72%, transparent);
+        margin-right: auto;
       }
 
       #pinEditorPanel input:not(.ds-input),
@@ -1391,7 +1551,7 @@
         align-items: center;
         justify-content: space-between;
         gap: var(--space-sm);
-        min-width: min(640px, calc(100vw - var(--space-md) * 2));
+        min-width: min(460px, calc(100vw - var(--space-md) * 2));
         max-width: calc(100vw - var(--space-md) * 2);
         padding: 10px 12px;
         pointer-events: none;
@@ -1756,8 +1916,14 @@
         }
 
         #minimapContainer[data-position="top-right"] {
+          top: calc(var(--space-sm) + 36px);
+          right: var(--space-sm);
+        }
+
+        #mapScaleChip {
           top: var(--space-sm);
           right: var(--space-sm);
+          min-width: 118px;
         }
 
         #minimapContainer[data-position="bottom-left"] {
@@ -2005,17 +2171,17 @@
                 <div class="control-section-head">
                   <div class="control-section-title">
                     <span class="io iconoir-database" aria-hidden="true"></span>
-                    Data Actions
+                    Save & Export
                   </div>
                 </div>
                 <div class="control-form">
                   <div class="map-data-group">
                     <div class="map-data-header">
-                      <span class="map-data-title">Linked Files</span>
+                      <span class="map-data-title">Work From A File</span>
                     </div>
                     <p class="map-data-copy">
-                      Open links a JSON file to the current workspace. Save
-                      writes back to that linked file.
+                      Open a JSON map to link it for direct saves. Save updates
+                      the linked file; if nothing is linked, it starts Save As.
                     </p>
                     <div class="map-action-row">
                       <button id="mapOpenBtn" class="ds-btn" type="button">
@@ -2023,24 +2189,24 @@
                           class="io iconoir-folder"
                           aria-hidden="true"
                         ></span>
-                        Open File
+                        Open & Link
                       </button>
                       <button id="mapSaveBtn" class="ds-btn" type="button">
                         <span
                           class="io iconoir-save-floppy-disk"
                           aria-hidden="true"
                         ></span>
-                        Save
+                        Save Linked
                       </button>
                     </div>
                   </div>
                   <div class="map-data-group">
                     <div class="map-data-header">
-                      <span class="map-data-title">Portable Copies</span>
+                      <span class="map-data-title">Make A Copy</span>
                     </div>
                     <p class="map-data-copy">
-                      Save As creates a new linked file. Export downloads a
-                      standalone JSON copy without linking.
+                      Save As creates and links a new file. Export downloads a
+                      standalone JSON copy and keeps this map local.
                     </p>
                     <div class="map-action-row">
                       <button
@@ -2052,14 +2218,18 @@
                           class="io iconoir-save-floppy-disk"
                           aria-hidden="true"
                         ></span>
-                        Save As
+                        Save As Linked
                       </button>
-                      <button id="mapExportBtn" class="ds-btn" type="button">
+                      <button
+                        id="mapExportBtn"
+                        class="ds-btn ds-btn-ghost"
+                        type="button"
+                      >
                         <span
                           class="io iconoir-upload"
                           aria-hidden="true"
                         ></span>
-                        Export
+                        Export Copy
                       </button>
                     </div>
                   </div>
@@ -2092,6 +2262,15 @@
                       type="search"
                       placeholder="Search pins"
                     />
+                    <button
+                      id="pinSearchClearBtn"
+                      class="pin-search-clear ds-btn ds-btn-icon ds-icon-action"
+                      type="button"
+                      aria-label="Clear pin search"
+                      title="Clear pin search"
+                    >
+                      <span class="io iconoir-xmark" aria-hidden="true"></span>
+                    </button>
                   </label>
                   <button
                     id="pinFilterBtn"
@@ -2156,9 +2335,17 @@
                   <span class="io iconoir-map" aria-hidden="true"></span>
                   Map
                 </div>
-                <button class="ds-btn ds-btn-sm" onclick="resetView()">
-                  Reset View
-                </button>
+                <div class="toolbar-actions">
+                  <button class="ds-btn ds-btn-sm" onclick="fitViewToPins()">
+                    Fit Pins
+                  </button>
+                  <button class="ds-btn ds-btn-sm" onclick="fitViewToCrop()">
+                    Fit Crop
+                  </button>
+                  <button class="ds-btn ds-btn-sm" onclick="resetView()">
+                    Reset View
+                  </button>
+                </div>
               </div>
               <div class="control-form">
                 <div class="control-field">
@@ -2568,6 +2755,11 @@
       </div>
     </div>
 
+    <div id="mapScaleChip" class="app-panel" aria-label="Map scale">
+      <span id="mapScaleRule" class="scale-chip-rule" aria-hidden="true"></span>
+      <span id="mapScaleLabel" class="scale-chip-label">16 blocks</span>
+    </div>
+
     <!-- HUD: Top Toolbar -->
     <div id="hud">
       <button
@@ -2604,19 +2796,16 @@
     <!-- Pin Editor -->
     <div id="pinEditorPanel" class="app-panel">
       <div id="pinEditorHeader" class="pin-editor-header">
-        <div>
+        <div class="pin-editor-heading">
           <div class="control-section-title">
             <span class="io iconoir-map-pin" aria-hidden="true"></span>
-            Pin Editor
-          </div>
-          <div class="pin-editor-subtitle">
-            Drag panel or drag pin on canvas
+            <span id="pinEditorMode">New pin</span>
           </div>
         </div>
         <button
+          id="pinEditorCloseBtn"
           class="ds-btn ds-btn-icon ds-icon-action ds-btn-sm"
           type="button"
-          onclick="closePinEditor()"
           aria-label="Close pin editor"
           title="Close pin editor"
         >
@@ -2624,8 +2813,48 @@
         </button>
       </div>
       <div class="pin-editor-body">
-        <section class="control-section ds-card ds-stack">
+        <div class="pin-editor-fields">
+          <div class="control-field">
+            <div class="control-inline control-inline-triple pin-editor-coords">
+              <input
+                class="ds-input"
+                type="number"
+                id="pinEditorX"
+                placeholder="X"
+                aria-label="Pin X position"
+              />
+              <input
+                class="ds-input"
+                type="number"
+                id="pinEditorY"
+                placeholder="Y"
+                aria-label="Pin Y position"
+              />
+              <input
+                class="ds-input"
+                type="number"
+                id="pinEditorZ"
+                placeholder="Z"
+                aria-label="Pin Z position"
+              />
+            </div>
+          </div>
           <div class="pin-editor-grid">
+            <div class="control-field editor-span-2">
+              <input
+                class="ds-input"
+                type="text"
+                id="pinEditorLabel"
+                placeholder="Label"
+              />
+            </div>
+            <div class="control-field editor-span-2">
+              <textarea
+                class="ds-input"
+                id="pinEditorDescription"
+                placeholder="Notes"
+              ></textarea>
+            </div>
             <div class="control-field">
               <select
                 id="pinEditorID"
@@ -2649,55 +2878,27 @@
                 />
               </div>
             </div>
-            <div class="control-field editor-span-2">
-              <input
-                class="ds-input"
-                type="text"
-                id="pinEditorLabel"
-                placeholder="Label"
-              />
-            </div>
-            <div class="control-field editor-span-2">
-              <textarea
-                class="ds-input"
-                id="pinEditorDescription"
-                placeholder="Notes"
-              ></textarea>
-            </div>
-            <div class="control-field editor-span-2">
-              <div class="control-inline control-inline-triple">
-                <input
-                  class="ds-input"
-                  type="number"
-                  id="pinEditorX"
-                  placeholder="X"
-                  aria-label="Pin X position"
-                />
-                <input
-                  class="ds-input"
-                  type="number"
-                  id="pinEditorY"
-                  placeholder="Y"
-                  aria-label="Pin Y position"
-                />
-                <input
-                  class="ds-input"
-                  type="number"
-                  id="pinEditorZ"
-                  placeholder="Z"
-                  aria-label="Pin Z position"
-                />
-              </div>
-            </div>
           </div>
-        </section>
+        </div>
       </div>
       <div class="pin-editor-actions">
-        <span class="pin-editor-hint"
-          >Enter to move fields, Ctrl/Cmd+Enter to save</span
+        <button
+          id="pinEditorHelpBtn"
+          class="pin-editor-hint ds-btn ds-btn-icon ds-icon-action ds-btn-sm"
+          type="button"
+          aria-label="Pin editor help"
+          title="Pin editor help"
         >
-        <button class="ds-btn" onclick="closePinEditor()">Cancel</button>
-        <button class="ds-btn ds-btn-primary" onclick="submitPinEditor()">
+          <span class="io iconoir-info-circle" aria-hidden="true"></span>
+        </button>
+        <button id="pinEditorCancelBtn" class="ds-btn" type="button">
+          Cancel
+        </button>
+        <button
+          id="pinEditorSaveBtn"
+          class="ds-btn ds-btn-primary"
+          type="button"
+        >
           Save
         </button>
       </div>
@@ -2780,14 +2981,6 @@
     <div id="mapStatusStrip" class="app-panel" aria-live="polite">
       <div class="status-strip-group">
         <span class="status-chip">
-          <span class="status-label">Map</span>
-          <strong id="statusMapName">No map</strong>
-        </span>
-        <span class="status-chip">
-          <span class="status-label">Save</span>
-          <strong id="statusSaveState">Local</strong>
-        </span>
-        <span class="status-chip">
           <span class="status-label">Tool</span>
           <strong id="statusToolState">Browse</strong>
         </span>
@@ -2821,10 +3014,12 @@
       function markDirty() {
         __dirty = true;
         updateStatusStrip?.();
+        window.__reflectLinkUI?.();
       }
       function clearDirty() {
         __dirty = false;
         updateStatusStrip?.();
+        window.__reflectLinkUI?.();
       }
 
       const canvas = document.getElementById("mapCanvas");
@@ -3026,13 +3221,20 @@
       const confirmDialogOk = document.getElementById("confirmDialogOk");
       const textPromptDialog = document.getElementById("textPromptDialog");
       const pinSearchInput = document.getElementById("pinSearchInput");
+      const pinSearchClearBtn = document.getElementById("pinSearchClearBtn");
       const pinFilterBtn = document.getElementById("pinFilterBtn");
       const pinFilterSummary = document.getElementById("pinFilterSummary");
+      const pinResultSummary = document.getElementById("pinResultSummary");
       const pinFilterPopover = document.getElementById("pinFilterPopover");
       const pinFilterResetBtn = document.getElementById("pinFilterResetBtn");
       const pinTypeChecklist = document.getElementById("pinTypeChecklist");
       const pinEditorPanel = document.getElementById("pinEditorPanel");
       const pinEditorHeader = document.getElementById("pinEditorHeader");
+      const pinEditorCloseBtn = document.getElementById("pinEditorCloseBtn");
+      const pinEditorCancelBtn = document.getElementById("pinEditorCancelBtn");
+      const pinEditorHelpBtn = document.getElementById("pinEditorHelpBtn");
+      const pinEditorSaveBtn = document.getElementById("pinEditorSaveBtn");
+      const pinEditorMode = document.getElementById("pinEditorMode");
       if (
         pinFilterPopover &&
         pinFilterPopover.parentElement !== document.body
@@ -3045,8 +3247,6 @@
       const mapMetaSource = document.getElementById("mapMetaSource");
       const mapMetaDetail = document.getElementById("mapMetaDetail");
       const mapMetaPins = document.getElementById("mapMetaPins");
-      const statusMapName = document.getElementById("statusMapName");
-      const statusSaveState = document.getElementById("statusSaveState");
       const statusToolState = document.getElementById("statusToolState");
       const statusHistoryState = document.getElementById("statusHistoryState");
       const statusZoomValue = document.getElementById("statusZoomValue");
@@ -3299,16 +3499,27 @@
         const badgeText = document.getElementById("mapLinkBadgeText");
         const mapSaveBtn = document.getElementById("mapSaveBtn");
         const linked = !!currentFileHandle;
+        const dirty = !!__dirty;
 
         if (badge) {
           if (linked) {
             if (badgeIcon) badgeIcon.className = "io iconoir-check-circle";
+            const fileName = currentFileHandle.name || currentMapName + ".json";
             if (badgeText)
-              badgeText.textContent = `Linked: ${currentFileHandle.name || currentMapName + ".json"}`;
+              badgeText.textContent = dirty
+                ? `Linked - unsaved`
+                : `Linked: ${fileName}`;
+            badge.title = dirty
+              ? `Unsaved changes in ${fileName}`
+              : `Linked to ${fileName}`;
             badge.classList.add("badge--linked");
           } else {
             if (badgeIcon) badgeIcon.className = "io iconoir-warning-triangle";
-            if (badgeText) badgeText.textContent = "Not Saved";
+            if (badgeText)
+              badgeText.textContent = dirty ? "Local - unsaved" : "Local only";
+            badge.title = dirty
+              ? "Unsaved browser-local changes"
+              : "Stored in browser storage";
             badge.classList.remove("badge--linked");
           }
         }
@@ -3481,71 +3692,99 @@
       // Draw functions
       // draw(), drawMinimap()
 
-      function draw() {
-        const bgColor = document.getElementById("bgColor").value;
-        const gridColor = document.getElementById("gridColor").value;
-        const gridSpacing = parseInt(
-          document.getElementById("gridSpacing").value,
-        );
-        const showAxes = document.getElementById("showAxes").checked;
-        const useTextScale = document.getElementById("useTextScale").checked;
-        const showLabelBackground = document.getElementById(
-          "showLabelBackground",
-        ).checked;
-        const rootStyles = getComputedStyle(document.documentElement);
-        const pinStrokePrimary = rootStyles.getPropertyValue("--color-primary");
-        const pinStrokeSecondary =
-          rootStyles.getPropertyValue("--color-secondary");
-        const pinStrokeDefault = rootStyles.getPropertyValue("--color-text");
-        const crosshairColor =
-          rootStyles.getPropertyValue("--color-primary").trim() || "#ffffff";
-        const axisColor =
-          rootStyles.getPropertyValue("--color-axis").trim() || "#ffffff88";
-        const pinIconColor =
-          rootStyles.getPropertyValue("--color-text-heading").trim() ||
-          pinStrokeDefault.trim() ||
-          "#ffffff";
-        const pinTextColor =
-          rootStyles.getPropertyValue("--color-primary").trim() || "#86f7a2";
-        const tempColor =
-          rootStyles.getPropertyValue("--color-primary").trim() || "#86f7a2";
-        const labelBgColor =
-          rootStyles.getPropertyValue("--color-panel").trim() || "#000000";
+      let renderColorCache = null;
+      function invalidateRenderColorCache() {
+        renderColorCache = null;
+      }
 
-        ctx.fillStyle = bgColor;
+      function getRenderColors() {
+        if (renderColorCache) return renderColorCache;
+
+        const rootStyles = getComputedStyle(document.documentElement);
+        const pinStrokeDefault = rootStyles.getPropertyValue("--color-text");
+        const primary = rootStyles.getPropertyValue("--color-primary").trim();
+        renderColorCache = {
+          pinStrokePrimary: rootStyles.getPropertyValue("--color-primary"),
+          pinStrokeSecondary: rootStyles.getPropertyValue("--color-secondary"),
+          pinStrokeDefault,
+          crosshairColor: primary || "#ffffff",
+          axisColor:
+            rootStyles.getPropertyValue("--color-axis").trim() || "#ffffff88",
+          pinIconColor:
+            rootStyles.getPropertyValue("--color-text-heading").trim() ||
+            pinStrokeDefault.trim() ||
+            "#ffffff",
+          pinTextColor: primary || "#86f7a2",
+          tempColor: primary || "#86f7a2",
+          labelBgColor:
+            rootStyles.getPropertyValue("--color-panel").trim() || "#000000",
+        };
+        return renderColorCache;
+      }
+
+      function getViewSettings() {
+        return {
+          bgColor: document.getElementById("bgColor").value,
+          gridColor: document.getElementById("gridColor").value,
+          gridSpacing: parseInt(document.getElementById("gridSpacing").value),
+          showAxes: document.getElementById("showAxes").checked,
+          useTextScale: document.getElementById("useTextScale").checked,
+          showLabelBackground: document.getElementById("showLabelBackground")
+            .checked,
+          showGrid: document.getElementById("showGrid").checked,
+          showIcons: document.getElementById("showIcons").checked,
+          showText: document.getElementById("showText").checked,
+          showCoords: document.getElementById("showCoords").checked,
+          showDescription: document.getElementById("showDescription").checked,
+          showTags: document.getElementById("showTags").checked,
+          minX: parseInt(document.getElementById("minX").value),
+          maxX: parseInt(document.getElementById("maxX").value),
+          minZ: parseInt(document.getElementById("minZ").value),
+          maxZ: parseInt(document.getElementById("maxZ").value),
+        };
+      }
+
+      function draw() {
+        const view = getViewSettings();
+        const {
+          axisColor,
+          crosshairColor,
+          labelBgColor,
+          pinIconColor,
+          pinStrokeDefault,
+          pinStrokePrimary,
+          pinStrokeSecondary,
+          pinTextColor,
+          tempColor,
+        } = getRenderColors();
+
+        ctx.fillStyle = view.bgColor;
         ctx.fillRect(0, 0, width, height);
 
-        const showGrid = document.getElementById("showGrid").checked;
-        const showIcons = document.getElementById("showIcons").checked;
-        const showText = document.getElementById("showText").checked;
-        const showCoords = document.getElementById("showCoords").checked;
-        const showDescription =
-          document.getElementById("showDescription").checked;
-        const showTags = document.getElementById("showTags").checked;
-        const minX = parseInt(document.getElementById("minX").value);
-        const maxX = parseInt(document.getElementById("maxX").value);
-        const minZ = parseInt(document.getElementById("minZ").value);
-        const maxZ = parseInt(document.getElementById("maxZ").value);
         const visibleMinX = Math.floor(-offsetX / zoom);
         const visibleMaxX = Math.ceil((width - offsetX) / zoom);
         const visibleMinZ = Math.floor(-offsetY / zoom);
         const visibleMaxZ = Math.ceil((height - offsetY) / zoom);
-        const startX = Math.floor(visibleMinX / gridSpacing) * gridSpacing;
-        const endX = Math.ceil(visibleMaxX / gridSpacing) * gridSpacing;
-        const startZ = Math.floor(visibleMinZ / gridSpacing) * gridSpacing;
-        const endZ = Math.ceil(visibleMaxZ / gridSpacing) * gridSpacing;
+        const startX =
+          Math.floor(visibleMinX / view.gridSpacing) * view.gridSpacing;
+        const endX =
+          Math.ceil(visibleMaxX / view.gridSpacing) * view.gridSpacing;
+        const startZ =
+          Math.floor(visibleMinZ / view.gridSpacing) * view.gridSpacing;
+        const endZ =
+          Math.ceil(visibleMaxZ / view.gridSpacing) * view.gridSpacing;
 
         const maxLines = 1000;
 
-        if ((endX - startX) / gridSpacing > maxLines) return; // skip draw
+        if ((endX - startX) / view.gridSpacing > maxLines) return; // skip draw
         if (zoom < 0.1) return; // skip grid when zoomed out too far
 
-        if (showGrid && gridSpacing > 0) {
+        if (view.showGrid && view.gridSpacing > 0) {
           ctx.save();
-          ctx.strokeStyle = gridColor;
+          ctx.strokeStyle = view.gridColor;
           ctx.lineWidth = 1;
 
-          for (let x = startX; x <= endX; x += gridSpacing) {
+          for (let x = startX; x <= endX; x += view.gridSpacing) {
             const sx = offsetX + x * zoom;
             ctx.beginPath();
             ctx.moveTo(sx, 0);
@@ -3553,7 +3792,7 @@
             ctx.stroke();
           }
 
-          for (let z = startZ; z <= endZ; z += gridSpacing) {
+          for (let z = startZ; z <= endZ; z += view.gridSpacing) {
             const sz = offsetY + z * zoom;
             ctx.beginPath();
             ctx.moveTo(0, sz);
@@ -3563,7 +3802,7 @@
           ctx.restore();
         }
 
-        if (showAxes) {
+        if (view.showAxes) {
           ctx.strokeStyle = axisColor;
           ctx.beginPath();
           ctx.moveTo(offsetX + 0 * zoom, 0);
@@ -3599,17 +3838,23 @@
         }
 
         for (const p of pins) {
-          if (p.x < minX || p.x > maxX || p.z < minZ || p.z > maxZ) continue;
+          if (
+            p.x < view.minX ||
+            p.x > view.maxX ||
+            p.z < view.minZ ||
+            p.z > view.maxZ
+          )
+            continue;
           const sx = offsetX + p.x * zoom;
           const sy = offsetY + p.z * zoom;
 
-          const fontSize = useTextScale
+          const fontSize = view.useTextScale
             ? 12 * textScale
             : Math.max(10, 12 * zoom);
           const labelOffsetX = 8 * zoom;
           const labelOffsetY = 0;
 
-          if (showIcons && p.icon) {
+          if (view.showIcons && p.icon) {
             const iconSize = Math.max(10, 12 * zoom); // match your scaling
             ctx.font = `${iconSize}px monospace`;
             ctx.textAlign = "center";
@@ -3624,7 +3869,7 @@
           ctx.textBaseline = "bottom";
 
           // Draw label background before the text.
-          if (showLabelBackground) {
+          if (view.showLabelBackground) {
             const text = p.label;
             const metrics = ctx.measureText(text);
             const padding = 4;
@@ -3639,7 +3884,7 @@
             ctx.globalAlpha = 1;
           }
 
-          if (showText) {
+          if (view.showText) {
             const yText =
               p.y === undefined ||
               p.y === null ||
@@ -3648,16 +3893,16 @@
                 ? "-"
                 : p.y;
             ctx.fillStyle = pinTextColor;
-            if (showTags && p.id)
+            if (view.showTags && p.id)
               ctx.fillText(`[${p.id}]`, sx + labelOffsetX, sy);
-            if (showCoords)
+            if (view.showCoords)
               ctx.fillText(
                 `(${p.x}, ${yText}, ${p.z})`,
                 sx + labelOffsetX,
                 sy + fontSize * 1.2,
               );
             ctx.fillText(p.label, sx + labelOffsetX, sy + fontSize * 2.4);
-            if (showDescription && p.description)
+            if (view.showDescription && p.description)
               ctx.fillText(
                 p.description,
                 sx + labelOffsetX,
@@ -3665,31 +3910,7 @@
               );
           }
         }
-        if (tempPin) {
-          const px = tempPin.x * zoom + offsetX;
-          const pz = tempPin.z * zoom + offsetY;
-          const canvasRect = canvas.getBoundingClientRect();
-          const anchor = getPinEditorAnchorPoint(
-            canvasRect.left + px,
-            canvasRect.top + pz,
-          );
-          const anchorX = anchor.x - canvasRect.left;
-          const anchorY = anchor.y - canvasRect.top;
-
-          // Draw placeholder pin
-          ctx.beginPath();
-          ctx.arc(px, pz, 6, 0, Math.PI * 2);
-          ctx.fillStyle = tempColor;
-          ctx.fill();
-
-          // Draw line from panel to placeholder
-          ctx.beginPath();
-          ctx.moveTo(anchorX, anchorY);
-          ctx.lineTo(px, pz);
-          ctx.strokeStyle = tempColor;
-          ctx.lineWidth = 1;
-          ctx.stroke();
-        }
+        drawPinEditorTether(tempColor);
 
         if (crosshairMode) {
           ctx.strokeStyle = crosshairColor;
@@ -3708,7 +3929,7 @@
 
           ctx.setLineDash([]);
         }
-        drawScaleRuler();
+        updateScaleChip();
         drawMinimap();
         updateStatusStrip();
       }
@@ -3743,54 +3964,66 @@
         ctx.stroke();
       }
 
-      function drawScaleRuler() {
+      function getPinEditorTargetPin() {
+        if (tempPin) return tempPin;
+        if (currentEditIndex !== null && pins[currentEditIndex]) {
+          return pins[currentEditIndex];
+        }
+        return null;
+      }
+
+      function drawPinEditorTether(color) {
+        const targetPin = getPinEditorTargetPin();
+        if (!targetPin || !pinEditorPanel || pinEditorPanel.style.display === "none") {
+          return;
+        }
+
+        const px = targetPin.x * zoom + offsetX;
+        const pz = targetPin.z * zoom + offsetY;
+        const canvasRect = canvas.getBoundingClientRect();
+        const anchor = getPinEditorAnchorPoint(
+          canvasRect.left + px,
+          canvasRect.top + pz,
+        );
+        const anchorX = anchor.x - canvasRect.left;
+        const anchorY = anchor.y - canvasRect.top;
+
+        if (tempPin) {
+          ctx.beginPath();
+          ctx.arc(px, pz, 6, 0, Math.PI * 2);
+          ctx.fillStyle = color;
+          ctx.fill();
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(anchorX, anchorY);
+        ctx.lineTo(px, pz);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      function updateScaleChip() {
         const showGridEl = document.getElementById("showGrid");
         const gridSpacingEl = document.getElementById("gridSpacing");
-        if (!showGridEl || !gridSpacingEl) return;
+        const scaleChip = document.getElementById("mapScaleChip");
+        const scaleRule = document.getElementById("mapScaleRule");
+        const scaleLabel = document.getElementById("mapScaleLabel");
+        if (!showGridEl || !gridSpacingEl || !scaleChip || !scaleRule || !scaleLabel)
+          return;
+        scaleChip.hidden = !showGridEl.checked;
         if (!showGridEl.checked) return;
-        const rootStyles = getComputedStyle(document.documentElement);
-        const rulerColor =
-          rootStyles.getPropertyValue("--color-primary").trim() || "#86f7a2";
 
         const spacing = parseInt(gridSpacingEl.value || "16", 10);
-        if (!Number.isFinite(spacing) || spacing <= 0) return;
+        if (!Number.isFinite(spacing) || spacing <= 0) {
+          scaleChip.hidden = true;
+          return;
+        }
 
         const px = spacing * zoom; // screen length of one grid cell
-        const label = `${spacing} blocks`;
-
-        const pad = 10;
-        const y = canvas.height - pad - 18; // baseline y
-        const minLen = 24,
-          maxLen = 180; // keep it readable
-        const len = Math.max(minLen, Math.min(px, maxLen));
-        const x0 = pad;
-        const x1 = x0 + len;
-
-        ctx.save();
-        ctx.strokeStyle = rulerColor;
-        ctx.fillStyle = rulerColor;
-        ctx.lineWidth = 2;
-
-        // baseline
-        ctx.beginPath();
-        ctx.moveTo(x0, y);
-        ctx.lineTo(x1, y);
-        ctx.stroke();
-
-        // end ticks
-        ctx.beginPath();
-        ctx.moveTo(x0, y - 4);
-        ctx.lineTo(x0, y + 4);
-        ctx.moveTo(x1, y - 4);
-        ctx.lineTo(x1, y + 4);
-        ctx.stroke();
-
-        // label
-        ctx.font = "12px monospace";
-        ctx.textBaseline = "top";
-        ctx.fillText(label, x0, y + 6);
-
-        ctx.restore();
+        const len = Math.max(32, Math.min(px, 160));
+        scaleRule.style.flexBasis = `${len}px`;
+        scaleLabel.textContent = `${spacing} blocks`;
       }
 
       function drawMiniGrid() {
@@ -4322,10 +4555,56 @@
           : value;
       }
 
+      function formatPinCoordsMarkup(pin) {
+        const yStr = formatPinCoordValue(pin.y);
+        return [
+          ["X", pin.x],
+          ["Y", yStr],
+          ["Z", pin.z],
+        ]
+          .map(
+            ([label, value]) =>
+              `<span class="pin-coord"><span class="pin-coord-label">${label}</span><span class="pin-coord-value">${escapeHtml(value)}</span></span>`,
+          )
+          .join("");
+      }
+
+      function copyPinCoords(pin) {
+        if (!pin) return;
+        const yStr = formatPinCoordValue(pin.y);
+        navigator.clipboard.writeText(`${pin.x} ${yStr} ${pin.z}`);
+        showToast("Copied coordinates.");
+      }
+
+      function getPinActionItems(index) {
+        const pin = pins[index];
+        if (!pin) return [];
+        return [
+          {
+            label: "Copy Coordinates",
+            iconClass: "iconoir-copy",
+            action: () => copyPinCoords(pin),
+          },
+          {
+            label: "Center on Pin",
+            iconClass: "iconoir-crosshair",
+            action: () => centerOnPin(pin),
+          },
+          {
+            label: "Edit Pin",
+            iconClass: "iconoir-edit-pencil",
+            action: () => editPin(index),
+          },
+          {
+            label: "Delete Pin",
+            iconClass: "iconoir-trash",
+            action: () => deletePin(index),
+          },
+        ];
+      }
+
       function getFilteredPins() {
-        const search = String(pinSearchInput?.value || "")
-          .trim()
-          .toLowerCase();
+        const search = getPinSearchValue().toLowerCase();
         const activeTypeSelection = pinTypeFilterSelection;
 
         return pins
@@ -4353,6 +4632,40 @@
 
             return haystack.includes(search);
           });
+      }
+
+      function getPinSearchValue() {
+        return String(pinSearchInput?.value || "").trim();
+      }
+
+      function hasActivePinFilters() {
+        return !!pinTypeFilterSelection;
+      }
+
+      function syncPinSearchUI() {
+        const hasSearch = !!getPinSearchValue();
+        pinSearchInput?.parentElement?.classList.toggle("has-value", hasSearch);
+      }
+
+      function clearPinSearchAndFilters() {
+        if (pinSearchInput) pinSearchInput.value = "";
+        pinTypeFilterSelection = null;
+        syncPinTypeFilterOptions();
+        renderPinList();
+      }
+
+      function clearPinSearch() {
+        if (pinSearchInput) {
+          pinSearchInput.value = "";
+          pinSearchInput.focus();
+        }
+        renderPinList();
+      }
+
+      function clearPinFilters() {
+        pinTypeFilterSelection = null;
+        syncPinTypeFilterOptions();
+        renderPinList();
       }
 
       function getFilterablePinTypes() {
@@ -4417,8 +4730,24 @@
           if (!pinTypeFilterSelection) {
             pinFilterSummary.textContent = "All types";
           } else {
-            pinFilterSummary.textContent = `${pinTypeFilterSelection.size} filters`;
+            const labels = typeEntries
+              .filter(([id]) => pinTypeFilterSelection.has(id))
+              .map(([, label]) => label);
+            pinFilterSummary.textContent =
+              labels.length === 0
+                ? "No types"
+                : labels.length <= 2
+                ? labels.join(", ")
+                : `${labels.length} types`;
           }
+          pinFilterSummary.title = pinFilterSummary.textContent;
+        }
+        if (pinFilterBtn) {
+          const active = !!pinTypeFilterSelection;
+          pinFilterBtn.setAttribute("aria-pressed", active ? "true" : "false");
+          pinFilterBtn.title = active
+            ? "Pin type filters active"
+            : "Filter pins";
         }
       }
 
@@ -4452,7 +4781,8 @@
               : linked
                 ? "iconoir-link"
                 : "iconoir-database";
-          mapMetaDetail.innerHTML = `<span class="io ${detailIcon}" aria-hidden="true"></span><span>${detailText}</span>`;
+          const dirtyText = __dirty ? " - unsaved changes" : "";
+          mapMetaDetail.innerHTML = `<span class="io ${detailIcon}" aria-hidden="true"></span><span>${detailText}${dirtyText}</span>`;
         }
       }
 
@@ -4620,17 +4950,16 @@
       }
 
       function updateStatusStrip() {
-        if (statusMapName)
-          statusMapName.textContent = currentMapName || "No map";
-        if (statusSaveState) {
-          const base = currentFileHandle ? "Linked" : "Local";
-          statusSaveState.textContent = __dirty ? `${base} - Unsaved` : base;
-        }
         if (statusToolState) statusToolState.textContent = getActiveToolLabel();
         if (statusHistoryState) {
-          const undoLabel = undoStack.at(-1)?.label || "None";
-          const redoLabel = redoStack.at(-1)?.label || "None";
-          statusHistoryState.textContent = `U:${undoLabel} (${undoStack.length}) R:${redoLabel} (${redoStack.length})`;
+          const undoLabel = undoStack.at(-1)?.label;
+          const redoLabel = redoStack.at(-1)?.label;
+          statusHistoryState.textContent = undoLabel
+            ? `Undo: ${undoLabel}`
+            : "Undo: none";
+          statusHistoryState.title = redoLabel
+            ? `Redo available: ${redoLabel}`
+            : "No redo available";
         }
         if (statusZoomValue)
           statusZoomValue.textContent = `${zoom.toFixed(2)}x`;
@@ -4672,26 +5001,62 @@
       function renderPinList() {
         const container = document.getElementById("pinList");
         container.innerHTML = "";
+        syncPinSearchUI();
         syncPinTypeFilterOptions();
         syncMapMetaUI();
 
         const pinCountEl = document.getElementById("pinCount");
         const filteredPins = getFilteredPins();
-        const resultSummaryEl = document.getElementById("pinResultSummary");
+        const search = getPinSearchValue();
+        const hasSearch = !!search;
+        const hasFilters = hasActivePinFilters();
         if (pinCountEl) {
           pinCountEl.textContent = `${filteredPins.length}/${pins.length}`;
         }
-        if (resultSummaryEl) {
-          resultSummaryEl.textContent = `${filteredPins.length}/${pins.length} shown`;
+        if (pinResultSummary) {
+          const qualifier =
+            hasSearch && hasFilters
+              ? "matched"
+              : hasSearch
+                ? "search"
+                : hasFilters
+                  ? "filtered"
+                  : "shown";
+          pinResultSummary.textContent = `${filteredPins.length}/${pins.length} ${qualifier}`;
+          pinResultSummary.title =
+            hasSearch || hasFilters
+              ? "Showing pins after search and filter state"
+              : "Showing all pins";
         }
 
         if (!Array.isArray(pins) || pins.length === 0) {
-          container.innerHTML = "<p>No pins yet.</p>";
+          container.innerHTML =
+            '<div class="section-note"><div class="pin-empty-title">No pins yet</div><div>Right-click the map or choose a pin type to place your first marker.</div></div>';
           return;
         }
 
         if (filteredPins.length === 0) {
-          container.innerHTML = "<p>No pins match the current filters.</p>";
+          const searchCopy = hasSearch
+            ? ` for "${escapeHtml(search)}"`
+            : "";
+          const filterCopy = hasFilters ? " with the selected type filters" : "";
+          const searchButton = hasSearch
+            ? '<button id="clearPinSearchOnlyBtn" class="ds-btn ds-btn-sm ds-btn-ghost" type="button">Clear search</button>'
+            : "";
+          const filterButton = hasFilters
+            ? '<button id="clearPinFiltersOnlyBtn" class="ds-btn ds-btn-sm ds-btn-ghost" type="button">Clear filters</button>'
+            : "";
+          container.innerHTML =
+            `<div class="section-note"><div class="pin-empty-title">No matching pins</div><div>No pins match${searchCopy}${filterCopy}.</div><div class="pin-empty-actions">${searchButton}${filterButton}<button id="clearPinSearchFiltersBtn" class="ds-btn ds-btn-sm" type="button">Show all pins</button></div></div>`;
+          document
+            .getElementById("clearPinSearchOnlyBtn")
+            ?.addEventListener("click", clearPinSearch);
+          document
+            .getElementById("clearPinFiltersOnlyBtn")
+            ?.addEventListener("click", clearPinFilters);
+          document
+            .getElementById("clearPinSearchFiltersBtn")
+            ?.addEventListener("click", clearPinSearchAndFilters);
           return;
         }
 
@@ -4701,7 +5066,6 @@
           item.dataset.index = index;
           item.tabIndex = 0;
 
-          const yStr = formatPinCoordValue(pin.y);
           const time = pin.timestamp
             ? new Date(pin.timestamp).toLocaleDateString(undefined, {
                 year: "numeric",
@@ -4713,28 +5077,61 @@
           const safeTag = pin.id ? `[${escapeHtml(pin.id)}]` : "";
           const safeIcon = renderPinIconMarkup(pin.icon);
           const safeDescription = escapeHtml(pin.description || "");
+          const safeCoords = formatPinCoordsMarkup(pin);
 
           item.innerHTML = `
             <div class="pin-card-content pin-card-compact">
               <div class="pin-card-main">
                 <span class="pin-icon">${safeIcon}</span>
                 <div class="pin-text">
-                  <div class="pin-line-primary">
+                  <div class="pin-card-date">${time}</div>
+                  <div class="pin-line-secondary">
                     <div class="pin-label">${safeLabel}</div>
                     <div class="pin-tag">${safeTag}</div>
+                    <span class="pin-coords">${safeCoords}</span>
                   </div>
-                  <div class="pin-line-secondary">
-                    <span class="pin-coords">X ${pin.x} / Y ${yStr} / Z ${pin.z}</span>
-                    ${safeDescription ? `<span class="pin-description">${safeDescription}</span>` : ""}
-                  </div>
+                  ${safeDescription ? `<div class="pin-description">${safeDescription}</div>` : ""}
                 </div>
-                <div class="pin-card-meta">${time}</div>
               </div>
             </div>
           `;
 
-          // Whole row centers on pin
-          item.onclick = () => centerOnPin(pin);
+          // Single click centers; double click opens editor without an extra camera jump.
+          let cardClickTimer = null;
+          item.addEventListener("click", (event) => {
+            if (event.target.closest("button")) return;
+            cardClickTimer = window.setTimeout(() => {
+              centerOnPin(pin);
+              cardClickTimer = null;
+            }, 180);
+          });
+          item.addEventListener("dblclick", (event) => {
+            event.preventDefault();
+            if (cardClickTimer) {
+              window.clearTimeout(cardClickTimer);
+              cardClickTimer = null;
+            }
+            editPin(index);
+          });
+          item.addEventListener("contextmenu", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            showContextMenu(getPinActionItems(index), event.clientX, event.clientY);
+          });
+          item.addEventListener("keydown", (event) => {
+            if (event.target.closest("button, input, select, textarea")) return;
+            const key = event.key.toLowerCase();
+            if (key === "enter") {
+              event.preventDefault();
+              editPin(index);
+            } else if (key === "c") {
+              event.preventDefault();
+              copyPinCoords(pin);
+            } else if (event.key === "Delete" || event.key === "Backspace") {
+              event.preventDefault();
+              deletePin(index);
+            }
+          });
 
           item.addEventListener("mouseenter", () => {
             hoveredPinIndex = index;
@@ -4752,42 +5149,24 @@
           btnCopy.className =
             "btn-copy-coords ds-btn ds-btn-icon ds-btn-sm ds-icon-action";
           btnCopy.title = "Copy coordinates";
+          btnCopy.setAttribute("aria-label", "Copy coordinates");
           btnCopy.innerHTML =
             '<span class="io iconoir-copy" aria-hidden="true"></span>';
           btnCopy.dataset.action = "copy";
           btnCopy.dataset.index = String(index);
 
-          const btnCenter = document.createElement("button");
-          btnCenter.className =
-            "btn-center ds-btn ds-btn-icon ds-btn-sm ds-icon-action";
-          btnCenter.title = "Center on pin";
-          btnCenter.innerHTML =
-            '<span class="io iconoir-crosshair" aria-hidden="true"></span>';
-          btnCenter.dataset.action = "center";
-          btnCenter.dataset.index = String(index);
-
-          const btnEdit = document.createElement("button");
-          btnEdit.className =
-            "btn-edit ds-btn ds-btn-icon ds-btn-sm ds-icon-action";
-          btnEdit.title = "Edit";
-          btnEdit.innerHTML =
-            '<span class="io iconoir-edit-pencil" aria-hidden="true"></span>';
-          btnEdit.dataset.action = "edit";
-          btnEdit.dataset.index = String(index);
-
-          const btnDelete = document.createElement("button");
-          btnDelete.className =
-            "btn-delete ds-btn ds-btn-icon ds-btn-sm ds-icon-action";
-          btnDelete.title = "Delete";
-          btnDelete.innerHTML =
-            '<span class="io iconoir-trash" aria-hidden="true"></span>';
-          btnDelete.dataset.action = "delete";
-          btnDelete.dataset.index = String(index);
+          const btnMore = document.createElement("button");
+          btnMore.className =
+            "btn-more ds-btn ds-btn-icon ds-btn-sm ds-icon-action";
+          btnMore.title = "More pin actions";
+          btnMore.setAttribute("aria-label", "More pin actions");
+          btnMore.innerHTML =
+            '<span class="io iconoir-more-horiz" aria-hidden="true"></span>';
+          btnMore.dataset.action = "more";
+          btnMore.dataset.index = String(index);
 
           controls.appendChild(btnCopy);
-          controls.appendChild(btnCenter);
-          controls.appendChild(btnEdit);
-          controls.appendChild(btnDelete);
+          controls.appendChild(btnMore);
           item.appendChild(controls);
 
           container.appendChild(item);
@@ -4836,6 +5215,45 @@
         const zInput = document.getElementById("pinEditorZ");
         if (xInput) xInput.value = x;
         if (zInput) zInput.value = z;
+        updatePinEditorState();
+      }
+
+      function getPinEditorDraft() {
+        const x = parseInt(document.getElementById("pinEditorX").value, 10);
+        const yRaw = document.getElementById("pinEditorY").value;
+        const y = yRaw === "" ? null : parseInt(yRaw, 10);
+        const z = parseInt(document.getElementById("pinEditorZ").value, 10);
+        const id = document.getElementById("pinEditorID").value;
+        const label = document.getElementById("pinEditorLabel").value.trim();
+        const description = document.getElementById(
+          "pinEditorDescription",
+        ).value;
+        const icon = document.getElementById("pinEditorIcon").value;
+        const color = document.getElementById("pinEditorColor").value;
+        return {
+          x,
+          y: Number.isFinite(y) ? y : null,
+          z,
+          id,
+          label,
+          description,
+          icon,
+          color,
+          valid: Number.isFinite(x) && Number.isFinite(z),
+        };
+      }
+
+      function updatePinEditorState() {
+        if (!pinEditorPanel || pinEditorPanel.style.display === "none") return;
+        const draft = getPinEditorDraft();
+        const mode = currentEditIndex !== null ? "Editing pin" : "New pin";
+        if (pinEditorMode) pinEditorMode.textContent = mode;
+        if (pinEditorSaveBtn) {
+          pinEditorSaveBtn.disabled = !draft.valid;
+          pinEditorSaveBtn.title = draft.valid
+            ? "Save pin"
+            : "Enter valid X and Z coordinates before saving";
+        }
       }
 
       function clampPinEditorPosition(screenX, screenY) {
@@ -4867,6 +5285,7 @@
         const clamped = clampPinEditorPosition(screenX, screenY);
         panel.style.left = `${clamped.x}px`;
         panel.style.top = `${clamped.y}px`;
+        draw();
       }
 
       function getPinEditorAnchorPoint(targetX, targetY) {
@@ -4964,12 +5383,14 @@
               }
             }
           };
+          field.oninput = updatePinEditorState;
         });
 
         setTimeout(() => {
           document.getElementById("pinEditorLabel").focus();
         }, 0);
 
+        updatePinEditorState();
         updateStatusStrip();
         draw();
       }
@@ -5059,6 +5480,7 @@
           pin.color ?? "#ffcc00";
 
         selectedPinIndex = index;
+        updatePinEditorState();
         draw();
         drawMinimap();
       }
@@ -5083,25 +5505,21 @@
       }
 
       function submitPinEditor() {
-        const x = parseInt(document.getElementById("pinEditorX").value);
-        const y = parseInt(document.getElementById("pinEditorY").value);
-        const z = parseInt(document.getElementById("pinEditorZ").value);
-        const id = document.getElementById("pinEditorID").value;
-        const label = document.getElementById("pinEditorLabel").value;
-        const description = document.getElementById(
-          "pinEditorDescription",
-        ).value;
-        const icon = document.getElementById("pinEditorIcon").value;
-        const color = document.getElementById("pinEditorColor").value;
+        const draft = getPinEditorDraft();
+        if (!draft.valid) {
+          updatePinEditorState();
+          showToast("Enter valid X and Z coordinates before saving.", "warn");
+          return;
+        }
         const pinData = {
-          x,
-          y,
-          z,
-          id,
-          label,
-          description,
-          icon,
-          color,
+          x: draft.x,
+          y: draft.y,
+          z: draft.z,
+          id: draft.id,
+          label: draft.label || "(no label)",
+          description: draft.description,
+          icon: draft.icon,
+          color: draft.color,
         };
 
         pushHistoryState(currentEditIndex !== null ? "Edit Pin" : "Add Pin");
@@ -5142,6 +5560,76 @@
 
       function hidePinList() {
         setWorkspaceTab("pins");
+      }
+
+      function fitViewToBounds(bounds, label) {
+        if (!bounds) return;
+        const boundsWidth = Math.max(1, bounds.maxX - bounds.minX);
+        const boundsHeight = Math.max(1, bounds.maxZ - bounds.minZ);
+        const padding = 96;
+        const availableWidth = Math.max(1, width - padding * 2);
+        const availableHeight = Math.max(1, height - padding * 2);
+        const nextZoom = Math.min(
+          5,
+          Math.max(
+            0.25,
+            Math.min(availableWidth / boundsWidth, availableHeight / boundsHeight),
+          ),
+        );
+        pushHistoryState(label);
+        zoom = nextZoom;
+        offsetX = width / 2 - ((bounds.minX + bounds.maxX) / 2) * zoom;
+        offsetY = height / 2 - ((bounds.minZ + bounds.maxZ) / 2) * zoom;
+        const zoomInput = document.getElementById("zoom");
+        if (zoomInput) zoomInput.value = zoom;
+        updateStatusStrip();
+        draw();
+      }
+
+      function fitViewToPins() {
+        if (!Array.isArray(pins) || pins.length === 0) {
+          showToast("No pins to fit.", "warn");
+          return;
+        }
+        const xs = pins.map((pin) => Number(pin.x)).filter(Number.isFinite);
+        const zs = pins.map((pin) => Number(pin.z)).filter(Number.isFinite);
+        if (!xs.length || !zs.length) {
+          showToast("No pin coordinates to fit.", "warn");
+          return;
+        }
+        fitViewToBounds(
+          {
+            minX: Math.min(...xs),
+            maxX: Math.max(...xs),
+            minZ: Math.min(...zs),
+            maxZ: Math.max(...zs),
+          },
+          "Fit Pins",
+        );
+      }
+
+      function fitViewToCrop() {
+        const view = getViewSettings();
+        if (
+          ![
+            view.minX,
+            view.maxX,
+            view.minZ,
+            view.maxZ,
+          ].every(Number.isFinite)
+        ) {
+          showToast("Set valid crop bounds first.", "warn");
+          return;
+        }
+        fitViewToBounds(
+          {
+            minX: view.minX,
+            maxX: view.maxX,
+            minZ: view.minZ,
+            maxZ: view.maxZ,
+          },
+          "Fit Crop",
+        );
       }
 
       function resetView() {
@@ -5305,6 +5793,56 @@
         URL.revokeObjectURL(a.href);
       }
 
+      function normalizePin(rawPin) {
+        const pin = rawPin && typeof rawPin === "object" ? rawPin : {};
+        const x = Number(pin.x);
+        const hasY = pin.y !== undefined && pin.y !== null && pin.y !== "";
+        const y = hasY ? Number(pin.y) : NaN;
+        const z = Number(pin.z);
+        const color = String(pin.color ?? "").trim();
+        const normalized = {
+          x: Number.isFinite(x) ? x : 0,
+          z: Number.isFinite(z) ? z : 0,
+          y: Number.isFinite(y) ? y : undefined,
+          id: String(pin.id ?? ""),
+          label: String(pin.label ?? ""),
+          description: String(pin.description ?? ""),
+          icon: String(pin.icon ?? ""),
+          color: /^#[0-9a-f]{3,8}$/i.test(color) ? color : "",
+          tags: Array.isArray(pin.tags) ? pin.tags.map(String) : undefined,
+          timestamp: pin.timestamp || new Date().toISOString(),
+        };
+        return normalized;
+      }
+
+      function parseMapPayload(data, fallbackName) {
+        const importedName = String(fallbackName || "imported").replace(
+          /\.json$/i,
+          "",
+        );
+
+        if (Array.isArray(data)) {
+          return {
+            name: importedName,
+            pins: data.map(normalizePin),
+            settings: null,
+          };
+        }
+
+        if (data && typeof data === "object") {
+          const name = data.name ? String(data.name) : importedName;
+          return {
+            name,
+            pins: Array.isArray(data.pins)
+              ? data.pins.map(normalizePin)
+              : [],
+            settings: data.settings || null,
+          };
+        }
+
+        return null;
+      }
+
       // Import map JSON (supports array-of-pins or object-with-pins)
       async function importMapFromFile(file) {
         const text = await file.text();
@@ -5316,42 +5854,18 @@
           return;
         }
 
-        // Accept either: [pins]  OR  { pins, name, settings }
-        let importedPins = [];
-        let importedName = file.name.replace(/\.json$/i, "");
-        let importedSettings = null;
-
-        if (Array.isArray(data)) {
-          importedPins = data;
-        } else if (data && typeof data === "object") {
-          if (Array.isArray(data.pins)) importedPins = data.pins;
-          if (data.name) importedName = String(data.name);
-          if (data.settings) importedSettings = data.settings;
-        } else {
+        const parsed = parseMapPayload(data, file.name);
+        if (!parsed) {
           showToast("Unsupported JSON format.", "error");
           return;
         }
 
-        // Normalize pins a bit
-        importedPins = importedPins.map((p) => ({
-          x: Number(p.x) || 0,
-          z: Number(p.z) || 0,
-          y: Number.isFinite(p.y) ? Number(p.y) : undefined,
-          id: (p.id ?? "").toString(),
-          label: (p.label ?? "").toString(),
-          description: (p.description ?? "").toString(),
-          icon: (p.icon ?? "").toString(),
-          color: (p.color ?? "").toString(),
-          tags: Array.isArray(p.tags) ? p.tags.map(String) : undefined,
-          timestamp: p.timestamp || new Date().toISOString(),
-        }));
-
         // Import creates a new saved map as an unlinked copy.
-        const finalName = saveMapAs(importedName, importedPins);
+        const finalName = saveMapAs(parsed.name, parsed.pins);
 
         // Apply settings if provided (optional)
-        if (importedSettings) {
-          applySettingsSnapshot(importedSettings);
+        if (parsed.settings) {
+          applySettingsSnapshot(parsed.settings);
         }
 
         setMapMeta(finalName, { source: "local" });
@@ -5429,51 +5943,27 @@
             return;
           }
 
-          // Accept either [pins] or {pins, settings, name}
-          let importedPins = [];
-          let importedSettings = null;
-          let importedName = file.name.replace(/\.json$/i, "");
-
-          if (Array.isArray(data)) {
-            importedPins = data;
-          } else if (data && typeof data === "object") {
-            if (Array.isArray(data.pins)) importedPins = data.pins;
-            if (data.settings) importedSettings = data.settings;
-            if (data.name) importedName = String(data.name);
-          } else {
+          const parsed = parseMapPayload(data, file.name);
+          if (!parsed) {
             showToast("Unsupported JSON format.", "error");
             return;
           }
 
-          // normalize a bit
-          importedPins = importedPins.map((p) => ({
-            x: Number(p.x) || 0,
-            z: Number(p.z) || 0,
-            y: Number.isFinite(p.y) ? Number(p.y) : undefined,
-            id: (p.id ?? "").toString(),
-            label: (p.label ?? "").toString(),
-            description: (p.description ?? "").toString(),
-            icon: (p.icon ?? "").toString(),
-            color: (p.color ?? "").toString(),
-            tags: Array.isArray(p.tags) ? p.tags.map(String) : undefined,
-            timestamp: p.timestamp || new Date().toISOString(),
-          }));
-
           // Set app state
-          pins = importedPins;
-          currentMapName = importedName;
+          pins = parsed.pins;
+          currentMapName = parsed.name;
           currentFileHandle = handle;
 
           // Keep a library entry so it appears in the selector without switching pins or breaking the link.
           localStorage.setItem(
-            mapKey(importedName),
-            JSON.stringify(importedPins),
+            mapKey(parsed.name),
+            JSON.stringify(parsed.pins),
           );
-          setMapMeta(importedName, { source: "disk", fileName: file.name });
+          setMapMeta(parsed.name, { source: "disk", fileName: file.name });
 
           // reflect the name & link
-          currentMapName = importedName;
-          setCurrentMapNameUI(importedName);
+          currentMapName = parsed.name;
+          setCurrentMapNameUI(parsed.name);
 
           // refresh selector without calling loadMap (we already set pins above)
           loadMapNames({ autoLoadFirst: false });
@@ -5482,8 +5972,8 @@
           if (window.__refreshSaveState) window.__refreshSaveState();
           if (window.__reflectLinkUI) window.__reflectLinkUI();
 
-          if (importedSettings && typeof applySettingsSnapshot === "function") {
-            applySettingsSnapshot(importedSettings);
+          if (parsed.settings && typeof applySettingsSnapshot === "function") {
+            applySettingsSnapshot(parsed.settings);
           }
 
           renderPinList();
@@ -5554,31 +6044,80 @@
       /* Context menu system */
       /* Signature: showContextMenu(items, x, y) */
 
+      let contextMenuReturnFocus = null;
+
+      function getContextMenuItems() {
+        return Array.from(
+          document.querySelectorAll("#contextMenuItems [role='menuitem']"),
+        );
+      }
+
+      function setActiveContextMenuItem(nextIndex) {
+        const menuItems = getContextMenuItems();
+        if (!menuItems.length) return;
+        const index = (nextIndex + menuItems.length) % menuItems.length;
+        menuItems.forEach((item, itemIndex) => {
+          item.classList.toggle("is-active", itemIndex === index);
+          item.tabIndex = itemIndex === index ? 0 : -1;
+        });
+        menuItems[index].focus();
+      }
+
       function showContextMenu(items, x, y) {
         const menu = document.getElementById("contextMenu");
         const list = document.getElementById("contextMenuItems"); // <ul> inside the menu
         if (!menu || !list) return;
+        contextMenuReturnFocus =
+          document.activeElement instanceof HTMLElement
+            ? document.activeElement
+            : null;
+        menu.setAttribute("role", "menu");
 
         // Build items
         list.innerHTML = "";
-        items.forEach(({ label, action, iconClass }) => {
+        items.forEach(({ label, action, iconClass }, index) => {
           const li = document.createElement("li");
+          li.setAttribute("role", "menuitem");
+          li.tabIndex = index === 0 ? 0 : -1;
           if (iconClass) {
             const icon = document.createElement("span");
             icon.className = `io ${iconClass}`;
             icon.setAttribute("aria-hidden", "true");
-            icon.style.marginRight = "8px";
             li.appendChild(icon);
           }
           li.appendChild(document.createTextNode(label));
-          li.onclick = (ev) => {
-            ev.stopPropagation();
+          const activate = (ev) => {
+            ev?.stopPropagation();
             try {
               action && action();
             } finally {
-              hideContextMenu();
+              hideContextMenu({ restoreFocus: false });
             }
           };
+          li.addEventListener("click", activate);
+          li.addEventListener("keydown", (event) => {
+            const menuItems = getContextMenuItems();
+            const currentIndex = menuItems.indexOf(li);
+            if (event.key === "ArrowDown") {
+              event.preventDefault();
+              setActiveContextMenuItem(currentIndex + 1);
+            } else if (event.key === "ArrowUp") {
+              event.preventDefault();
+              setActiveContextMenuItem(currentIndex - 1);
+            } else if (event.key === "Home") {
+              event.preventDefault();
+              setActiveContextMenuItem(0);
+            } else if (event.key === "End") {
+              event.preventDefault();
+              setActiveContextMenuItem(menuItems.length - 1);
+            } else if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              activate(event);
+            } else if (event.key === "Escape") {
+              event.preventDefault();
+              hideContextMenu();
+            }
+          });
           list.appendChild(li);
         });
 
@@ -5596,16 +6135,30 @@
 
         menu.style.left = `${Math.max(0, left)}px`;
         menu.style.top = `${Math.max(0, top)}px`;
+        setActiveContextMenuItem(0);
       }
 
-      function hideContextMenu() {
+      function hideContextMenu({ restoreFocus = true } = {}) {
         const menu = document.getElementById("contextMenu");
         if (menu) menu.style.display = "none";
+        if (restoreFocus && contextMenuReturnFocus?.isConnected) {
+          contextMenuReturnFocus.focus();
+        }
+        contextMenuReturnFocus = null;
       }
 
       window.addEventListener("click", hideContextMenu);
       window.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") hideContextMenu();
+        if (e.key !== "Escape") return;
+        const menu = document.getElementById("contextMenu");
+        if (menu && menu.style.display !== "none") {
+          hideContextMenu();
+          return;
+        }
+        if (pinEditorPanel && pinEditorPanel.style.display !== "none") {
+          e.preventDefault();
+          closePinEditor();
+        }
       });
 
       /* Right-click on the canvas */
@@ -5628,22 +6181,7 @@
 
         if (found) {
           const index = pins.indexOf(found);
-          showContextMenu(
-            [
-              {
-                label: "Edit Pin",
-                iconClass: "iconoir-edit-pencil",
-                action: () => editPin(index),
-              },
-              {
-                label: "Delete Pin",
-                iconClass: "iconoir-trash",
-                action: () => deletePin(index),
-              },
-            ],
-            e.clientX,
-            e.clientY,
-          );
+          showContextMenu(getPinActionItems(index), e.clientX, e.clientY);
         } else {
           // quickPinContextItems must be an array of {label, action}
           showContextMenu(quickPinContextItems, e.clientX, e.clientY);
@@ -6012,32 +6550,17 @@
 
         switch (btn.dataset.action) {
           case "copy": {
-            const yStr =
-              p.y === undefined ||
-              p.y === null ||
-              p.y === "" ||
-              Number.isNaN(p.y)
-                ? "-"
-                : p.y;
-            navigator.clipboard.writeText(`${p.x} ${yStr} ${p.z}`);
+            copyPinCoords(p);
             break;
           }
-          case "center": {
-            centerOnPin(p);
-            break;
-          }
-          case "edit": {
-            editPin(idx);
-            break;
-          }
-          case "delete": {
-            deletePin(idx);
+          case "more": {
+            const rect = btn.getBoundingClientRect();
+            showContextMenu(getPinActionItems(idx), rect.right, rect.bottom + 4);
             break;
           }
         }
       });
 
-      window.addEventListener("keydown", () => hideContextMenu());
       window.addEventListener("keydown", (event) => {
         const modifier = event.ctrlKey || event.metaKey;
         if (!modifier) return;
@@ -6155,6 +6678,14 @@
         if (!el) return;
         el.addEventListener("input", () => {
           if (
+            id === "themeSelect" ||
+            id === "glowIntensitySelect" ||
+            id === "bgColor" ||
+            id === "gridColor"
+          ) {
+            invalidateRenderColorCache();
+          }
+          if (
             id === "showMinimap" ||
             id === "minimapPosition" ||
             id === "minimapSizePreset"
@@ -6171,6 +6702,21 @@
       pinSearchInput?.addEventListener("input", () => {
         renderPinList();
       });
+
+      pinSearchClearBtn?.addEventListener("click", clearPinSearch);
+
+      pinEditorCloseBtn?.addEventListener("click", () => closePinEditor());
+      pinEditorCancelBtn?.addEventListener("click", () => closePinEditor());
+      pinEditorHelpBtn?.addEventListener("click", () => {
+        showToast(
+          "Drag the panel or pin to adjust placement. Enter moves fields; Ctrl/Cmd+Enter saves.",
+          "success",
+          4200,
+        );
+      });
+      pinEditorSaveBtn?.addEventListener("click", submitPinEditor);
+      pinEditorPanel?.addEventListener("input", updatePinEditorState);
+      pinEditorPanel?.addEventListener("change", updatePinEditorState);
 
       function positionPinFilterPopover() {
         if (!pinFilterPopover || !pinFilterBtn) return;
@@ -6201,9 +6747,7 @@
       });
 
       pinFilterResetBtn?.addEventListener("click", () => {
-        pinTypeFilterSelection = null;
-        syncPinTypeFilterOptions();
-        renderPinList();
+        clearPinFilters();
       });
 
       window.addEventListener("click", (event) => {
@@ -6263,6 +6807,7 @@
         }
 
         function syncCanvasTheme() {
+          window.invalidateRenderColorCache?.();
           const styles = getComputedStyle(html);
           const bg = cssColorToHex(
             styles.getPropertyValue("--color-bg").trim(),
@@ -6282,6 +6827,7 @@
           html.style.setProperty("--glow-panel", preset.panel);
           html.style.setProperty("--glow-text", preset.text);
           html.style.setProperty("--glow-border", preset.border);
+          window.invalidateRenderColorCache?.();
           localStorage.setItem(
             STORAGE_KEY_GLOW,
             GLOW_PRESETS[name] ? name : "standard",
