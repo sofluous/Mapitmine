@@ -4,9 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "qa": "npm run smoke && npm run qa:pin-cards",
+    "qa": "npm run smoke && npm run qa:pin-cards && npm run qa:ui-layout && npm run qa:map-cards",
     "smoke": "node scripts/smoke-check.mjs",
     "smoke:browser": "node scripts/browser-smoke.mjs",
-    "qa:pin-cards": "node scripts/pin-card-layout-check.mjs"
+    "qa:pin-cards": "node scripts/pin-card-layout-check.mjs",
+    "qa:ui-layout": "node scripts/ui-layout-check.mjs",
+    "qa:map-cards": "node scripts/map-card-interaction-check.mjs"
   }
 }

@@ -48,15 +48,36 @@
       }
 
       .pin-card {
+        --item-card-bg: var(--ds-card-bg);
+        --item-card-hover-bg: color-mix(in oklab, var(--ds-card-bg) 88%, var(--ds-accent, #6cf) 12%);
+        --item-card-active-bg: color-mix(in oklab, var(--ds-card-bg) 86%, var(--ds-accent, #6cf) 14%);
         position: relative;
         padding: var(--space-sm) var(--space-md);
-        background: var(--ds-card-bg);
+        background: var(--item-card-bg);
         background-image: var(--ds-card-texture-image), var(--ds-card-bg-image);
         background-blend-mode: var(--ds-texture-blend), normal;
         border: var(--ds-border-w) var(--ds-border-style) var(--ds-card-border);
         border-radius: var(--ds-card-radius);
         box-shadow: var(--ds-card-shadow);
         font-size: var(--font-md);
+      }
+
+      .pin-card.is-hovered {
+        border-color: var(--ds-accent, #6cf);
+      }
+
+      .pin-card:focus-visible {
+        outline: 2px solid var(--ds-accent, #6cf);
+        outline-offset: 2px;
+      }
+
+      .pin-card.is-selected {
+        background: var(--item-card-active-bg);
+        box-shadow: inset 3px 0 0 var(--ds-accent, #6cf);
+      }
+
+      .pin-card.is-editing {
+        background: var(--item-card-active-bg);
       }
 
       .pin-card-main {
@@ -84,13 +105,6 @@
         min-width: 0;
       }
 
-      .pin-card-date {
-        grid-area: date;
-        color: color-mix(in oklab, var(--color-text) 56%, transparent);
-        font-size: var(--font-sm);
-        min-height: 18px;
-      }
-
       .pin-line-secondary {
         grid-area: bottom;
         display: grid;
@@ -100,6 +114,13 @@
         min-width: 0;
         color: color-mix(in oklab, var(--color-text) 78%, transparent);
         font-size: var(--font-sm);
+      }
+
+      .pin-card-date {
+        grid-area: date;
+        color: color-mix(in oklab, var(--color-text) 56%, transparent);
+        font-size: var(--font-sm);
+        min-height: 18px;
       }
 
       .pin-label {
@@ -182,40 +203,30 @@
       <section class="fixture-grid">
         <div class="fixture-panel">
           <h2>Normal Panel</h2>
-          <article class="pin-card">
+          <article class="pin-card is-selected">
             <div class="pin-card-main">
               <span class="pin-icon">⌖</span>
               <div class="pin-text">
-                <div class="pin-card-date">Oct 5, 2026</div>
-                <div class="pin-line-secondary">
-                  <div class="pin-label">Spawn Point</div>
-                  <div class="pin-tag">[spawn]</div>
-                  <span class="pin-coords">
+                <div class="pin-card-date">Oct 5, 2026</div><div class="pin-line-secondary"><div class="pin-label">Spawn Point</div><div class="pin-tag">[spawn]</div><span class="pin-coords">
                     <span class="pin-coord"><span class="pin-coord-label">X</span><span class="pin-coord-value">0</span></span>
                     <span class="pin-coord"><span class="pin-coord-label">Y</span><span class="pin-coord-value">64</span></span>
                     <span class="pin-coord"><span class="pin-coord-label">Z</span><span class="pin-coord-value">0</span></span>
-                  </span>
-                </div>
+                  </span></div>
                 <div class="pin-description">Primary working spawn area with a short description.</div>
               </div>
             </div>
             <div class="pin-controls"><button>⧉</button><button>⋯</button></div>
           </article>
 
-          <article class="pin-card">
+          <article class="pin-card is-hovered">
             <div class="pin-card-main">
               <span class="pin-icon">◆</span>
               <div class="pin-text">
-                <div class="pin-card-date">Sep 28, 2026</div>
-                <div class="pin-line-secondary">
-                  <div class="pin-label">Very Long Settlement Name That Should Truncate Only When Needed</div>
-                  <div class="pin-tag">[settlement]</div>
-                  <span class="pin-coords">
+                <div class="pin-card-date">Sep 28, 2026</div><div class="pin-line-secondary"><div class="pin-label">Very Long Settlement Name That Should Truncate Only When Needed</div><div class="pin-tag">[settlement]</div><span class="pin-coords">
                     <span class="pin-coord"><span class="pin-coord-label">X</span><span class="pin-coord-value">-12840</span></span>
                     <span class="pin-coord"><span class="pin-coord-label">Y</span><span class="pin-coord-value">72</span></span>
                     <span class="pin-coord"><span class="pin-coord-label">Z</span><span class="pin-coord-value">30016</span></span>
-                  </span>
-                </div>
+                  </span></div>
               </div>
             </div>
             <div class="pin-controls"><button>⧉</button><button>⋯</button></div>
@@ -224,20 +235,15 @@
 
         <div class="fixture-panel">
           <h2>Narrow Panel</h2>
-          <article class="pin-card">
+          <article class="pin-card is-editing">
             <div class="pin-card-main">
               <span class="pin-icon">◆</span>
               <div class="pin-text">
-                <div class="pin-card-date">Sep 28, 2026</div>
-                <div class="pin-line-secondary">
-                  <div class="pin-label">Very Long Settlement Name That Should Truncate Only When Needed</div>
-                  <div class="pin-tag">[settlement]</div>
-                  <span class="pin-coords">
+                <div class="pin-card-date">Sep 28, 2026</div><div class="pin-line-secondary"><div class="pin-label">Very Long Settlement Name That Should Truncate Only When Needed</div><div class="pin-tag">[settlement]</div><span class="pin-coords">
                     <span class="pin-coord"><span class="pin-coord-label">X</span><span class="pin-coord-value">-12840</span></span>
                     <span class="pin-coord"><span class="pin-coord-label">Y</span><span class="pin-coord-value">72</span></span>
                     <span class="pin-coord"><span class="pin-coord-label">Z</span><span class="pin-coord-value">30016</span></span>
-                  </span>
-                </div>
+                  </span></div>
                 <div class="pin-description">This longer note should sit below the scan row without stealing coordinate space.</div>
               </div>
             </div>

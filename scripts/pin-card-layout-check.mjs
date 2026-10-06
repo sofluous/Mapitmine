@@ -11,6 +11,9 @@ const required = [
   "grid-template-columns: minmax(0, 1fr) auto minmax(max-content, 52%)",
   "grid-template-columns: repeat(3, max-content)",
   "grid-template-columns: 1ch minmax(3ch, max-content)",
+  ".pin-card.is-hovered",
+  ".pin-card.is-selected",
+  ".pin-card.is-editing",
   "Narrow Panel",
   "Very Long Settlement Name",
 ];

@@ -302,9 +302,68 @@
         padding-right: 2px;
       }
 
+      .item-card {
+        --item-card-bg: color-mix(in oklab, var(--ds-card-bg) 94%, transparent);
+        --item-card-hover-bg: color-mix(
+          in oklab,
+          var(--item-card-bg) 88%,
+          var(--color-primary) 12%
+        );
+        --item-card-active-bg: color-mix(
+          in oklab,
+          var(--item-card-bg) 86%,
+          var(--color-primary) 14%
+        );
+        --item-card-selected-color: var(--color-primary);
+        position: relative;
+        background: var(--item-card-bg);
+        border: 1px solid var(--ui-border-quiet);
+        border-radius: var(--ds-radius-2);
+        color: var(--color-text);
+        transition:
+          background 120ms ease,
+          border-color 120ms ease,
+          box-shadow 120ms ease;
+      }
+
+      .item-card:focus-visible {
+        outline: 2px solid var(--color-primary);
+        outline-offset: 2px;
+      }
+
+      .item-card.is-selected {
+        background: var(--item-card-active-bg);
+        border-color: var(--ui-border-quiet);
+        box-shadow:
+          inset 3px 0 0 var(--item-card-selected-color);
+      }
+
+      .item-card.is-active,
+      .item-card.is-editing {
+        background: var(--item-card-active-bg);
+      }
+
+      .item-card.is-editing {
+        --item-card-selected-color: var(--ds-warning, var(--color-primary));
+      }
+
+      .item-card:hover,
+      .item-card.is-hovered {
+        border-color: color-mix(
+          in oklab,
+          var(--color-primary) 78%,
+          var(--ui-border)
+        );
+      }
+
       .control-section {
-        padding: var(--ds-card-pad);
+        padding-block: var(--space-md);
         gap: var(--space-sm);
+        border-bottom: 1px solid var(--ui-border-quiet);
+      }
+
+      .control-section:last-child {
+        border-bottom: 0;
       }
 
       #mapViewPanelSection .control-form,
@@ -342,6 +401,49 @@
         color: var(--color-text-heading);
         letter-spacing: 0.08em;
         text-transform: uppercase;
+      }
+
+      details.control-section > summary.control-section-head {
+        cursor: pointer;
+        list-style: none;
+      }
+
+      details.control-section > summary.control-section-head::-webkit-details-marker {
+        display: none;
+      }
+
+      details.control-section > summary.control-section-head::after {
+        content: "+";
+        color: color-mix(in oklab, var(--color-text) 68%, transparent);
+        font-weight: 700;
+      }
+
+      details.control-section[open] > summary.control-section-head::after {
+        content: "-";
+      }
+
+      .workspace-tab-header {
+        display: grid;
+        gap: var(--space-sm);
+        padding-bottom: var(--space-sm);
+        border-bottom: 1px solid var(--ui-border-quiet);
+      }
+
+      .workspace-tab-title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-sm);
+        min-width: 0;
+      }
+
+      .workspace-tab-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: var(--space-xs);
+        margin-left: auto;
       }
 
       .control-form {
@@ -416,7 +518,7 @@
       }
 
       .control-segment .ds-btn .io {
-        font-size: 14px;
+        font-size: 24px;
       }
 
       .ds-switch input {
@@ -467,10 +569,6 @@
         align-items: center;
       }
 
-      #mapSelector {
-        flex: 1 1 auto;
-        min-width: 0;
-      }
       /* 5) Pin list header */
       .history-btn[disabled] {
         opacity: 0.42;
@@ -503,7 +601,6 @@
         flex: 1 1 220px;
         min-width: 0;
         padding-inline: var(--space-sm);
-        border: 1px solid var(--ui-border-quiet);
         border-radius: var(--ds-radius-2);
         background: color-mix(in oklab, var(--ui-surface) 85%, transparent);
       }
@@ -511,7 +608,6 @@
       .pin-search-wrap .ds-input {
         border: 0;
         background: transparent;
-        padding-inline: 0;
       }
 
       .pin-search-wrap .ds-input:focus {
@@ -582,38 +678,21 @@
       .scrollable-pin-list {
         display: grid;
         align-content: start;
-        gap: var(--space-toolbar);
         overflow-y: auto;
         flex: 1 1 auto;
         min-height: 0;
         height: auto;
         padding: var(--space-xs);
-        border: 1px solid var(--ui-border-quiet);
         border-radius: var(--ds-card-radius);
         background: color-mix(in oklab, var(--ds-bg-raised) 78%, transparent);
       }
 
       .pin-card {
-        position: relative;
         padding: var(--space-sm) var(--space-md);
-        background: var(--ds-card-bg);
         background-image: var(--ds-card-texture-image), var(--ds-card-bg-image);
         background-blend-mode: var(--ds-texture-blend), normal;
-        border: var(--ds-border-w) var(--ds-border-style) var(--ds-card-border);
         box-shadow: var(--ds-card-shadow);
         font-size: var(--font-md);
-      }
-
-      .pin-card:hover,
-      .pin-card.hovered {
-        border: 1px solid var(--color-primary);
-        background-color: var(--color-hover-highlight, var(--ui-surface-hover));
-      }
-
-      /* FIX: outline follows theme primary (replaces hardcoded orange) */
-      .pin-card.selected {
-        outline: 2px solid var(--color-primary);
-        background-color: var(--bg-selected);
       }
 
       .pin-card-content {
@@ -658,19 +737,11 @@
         white-space: nowrap;
       }
 
-      .pin-card-date,
       .pin-line-secondary {
         display: flex;
         align-items: center;
         gap: 8px;
         min-width: 0;
-      }
-
-      .pin-card-date {
-        grid-area: date;
-        color: color-mix(in oklab, var(--color-text) 56%, transparent);
-        font-size: var(--font-sm);
-        min-height: 18px;
       }
 
       .pin-line-secondary {
@@ -679,6 +750,13 @@
         grid-template-columns: minmax(0, 1fr) auto minmax(max-content, 52%);
         color: color-mix(in oklab, var(--color-text) 78%, transparent);
         font-size: var(--font-sm);
+      }
+
+      .pin-card-date {
+        grid-area: date;
+        color: color-mix(in oklab, var(--color-text) 56%, transparent);
+        font-size: var(--font-sm);
+        min-height: 18px;
       }
 
       .pin-coord-label {
@@ -1629,29 +1707,106 @@
         gap: var(--space-sm);
       }
 
-      .map-library-select {
-        width: 100%;
-      }
-
-      .map-select-row {
-        display: block;
-      }
-
-      .map-select-row .map-library-select {
-        width: 100%;
-      }
-
-      .map-select-actions {
+      .map-gallery {
         display: grid;
-        grid-template-columns: repeat(2, auto);
-        justify-content: end;
+        align-content: start;
+        gap: var(--space-xs);
+        min-height: 0;
+        height: 100%;
+        overflow: auto;
+      }
+
+      .map-gallery-card {
+        display: grid;
+        grid-template-rows: auto auto 1fr auto;
+        gap: var(--space-xs);
+        width: 100%;
+        min-height: 132px;
+        padding: var(--space-sm);
+        text-align: left;
+      }
+
+      .map-gallery-card-actions {
+        position: absolute;
+        top: var(--space-xs);
+        right: var(--space-xs);
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: var(--space-xs);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 120ms ease;
+      }
+
+      .map-gallery-card-actions .ds-btn {
+        min-width: 0;
+      }
+
+      .map-gallery-card:hover .map-gallery-card-actions,
+      .map-gallery-card:focus-within .map-gallery-card-actions {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .map-gallery-card-title {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 32px;
         gap: var(--space-xs);
         align-items: center;
-        margin-top: var(--space-xs);
+        min-width: 0;
       }
 
-      .map-select-actions .ds-btn {
+      .map-gallery-card-name {
         min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--color-text-heading);
+        font-weight: 700;
+      }
+
+      .map-gallery-card-rename {
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+      }
+
+      .map-gallery-card-status {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-xs);
+      }
+
+      .map-gallery-card-body {
+        display: grid;
+        align-content: start;
+        gap: var(--space-xs);
+        color: color-mix(in oklab, var(--color-text) 72%, transparent);
+        font-size: var(--font-sm);
+      }
+
+      .map-gallery-card-footer {
+        display: flex;
+        justify-content: flex-end;
+        align-items: end;
+        min-height: 32px;
+      }
+
+      .map-gallery-card-footer .ds-btn {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 120ms ease;
+      }
+
+      .map-gallery-card:hover .map-gallery-card-footer .ds-btn,
+      .map-gallery-card:focus-within .map-gallery-card-footer .ds-btn {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .map-gallery-card[aria-current="true"] .map-gallery-card-footer .ds-btn {
+        visibility: hidden;
       }
 
       .map-meta-grid {
@@ -1689,25 +1844,6 @@
         color: color-mix(in oklab, var(--color-text) 82%, transparent);
         font-size: var(--font-sm);
         text-align: right;
-      }
-
-      .map-action-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: var(--space-xs);
-      }
-
-      .map-action-grid .ds-btn {
-        justify-content: flex-start;
-      }
-
-      .map-action-stack {
-        display: grid;
-        gap: var(--space-xs);
-      }
-
-      .map-action-stack .ds-btn {
-        justify-content: flex-start;
       }
 
       .section-note {
@@ -1767,6 +1903,28 @@
         gap: var(--space-xs);
       }
 
+      .map-action-primary {
+        display: grid;
+        gap: var(--space-xs);
+      }
+
+      .map-action-primary .ds-btn {
+        justify-content: center;
+        width: 100%;
+      }
+
+      .map-action-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--space-xs);
+      }
+
+      .map-action-grid .ds-btn {
+        justify-content: center;
+        min-width: 0;
+        padding-inline: var(--ds-space-2);
+      }
+
       .badge {
         display: inline-flex;
         align-items: center;
@@ -1788,10 +1946,6 @@
 
       .badge .io {
         font-size: 13px;
-      }
-
-      #mapLinkBadge {
-        width: fit-content;
       }
 
       .app-modal-copy {
@@ -1952,9 +2106,22 @@
           justify-content: flex-start;
         }
 
-        .map-select-actions {
+        .map-action-grid {
           grid-template-columns: 1fr;
+        }
+
+        .pin-editor-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .pin-editor-mini-group {
+          grid-template-columns: 1fr 72px;
           justify-content: stretch;
+        }
+
+        .pin-editor-mini {
+          width: 100%;
+          min-width: 0;
         }
 
         .pin-toolbar {
@@ -2000,7 +2167,7 @@
             title="Maps"
             aria-label="Maps"
           >
-            <span class="io iconoir-folder" aria-hidden="true"></span>
+            <span class="io iconoir-map" aria-hidden="true"></span>
           </button>
           <button
             class="ds-btn ds-btn-icon ds-icon-action rail-tab-btn"
@@ -2020,7 +2187,7 @@
             title="Map View"
             aria-label="Map View"
           >
-            <span class="io iconoir-map" aria-hidden="true"></span>
+            <span class="io iconoir-control-slider" aria-hidden="true"></span>
           </button>
         </div>
         <div class="rail-tabs rail-secondary">
@@ -2043,205 +2210,40 @@
           class="workspace-section is-active"
           data-workspace-panel="maps"
         >
-          <div class="workspace-section-head">
-            <div class="workspace-section-title">
-              <span class="io iconoir-folder" aria-hidden="true"></span>
-              Maps
+          <div class="workspace-tab-header">
+            <div class="workspace-tab-title-row">
+              <div class="workspace-section-title">
+                <span class="io iconoir-map" aria-hidden="true"></span>
+                Maps
+              </div>
+              <div class="workspace-tab-actions">
+                <button id="createNewMapBtn" class="ds-btn ds-btn-sm" type="button">
+                  <span class="io iconoir-plus" aria-hidden="true"></span>
+                  New
+                </button>
+                <button id="mapImportBtn" class="ds-btn ds-btn-sm" type="button">
+                  <span class="io iconoir-download" aria-hidden="true"></span>
+                  Import
+                </button>
+                <button id="mapOpenLibraryBtn" class="ds-btn ds-btn-sm" type="button">
+                  <span class="io iconoir-folder" aria-hidden="true"></span>
+                  Open
+                </button>
+              </div>
             </div>
           </div>
           <div class="workspace-section-body">
-            <div class="map-panel-stack">
-              <section class="control-section ds-card ds-stack">
-                <div class="control-section-head">
-                  <div class="control-section-title">
-                    <span
-                      class="io iconoir-multiple-pages"
-                      aria-hidden="true"
-                    ></span>
-                    Map Library
-                  </div>
-                </div>
-                <div class="control-form">
-                  <div class="control-field no-readout">
-                    <label for="mapSelector">Select Map</label>
-                    <div class="map-select-row">
-                      <select
-                        id="mapSelector"
-                        class="ds-select map-library-select"
-                        title="Select a map"
-                      ></select>
-                      <div class="map-select-actions">
-                        <button
-                          id="createNewMapBtn"
-                          class="ds-btn"
-                          type="button"
-                        >
-                          <span
-                            class="io iconoir-plus"
-                            aria-hidden="true"
-                          ></span>
-                          New
-                        </button>
-                        <button id="mapImportBtn" class="ds-btn" type="button">
-                          <span
-                            class="io iconoir-download"
-                            aria-hidden="true"
-                          ></span>
-                          Import
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  <p class="section-note">
-                    Choose a local map, create a fresh one, or import JSON into
-                    your local library.
-                  </p>
-                </div>
-              </section>
-
-              <section class="control-section ds-card ds-stack">
-                <div class="control-section-head">
-                  <div class="control-section-title">
-                    <span class="io iconoir-map" aria-hidden="true"></span>
-                    Selected Map
-                  </div>
-                </div>
-                <div class="control-form">
-                  <div class="control-field no-readout">
-                    <label for="currentMapNameInput">Name</label>
-                    <input
-                      id="currentMapNameInput"
-                      class="map-title-input ds-input"
-                      type="text"
-                      value="default"
-                      aria-label="Current map name"
-                    />
-                  </div>
-                  <div class="map-meta-grid">
-                    <div class="map-meta-row">
-                      <span class="map-meta-label">Source</span>
-                      <span id="mapMetaSource" class="map-meta-value">
-                        <span
-                          class="io iconoir-hard-drive"
-                          aria-hidden="true"
-                        ></span>
-                        <span id="mapMetaSourceText">Local</span>
-                      </span>
-                    </div>
-                    <div class="map-meta-row">
-                      <span class="map-meta-label">Details</span>
-                      <span id="mapMetaDetail" class="map-meta-detail"
-                        >Not linked</span
-                      >
-                    </div>
-                    <div class="map-meta-row">
-                      <span class="map-meta-label">Pins</span>
-                      <span id="mapMetaPins" class="map-meta-value">0</span>
-                    </div>
-                    <div class="map-meta-row">
-                      <span class="map-meta-label">Status</span>
-                      <span id="mapLinkBadge" class="badge ds-chip"
-                        ><span
-                          id="mapLinkBadgeIcon"
-                          class="io iconoir-warning-triangle"
-                          aria-hidden="true"
-                        ></span
-                        ><span id="mapLinkBadgeText">Not Saved</span></span
-                      >
-                    </div>
-                  </div>
-                  <div class="map-meta-actions">
-                    <button id="duplicateMapBtn" class="ds-btn" type="button">
-                      <span class="io iconoir-copy" aria-hidden="true"></span>
-                      Duplicate
-                    </button>
-                    <button
-                      id="deleteMapBtn"
-                      class="ds-btn ds-btn-danger"
-                      type="button"
-                    >
-                      <span class="io iconoir-trash" aria-hidden="true"></span>
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </section>
-
-              <section class="control-section ds-card ds-stack">
-                <div class="control-section-head">
-                  <div class="control-section-title">
-                    <span class="io iconoir-database" aria-hidden="true"></span>
-                    Save & Export
-                  </div>
-                </div>
-                <div class="control-form">
-                  <div class="map-data-group">
-                    <div class="map-data-header">
-                      <span class="map-data-title">Work From A File</span>
-                    </div>
-                    <p class="map-data-copy">
-                      Open a JSON map to link it for direct saves. Save updates
-                      the linked file; if nothing is linked, it starts Save As.
-                    </p>
-                    <div class="map-action-row">
-                      <button id="mapOpenBtn" class="ds-btn" type="button">
-                        <span
-                          class="io iconoir-folder"
-                          aria-hidden="true"
-                        ></span>
-                        Open & Link
-                      </button>
-                      <button id="mapSaveBtn" class="ds-btn" type="button">
-                        <span
-                          class="io iconoir-save-floppy-disk"
-                          aria-hidden="true"
-                        ></span>
-                        Save Linked
-                      </button>
-                    </div>
-                  </div>
-                  <div class="map-data-group">
-                    <div class="map-data-header">
-                      <span class="map-data-title">Make A Copy</span>
-                    </div>
-                    <p class="map-data-copy">
-                      Save As creates and links a new file. Export downloads a
-                      standalone JSON copy and keeps this map local.
-                    </p>
-                    <div class="map-action-row">
-                      <button
-                        id="linkNowBtn"
-                        class="ds-btn ds-btn-primary"
-                        type="button"
-                      >
-                        <span
-                          class="io iconoir-save-floppy-disk"
-                          aria-hidden="true"
-                        ></span>
-                        Save As Linked
-                      </button>
-                      <button
-                        id="mapExportBtn"
-                        class="ds-btn ds-btn-ghost"
-                        type="button"
-                      >
-                        <span
-                          class="io iconoir-upload"
-                          aria-hidden="true"
-                        ></span>
-                        Export Copy
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <input
-                  id="importJsonInput"
-                  type="file"
-                  accept="application/json"
-                  style="display: none"
-                />
-              </section>
-            </div>
+            <div
+              id="mapGallery"
+              class="map-gallery"
+              aria-label="Map gallery"
+            ></div>
+            <input
+              id="importJsonInput"
+              type="file"
+              accept="application/json"
+              style="display: none"
+            />
           </div>
         </div>
 
@@ -2324,15 +2326,13 @@
         >
           <div class="workspace-section-head">
             <div class="workspace-section-title">
-              <span class="io iconoir-map" aria-hidden="true"></span>
               Map View
             </div>
           </div>
           <div class="workspace-section-body">
-            <section class="control-section ds-card ds-stack">
+            <section class="control-section ds-stack">
               <div class="control-section-head">
                 <div class="control-section-title">
-                  <span class="io iconoir-map" aria-hidden="true"></span>
                   Map
                 </div>
                 <div class="toolbar-actions">
@@ -2462,7 +2462,7 @@
               </div>
             </section>
 
-            <section class="control-section ds-card ds-stack">
+            <section class="control-section ds-stack">
               <div class="control-section-head">
                 <div class="control-section-title">
                   <span class="io iconoir-text" aria-hidden="true"></span>
@@ -2522,10 +2522,9 @@
               </div>
             </section>
 
-            <section class="control-section ds-card ds-stack">
+            <section class="control-section ds-stack">
               <div class="control-section-head">
                 <div class="control-section-title">
-                  <span class="io iconoir-map" aria-hidden="true"></span>
                   Minimap
                 </div>
               </div>
@@ -2552,7 +2551,7 @@
                       title="Top left"
                     >
                       <span
-                        class="io iconoir-align-left"
+                        class="io iconoir-corner-bottom-left"
                         aria-hidden="true"
                       ></span>
                     </button>
@@ -2564,7 +2563,7 @@
                       title="Top right"
                     >
                       <span
-                        class="io iconoir-align-right"
+                        class="io iconoir-corner-top-right"
                         aria-hidden="true"
                       ></span>
                     </button>
@@ -2576,7 +2575,7 @@
                       title="Bottom left"
                     >
                       <span
-                        class="io iconoir-align-bottom-box"
+                        class="io iconoir-corner-bottom-left"
                         aria-hidden="true"
                       ></span>
                     </button>
@@ -2588,7 +2587,7 @@
                       title="Bottom right"
                     >
                       <span
-                        class="io iconoir-align-bottom-box"
+                        class="io iconoir-corner-bottom-right"
                         style="transform: scaleX(-1)"
                         aria-hidden="true"
                       ></span>
@@ -2654,15 +2653,13 @@
         >
           <div class="workspace-section-head">
             <div class="workspace-section-title">
-              <span class="io iconoir-settings" aria-hidden="true"></span>
               Settings
             </div>
           </div>
           <div class="workspace-section-body">
-            <section class="control-section ds-card ds-stack">
+            <section class="control-section ds-stack">
               <div class="control-section-head">
                 <div class="control-section-title">
-                  <span class="io iconoir-settings" aria-hidden="true"></span>
                   Interface
                 </div>
               </div>
@@ -2789,7 +2786,7 @@
         aria-label="Toggle crosshair"
         aria-pressed="false"
       >
-        <span class="io iconoir-crosshair" aria-hidden="true"></span>
+        <span class="io iconoir-axes" aria-hidden="true"></span>
       </button>
     </div>
 
@@ -2899,7 +2896,7 @@
           class="ds-btn ds-btn-primary"
           type="button"
         >
-          Save
+          <span id="pinEditorSaveText">Save</span>
         </button>
       </div>
     </div>
@@ -3015,11 +3012,13 @@
         __dirty = true;
         updateStatusStrip?.();
         window.__reflectLinkUI?.();
+        renderMapGallery?.();
       }
       function clearDirty() {
         __dirty = false;
         updateStatusStrip?.();
         window.__reflectLinkUI?.();
+        renderMapGallery?.();
       }
 
       const canvas = document.getElementById("mapCanvas");
@@ -3076,6 +3075,8 @@
       let editorDragState = null;
       let pinCanvasDragState = null;
       let pinEditOriginalSnapshot = null;
+      let pinEditorOriginalDraft = null;
+      let editingMapName = null;
       let suppressCanvasClick = false;
       let crosshairMode = false;
       let undoStack = [];
@@ -3206,9 +3207,6 @@
       }));
 
       let currentMapName = "default";
-      const currentMapNameInput = document.getElementById(
-        "currentMapNameInput",
-      );
       const toastStack = document.getElementById("toastStack");
       const confirmDialog = document.getElementById("confirmDialog");
       const confirmDialogTitle = document.getElementById("confirmDialogTitle");
@@ -3234,6 +3232,7 @@
       const pinEditorCancelBtn = document.getElementById("pinEditorCancelBtn");
       const pinEditorHelpBtn = document.getElementById("pinEditorHelpBtn");
       const pinEditorSaveBtn = document.getElementById("pinEditorSaveBtn");
+      const pinEditorSaveText = document.getElementById("pinEditorSaveText");
       const pinEditorMode = document.getElementById("pinEditorMode");
       if (
         pinFilterPopover &&
@@ -3244,9 +3243,6 @@
       const minimapSizePresetSelect =
         document.getElementById("minimapSizePreset");
       const useTextScaleBtn = document.getElementById("useTextScaleBtn");
-      const mapMetaSource = document.getElementById("mapMetaSource");
-      const mapMetaDetail = document.getElementById("mapMetaDetail");
-      const mapMetaPins = document.getElementById("mapMetaPins");
       const statusToolState = document.getElementById("statusToolState");
       const statusHistoryState = document.getElementById("statusHistoryState");
       const statusZoomValue = document.getElementById("statusZoomValue");
@@ -3354,11 +3350,6 @@
       }
 
       function setCurrentMapNameUI(name) {
-        const display = name || "";
-        if (currentMapNameInput) {
-          currentMapNameInput.value = display;
-          currentMapNameInput.disabled = !display;
-        }
         syncMapMetaUI();
         updateStatusStrip();
       }
@@ -3388,11 +3379,12 @@
         localStorage.setItem(`map:${trimmed}`, data);
         localStorage.removeItem(`map:${oldMap}`);
 
-        const oldMeta = localStorage.getItem(mapMetaKey(oldMap));
-        if (oldMeta !== null) {
-          localStorage.setItem(mapMetaKey(trimmed), oldMeta);
-          localStorage.removeItem(mapMetaKey(oldMap));
-        }
+        const nextMeta = getMapMeta(oldMap) || {};
+        localStorage.setItem(
+          mapMetaKey(trimmed),
+          JSON.stringify({ ...nextMeta, updatedAt: new Date().toISOString() }),
+        );
+        localStorage.removeItem(mapMetaKey(oldMap));
 
         currentMapName = trimmed;
         loadMapNames({ autoLoadFirst: false });
@@ -3407,85 +3399,71 @@
         }
       });
 
-      if (currentMapNameInput) {
-        currentMapNameInput.addEventListener("keydown", (e) => {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            if (!renameCurrentMap(currentMapNameInput.value)) {
-              setCurrentMapNameUI(currentMapName);
-            }
-            currentMapNameInput.blur();
-          } else if (e.key === "Escape") {
-            setCurrentMapNameUI(currentMapName);
-            currentMapNameInput.blur();
-          }
+      async function deleteMapByName(name = currentMapName) {
+        if (!name) return;
+
+        const confirmDelete = await showConfirmDialog({
+          title: "Delete map?",
+          message: `This will permanently remove "${name}" from local storage.`,
+          confirmText: "Delete",
         });
-        currentMapNameInput.addEventListener("blur", () => {
-          if (!renameCurrentMap(currentMapNameInput.value)) {
-            setCurrentMapNameUI(currentMapName);
-          }
-        });
+        if (!confirmDelete) return;
+        pushHistoryState("Delete Map");
+
+        localStorage.removeItem(mapKey(name));
+        localStorage.removeItem(mapMetaKey(name));
+
+        const remaining = getStoredMapNames();
+
+        if (remaining.length > 0) {
+          currentMapName =
+            name === currentMapName ? remaining[0] : currentMapName || remaining[0];
+          loadMapNames();
+          loadMap(currentMapName);
+        } else {
+          currentMapName = null;
+          setCurrentMapNameUI(null);
+          pins = [];
+          loadMapNames();
+          updateOverlayVisibility();
+        }
+        showToast("Map deleted.");
       }
 
-      document
-        .getElementById("deleteMapBtn")
-        .addEventListener("click", async () => {
-          if (!currentMapName) return;
-
-          const confirmDelete = await showConfirmDialog({
-            title: "Delete map?",
-            message: `This will permanently remove "${currentMapName}" from local storage.`,
-            confirmText: "Delete",
-          });
-          if (!confirmDelete) return;
-          pushHistoryState("Delete Map");
-
-          localStorage.removeItem(`map:${currentMapName}`);
-
-          const remaining = Object.keys(localStorage)
-            .filter((k) => k.startsWith("map:"))
-            .map((k) => k.slice(4));
-
-          if (remaining.length > 0) {
-            currentMapName = remaining[0];
-            loadMapNames();
-            loadMap(currentMapName);
-          } else {
-            currentMapName = null;
-            setCurrentMapNameUI(null);
-            pins = [];
-            loadMapNames();
-            updateOverlayVisibility();
-          }
-          showToast("Map deleted.");
-        });
-
-      document
-        .getElementById("duplicateMapBtn")
-        .addEventListener("click", () => {
-          if (!currentMapName) {
+      function duplicateMapByName(name = currentMapName) {
+        if (!name || !localStorage.getItem(mapKey(name))) {
             showToast("No map selected.", "warn");
             return;
           }
 
-          const duplicateName = dedupeMapName(`${currentMapName} Copy`);
-          pushHistoryState("Duplicate Map");
-          localStorage.setItem(mapKey(duplicateName), JSON.stringify(pins));
-          setMapMeta(duplicateName, { source: "local" });
-          currentMapName = duplicateName;
-          loadMapNames();
-          loadMap(duplicateName);
-          showToast(`Map duplicated as "${duplicateName}".`);
+        const duplicateName = dedupeMapName(`${name} Copy`);
+        const sourcePins =
+          name === currentMapName
+            ? pins
+            : JSON.parse(localStorage.getItem(mapKey(name)) || "[]");
+        pushHistoryState("Duplicate Map");
+        localStorage.setItem(mapKey(duplicateName), JSON.stringify(sourcePins));
+        setMapMeta(duplicateName, {
+          source: "local",
+          updatedAt: new Date().toISOString(),
         });
+        currentMapName = duplicateName;
+        loadMapNames();
+        loadMap(duplicateName);
+        showToast(`Map duplicated as "${duplicateName}".`);
+      }
+
+      document
+        .getElementById("deleteMapBtn")
+        ?.addEventListener("click", () => deleteMapByName());
+
+      document
+        .getElementById("duplicateMapBtn")
+        ?.addEventListener("click", () => duplicateMapByName());
 
       // DOM initialization
 
       function refreshSaveState() {
-        const mapSaveBtn = document.getElementById("mapSaveBtn");
-        const linked =
-          typeof currentFileHandle !== "undefined" && !!currentFileHandle;
-        if (mapSaveBtn)
-          mapSaveBtn.disabled = !linked && !window.showSaveFilePicker;
         if (window.__reflectLinkUI) window.__reflectLinkUI();
       }
 
@@ -3494,45 +3472,9 @@
 
       // ===== Linked/Unlinked status UI =====
       function reflectLinkUI() {
-        const badge = document.getElementById("mapLinkBadge");
-        const badgeIcon = document.getElementById("mapLinkBadgeIcon");
-        const badgeText = document.getElementById("mapLinkBadgeText");
-        const mapSaveBtn = document.getElementById("mapSaveBtn");
-        const linked = !!currentFileHandle;
-        const dirty = !!__dirty;
-
-        if (badge) {
-          if (linked) {
-            if (badgeIcon) badgeIcon.className = "io iconoir-check-circle";
-            const fileName = currentFileHandle.name || currentMapName + ".json";
-            if (badgeText)
-              badgeText.textContent = dirty
-                ? `Linked - unsaved`
-                : `Linked: ${fileName}`;
-            badge.title = dirty
-              ? `Unsaved changes in ${fileName}`
-              : `Linked to ${fileName}`;
-            badge.classList.add("badge--linked");
-          } else {
-            if (badgeIcon) badgeIcon.className = "io iconoir-warning-triangle";
-            if (badgeText)
-              badgeText.textContent = dirty ? "Local - unsaved" : "Local only";
-            badge.title = dirty
-              ? "Unsaved browser-local changes"
-              : "Stored in browser storage";
-            badge.classList.remove("badge--linked");
-          }
-        }
-
-        if (mapSaveBtn)
-          mapSaveBtn.disabled = !linked && !window.showSaveFilePicker;
         syncMapMetaUI();
         updateStatusStrip();
       }
-
-      // Click -> Save As
-      const linkBtn = document.getElementById("linkNowBtn");
-      if (linkBtn) linkBtn.addEventListener("click", () => saveAsMapToDisk());
 
       // make this callable from elsewhere
       window.__reflectLinkUI = reflectLinkUI;
@@ -3605,9 +3547,341 @@
         }
       }
 
+      function updateMapMeta(name, patch = {}) {
+        if (!name) return;
+        setMapMeta(name, { ...(getMapMeta(name) || {}), ...patch });
+      }
+
+      function touchMapMeta(name = currentMapName) {
+        updateMapMeta(name, { updatedAt: new Date().toISOString() });
+      }
+
+      function formatRelativeDate(value) {
+        if (!value) return "Not edited";
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "Not edited";
+        const diffMs = Date.now() - date.getTime();
+        const minute = 60 * 1000;
+        const hour = 60 * minute;
+        const day = 24 * hour;
+        if (diffMs < minute) return "Updated now";
+        if (diffMs < hour) {
+          const minutes = Math.max(1, Math.floor(diffMs / minute));
+          return `Updated ${minutes}m ago`;
+        }
+        if (diffMs < day) {
+          const hours = Math.floor(diffMs / hour);
+          return `Updated ${hours}h ago`;
+        }
+        if (diffMs < 7 * day) {
+          const days = Math.floor(diffMs / day);
+          return `Updated ${days}d ago`;
+        }
+        return `Updated ${date.toLocaleDateString(undefined, {
+          month: "short",
+          day: "numeric",
+        })}`;
+      }
+
+      function getStoredMapSummary(name) {
+        let mapPins = [];
+        try {
+          mapPins = JSON.parse(localStorage.getItem(mapKey(name)) || "[]");
+        } catch {
+          mapPins = [];
+        }
+        const meta = getMapMeta(name) || {};
+        const linked = meta.source === "disk";
+        const selected = name === currentMapName;
+        const dirty = selected && !!__dirty;
+        return {
+          name,
+          pinCount: Array.isArray(mapPins) ? mapPins.length : 0,
+          source: linked ? "Linked" : "Local",
+          detail: meta.fileName || (linked ? "Linked file" : "Browser storage"),
+          updated: formatRelativeDate(meta.updatedAt),
+          linked,
+          dirty,
+        };
+      }
+
+      function getStoredMapNames() {
+        return Object.keys(localStorage)
+          .filter((key) => key.startsWith("map:"))
+          .map((key) => key.slice(4))
+          .sort((a, b) => a.localeCompare(b));
+      }
+
+      function renderMapGallery(names = getStoredMapNames()) {
+        const gallery = document.getElementById("mapGallery");
+        if (!gallery) return;
+        gallery.innerHTML = "";
+
+        if (!names.length) {
+          gallery.innerHTML =
+            '<p class="section-note">No maps yet.</p>';
+          return;
+        }
+
+        names.forEach((name) => {
+          const summary = getStoredMapSummary(name);
+          const selected = name === currentMapName;
+          const isRenaming = editingMapName === name;
+          const card = document.createElement("article");
+          card.className = `map-gallery-card item-card${selected ? " is-active" : ""}`;
+          card.dataset.mapName = name;
+          card.tabIndex = 0;
+          card.setAttribute("aria-label", `${selected ? "Active map" : "Map"} ${summary.name}`);
+          card.setAttribute(
+            "aria-current",
+            selected ? "true" : "false",
+          );
+          card.innerHTML = `
+            <span class="map-gallery-card-title">
+              ${
+                isRenaming
+                  ? `<input class="map-gallery-card-rename ds-input" type="text" value="${escapeHtml(summary.name)}" data-map-rename-input aria-label="Rename map ${escapeHtml(summary.name)}" />`
+                  : `<span class="map-gallery-card-name">${escapeHtml(summary.name)}</span>`
+              }
+              <span class="map-gallery-card-actions">
+                <button class="ds-btn ds-btn-icon ds-icon-action ds-btn-sm" type="button" data-map-card-action="more" title="Map actions" aria-label="Map actions">
+                  <span class="io iconoir-more-horiz" aria-hidden="true"></span>
+                </button>
+              </span>
+            </span>
+            <span class="map-gallery-card-status">
+              <span class="badge ds-chip">${summary.source}</span>
+              ${summary.dirty ? '<span class="badge ds-chip">Unsaved</span>' : ""}
+              ${selected ? '<span class="badge ds-chip">Active</span>' : ""}
+            </span>
+            <span class="map-gallery-card-body">
+              <span>${summary.pinCount} pin${summary.pinCount === 1 ? "" : "s"}</span>
+              <span>${escapeHtml(summary.detail)}</span>
+              <span>${escapeHtml(summary.updated)}</span>
+            </span>
+            <span class="map-gallery-card-footer">
+              ${
+                selected
+                  ? ""
+                  : '<button class="ds-btn ds-btn-sm" type="button" data-map-card-action="open">Open</button>'
+              }
+            </span>
+          `;
+          gallery.appendChild(card);
+        });
+        gallery.querySelector("[data-map-rename-input]")?.focus();
+        gallery.querySelector("[data-map-rename-input]")?.select();
+      }
+
+      function selectMapByName(name) {
+        if (name === currentMapName) return;
+        loadMap(name);
+      }
+
+      function saveSelectedMapToDisk() {
+        if (currentFileHandle) saveMapToDisk();
+        else saveAsMapToDisk();
+      }
+
+      function startMapCardRename(name) {
+        if (name !== currentMapName) selectMapByName(name);
+        editingMapName = name;
+        renderMapGallery();
+      }
+
+      function stopMapCardRename({ commit = false, input } = {}) {
+        if (!editingMapName) return;
+        const originalName = editingMapName;
+        const nextName = input?.value ?? originalName;
+        editingMapName = null;
+        if (commit && originalName === currentMapName) {
+          renameCurrentMap(nextName);
+        } else {
+          renderMapGallery();
+        }
+      }
+
+      function runMapCardAction(actionName, name) {
+        switch (actionName) {
+          case "open":
+            selectMapByName(name);
+            break;
+          case "save":
+            if (name !== currentMapName) selectMapByName(name);
+            saveSelectedMapToDisk();
+            break;
+          case "save-as":
+            if (name !== currentMapName) selectMapByName(name);
+            saveAsMapToDisk();
+            break;
+          case "open-disk":
+            openMapFromDisk();
+            break;
+          case "rename":
+            startMapCardRename(name);
+            break;
+          case "duplicate":
+            duplicateMapByName(name);
+            break;
+          case "export":
+            exportMapByName(name);
+            break;
+          case "delete":
+            deleteMapByName(name);
+            break;
+        }
+      }
+
+      function getMapCardActionItems(name) {
+        const selected = name === currentMapName;
+        const hasLiveFileLink = selected && !!currentFileHandle;
+        const items = [];
+        if (selected) {
+          items.push({
+            label: hasLiveFileLink ? "Save Linked" : "Save As Linked",
+            iconClass: "iconoir-save-floppy-disk",
+            action: () => runMapCardAction("save", name),
+          });
+          if (hasLiveFileLink && window.showSaveFilePicker) {
+            items.push({
+              label: "Save As Linked",
+              iconClass: "iconoir-save-floppy-disk",
+              action: () => runMapCardAction("save-as", name),
+            });
+          }
+          items.push({
+            label: "Rename",
+            iconClass: "iconoir-edit-pencil",
+            action: () => runMapCardAction("rename", name),
+          });
+        }
+        items.push(
+          {
+            label: "Open & Link",
+            iconClass: "iconoir-folder",
+            action: () => runMapCardAction("open-disk", name),
+          },
+          {
+            label: "Duplicate",
+            iconClass: "iconoir-copy",
+            action: () => runMapCardAction("duplicate", name),
+          },
+          {
+            label: "Export Copy",
+            iconClass: "iconoir-upload",
+            action: () => runMapCardAction("export", name),
+          },
+          {
+            label: "Delete",
+            iconClass: "iconoir-trash",
+            action: () => runMapCardAction("delete", name),
+          },
+        );
+        return items;
+      }
+
+      function showMapCardMenu(card, anchor) {
+        const name = card?.dataset.mapName;
+        if (!name) return;
+        const rect = (anchor || card).getBoundingClientRect();
+        showContextMenu(getMapCardActionItems(name), rect.right, rect.bottom + 4);
+      }
+
+      const mapGalleryEl = document.getElementById("mapGallery");
+      mapGalleryEl?.addEventListener("click", (event) => {
+        const action = event.target.closest("[data-map-card-action]");
+        const card = event.target.closest("[data-map-name]");
+        if (!card) return;
+        if (event.target.closest("[data-map-rename-input]")) return;
+        const name = card.dataset.mapName;
+
+        if (!action) {
+          if (!event.target.closest("button, input, select, textarea, a")) {
+            card.focus();
+          }
+          return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        const actionName = action.dataset.mapCardAction;
+        if (actionName === "more") {
+          showMapCardMenu(card, action);
+          return;
+        }
+        runMapCardAction(actionName, name);
+      });
+
+      mapGalleryEl?.addEventListener("dblclick", (event) => {
+        const card = event.target.closest("[data-map-name]");
+        if (!card || event.target.closest("button, input, select, textarea")) return;
+        event.preventDefault();
+        selectMapByName(card.dataset.mapName);
+      });
+
+      mapGalleryEl?.addEventListener("contextmenu", (event) => {
+        const card = event.target.closest("[data-map-name]");
+        if (!card) return;
+        event.preventDefault();
+        showContextMenu(getMapCardActionItems(card.dataset.mapName), event.clientX, event.clientY);
+      });
+
+      mapGalleryEl?.addEventListener("keydown", (event) => {
+        const renameInput = event.target.closest("[data-map-rename-input]");
+        if (renameInput) {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            stopMapCardRename({ commit: true, input: renameInput });
+          } else if (event.key === "Escape") {
+            event.preventDefault();
+            stopMapCardRename({ commit: false });
+          }
+          return;
+        }
+        const card = event.target.closest("[data-map-name]");
+        if (!card || event.target.closest("button, input, select, textarea")) return;
+        const cards = Array.from(mapGalleryEl.querySelectorAll("[data-map-name]"));
+        const index = cards.indexOf(card);
+        if (event.key === "ArrowDown" || event.key === "ArrowRight") {
+          event.preventDefault();
+          cards[Math.min(cards.length - 1, index + 1)]?.focus();
+        } else if (event.key === "ArrowUp" || event.key === "ArrowLeft") {
+          event.preventDefault();
+          cards[Math.max(0, index - 1)]?.focus();
+        } else if (event.key === "Home") {
+          event.preventDefault();
+          cards[0]?.focus();
+        } else if (event.key === "End") {
+          event.preventDefault();
+          cards[cards.length - 1]?.focus();
+        } else if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          selectMapByName(card.dataset.mapName);
+        } else if (event.key === "F2") {
+          event.preventDefault();
+          runMapCardAction("rename", card.dataset.mapName);
+        } else if (event.key === "Delete" || event.key === "Backspace") {
+          event.preventDefault();
+          runMapCardAction("delete", card.dataset.mapName);
+        } else if (event.key === "ContextMenu" || (event.shiftKey && event.key === "F10")) {
+          event.preventDefault();
+          showMapCardMenu(card);
+        }
+      });
+
+      mapGalleryEl?.addEventListener("focusout", (event) => {
+        const renameInput = event.target.closest("[data-map-rename-input]");
+        if (!renameInput) return;
+        if (event.relatedTarget && event.currentTarget.contains(event.relatedTarget)) {
+          return;
+        }
+        stopMapCardRename({ commit: true, input: renameInput });
+      });
+
       function saveCurrentMap() {
         if (!currentMapName) return; // skip saving if no valid name
         localStorage.setItem(`map:${currentMapName}`, JSON.stringify(pins));
+        touchMapMeta(currentMapName);
         queueDiskSave();
       }
 
@@ -3643,47 +3917,25 @@
         updateOverlayVisibility();
         clearDirty();
         syncMapMetaUI();
+        renderMapGallery();
         draw();
       }
 
       function loadMapNames({ autoLoadFirst = false } = {}) {
-        const sel = document.getElementById("mapSelector");
-        if (!sel) return;
+        const names = getStoredMapNames();
 
-        const names = Object.keys(localStorage)
-          .filter((k) => k.startsWith("map:"))
-          .map((k) => k.slice(4))
-          .sort((a, b) => a.localeCompare(b));
-
-        sel.innerHTML = "";
-
-        // Optional placeholder if none
         if (names.length === 0) {
           currentMapName = null;
           setCurrentMapNameUI(null);
-          const opt = document.createElement("option");
-          opt.value = "";
-          opt.textContent = "(no maps)";
-          sel.appendChild(opt);
         }
 
-        names.forEach((name) => {
-          const meta = getMapMeta(name);
-          const source = meta && meta.source === "disk" ? "Disk" : "Local";
-          const opt = document.createElement("option");
-          opt.value = name;
-          opt.textContent = `${source} | ${name}`;
-          sel.appendChild(opt);
-        });
-
-        // Select current map if available
         if (currentMapName && names.includes(currentMapName)) {
-          sel.value = currentMapName;
           setCurrentMapNameUI(currentMapName);
         } else if (autoLoadFirst && names[0]) {
-          sel.value = names[0];
           loadMap(names[0]);
         }
+
+        renderMapGallery(names);
 
         // Update overlay visibility
         updateOverlayVisibility?.();
@@ -3868,22 +4120,6 @@
           ctx.textAlign = "left";
           ctx.textBaseline = "bottom";
 
-          // Draw label background before the text.
-          if (view.showLabelBackground) {
-            const text = p.label;
-            const metrics = ctx.measureText(text);
-            const padding = 4;
-            const bgWidth = metrics.width + padding * 2;
-            const bgHeight = fontSize + padding * 2;
-            const bgX = sx + labelOffsetX - padding;
-            const bgY = sy - bgHeight / 2;
-
-            ctx.fillStyle = labelBgColor;
-            ctx.globalAlpha = 0.82;
-            ctx.fillRect(bgX, bgY, bgWidth, bgHeight);
-            ctx.globalAlpha = 1;
-          }
-
           if (view.showText) {
             const yText =
               p.y === undefined ||
@@ -3892,21 +4128,67 @@
               Number.isNaN(p.y)
                 ? "-"
                 : p.y;
+            const titleText = p.label || "(no label)";
+            const coordParts = [
+              ["X", p.x],
+              ["Y", yText],
+              ["Z", p.z],
+            ];
+            const coordText = coordParts
+              .map(([axis, value]) => `${axis} ${value}`)
+              .join("  ");
+            const titleCoordGap = "  ";
+            const firstLineText = view.showCoords
+              ? `${titleText}${titleCoordGap}${coordText}`
+              : titleText;
+            const labelLines = [firstLineText];
+            if (view.showTags && p.id) labelLines.push(`[${p.id}]`);
+            if (view.showDescription && p.description) labelLines.push(p.description);
+
+            if (view.showLabelBackground) {
+              const padding = 4;
+              const bgWidth =
+                Math.max(...labelLines.map((text) => ctx.measureText(text).width)) +
+                padding * 2;
+              const bgHeight = fontSize * labelLines.length * 1.2 + padding * 2;
+              const bgX = sx + labelOffsetX - padding;
+              const bgY = sy - fontSize - padding;
+
+              ctx.fillStyle = labelBgColor;
+              ctx.globalAlpha = 0.82;
+              ctx.fillRect(bgX, bgY, bgWidth, bgHeight);
+              ctx.globalAlpha = 1;
+            }
+
             ctx.fillStyle = pinTextColor;
-            if (view.showTags && p.id)
-              ctx.fillText(`[${p.id}]`, sx + labelOffsetX, sy);
-            if (view.showCoords)
-              ctx.fillText(
-                `(${p.x}, ${yText}, ${p.z})`,
-                sx + labelOffsetX,
-                sy + fontSize * 1.2,
-              );
-            ctx.fillText(p.label, sx + labelOffsetX, sy + fontSize * 2.4);
+            let firstLineX = sx + labelOffsetX;
+            ctx.fillText(titleText, firstLineX, sy);
+            if (view.showCoords) {
+              firstLineX += ctx.measureText(`${titleText}${titleCoordGap}`).width;
+              coordParts.forEach(([axis, value], coordIndex) => {
+                if (coordIndex > 0) firstLineX += ctx.measureText("  ").width;
+                ctx.save();
+                ctx.globalAlpha = 0.48;
+                ctx.fillText(axis, firstLineX, sy);
+                firstLineX += ctx.measureText(`${axis} `).width;
+                ctx.restore();
+                ctx.fillText(String(value), firstLineX, sy);
+                firstLineX += ctx.measureText(String(value)).width;
+              });
+            }
+            let nextLine = 1;
+            if (view.showTags && p.id) {
+              ctx.save();
+              ctx.globalAlpha = 0.72;
+              ctx.fillText(`[${p.id}]`, sx + labelOffsetX, sy + fontSize * 1.2);
+              ctx.restore();
+              nextLine++;
+            }
             if (view.showDescription && p.description)
               ctx.fillText(
                 p.description,
                 sx + labelOffsetX,
-                sy + fontSize * 3.6,
+                sy + fontSize * 1.2 * nextLine,
               );
           }
         }
@@ -4752,38 +5034,7 @@
       }
 
       function syncMapMetaUI() {
-        if (mapMetaPins) mapMetaPins.textContent = String(pins.length);
-        if (!currentMapName) {
-          if (mapMetaSource) mapMetaSource.textContent = "None";
-          if (mapMetaDetail) mapMetaDetail.textContent = "No map selected";
-          return;
-        }
-
-        const meta = getMapMeta(currentMapName);
-        const linked = !!currentFileHandle || meta?.source === "disk";
-        const sourceIcon = linked
-          ? "iconoir-cloud-check"
-          : "iconoir-hard-drive";
-        if (mapMetaSource) {
-          mapMetaSource.innerHTML = `<span class="io ${sourceIcon}" aria-hidden="true"></span><span id="mapMetaSourceText">${linked ? "Linked" : "Local"}</span>`;
-        }
-        if (mapMetaDetail) {
-          const detailText = currentFileHandle?.name
-            ? currentFileHandle.name
-            : meta?.fileName
-              ? meta.fileName
-              : linked
-                ? "Linked file"
-                : "Stored in browser";
-          const detailIcon =
-            currentFileHandle?.name || meta?.fileName
-              ? "iconoir-page"
-              : linked
-                ? "iconoir-link"
-                : "iconoir-database";
-          const dirtyText = __dirty ? " - unsaved changes" : "";
-          mapMetaDetail.innerHTML = `<span class="io ${detailIcon}" aria-hidden="true"></span><span>${detailText}${dirtyText}</span>`;
-        }
+        renderMapGallery();
       }
 
       function syncTextScaleToggleButton() {
@@ -5062,7 +5313,9 @@
 
         filteredPins.forEach(({ pin, index }) => {
           const item = document.createElement("div");
-          item.className = "pin-card ds-card";
+          item.className = "pin-card item-card ds-card";
+          item.classList.toggle("is-selected", index === selectedPinIndex);
+          item.classList.toggle("is-editing", index === currentEditIndex);
           item.dataset.index = index;
           item.tabIndex = 0;
 
@@ -5100,6 +5353,8 @@
           let cardClickTimer = null;
           item.addEventListener("click", (event) => {
             if (event.target.closest("button")) return;
+            selectedPinIndex = index;
+            updatePinListHighlight();
             cardClickTimer = window.setTimeout(() => {
               centerOnPin(pin);
               cardClickTimer = null;
@@ -5181,12 +5436,11 @@
       }
       function updatePinListHighlight() {
         const pinCards = document.querySelectorAll(".pin-card");
-        pinCards.forEach((card, i) => {
-          if (i === hoveredPinIndex) {
-            card.classList.add("hovered");
-          } else {
-            card.classList.remove("hovered");
-          }
+        pinCards.forEach((card) => {
+          const index = Number(card.dataset.index);
+          card.classList.toggle("is-hovered", index === hoveredPinIndex);
+          card.classList.toggle("is-selected", index === selectedPinIndex);
+          card.classList.toggle("is-editing", index === currentEditIndex);
         });
         draw(); // redraw canvas
         drawMinimap(); // redraw minimap too
@@ -5243,16 +5497,59 @@
         };
       }
 
+      function getComparablePinDraft(draft) {
+        return {
+          x: draft.x,
+          y: draft.y ?? null,
+          z: draft.z,
+          id: draft.id || "",
+          label: draft.label || "",
+          description: draft.description || "",
+          icon: draft.icon || "",
+          color: draft.color || "#ffcc00",
+        };
+      }
+
+      function getPinSnapshotForEditor(pin) {
+        return getComparablePinDraft({
+          x: Number(pin?.x),
+          y: pin?.y === undefined || pin?.y === "" ? null : Number(pin.y),
+          z: Number(pin?.z),
+          id: pin?.id ?? "",
+          label: pin?.label ?? "",
+          description: pin?.description ?? "",
+          icon: pin?.icon ?? "",
+          color: pin?.color ?? "#ffcc00",
+        });
+      }
+
+      function isPinEditorDraftDirty(draft) {
+        if (!draft.valid) return false;
+        if (currentEditIndex === null) return true;
+        if (!pinEditorOriginalDraft) return true;
+        return (
+          JSON.stringify(getComparablePinDraft(draft)) !==
+          JSON.stringify(pinEditorOriginalDraft)
+        );
+      }
+
       function updatePinEditorState() {
         if (!pinEditorPanel || pinEditorPanel.style.display === "none") return;
         const draft = getPinEditorDraft();
         const mode = currentEditIndex !== null ? "Editing pin" : "New pin";
+        const dirty = isPinEditorDraftDirty(draft);
         if (pinEditorMode) pinEditorMode.textContent = mode;
         if (pinEditorSaveBtn) {
-          pinEditorSaveBtn.disabled = !draft.valid;
-          pinEditorSaveBtn.title = draft.valid
-            ? "Save pin"
-            : "Enter valid X and Z coordinates before saving";
+          pinEditorSaveBtn.disabled = !draft.valid || !dirty;
+          pinEditorSaveBtn.title = !draft.valid
+            ? "Enter valid X and Z coordinates before saving"
+            : dirty
+              ? "Save pin changes"
+              : "No pin changes to save";
+        }
+        if (pinEditorSaveText) {
+          pinEditorSaveText.textContent =
+            currentEditIndex !== null && !dirty && draft.valid ? "Saved" : "Save";
         }
       }
 
@@ -5367,6 +5664,7 @@
         document.getElementById("pinEditorLabel").value = label || typeID;
         document.getElementById("pinEditorDescription").value = "";
         document.getElementById("pinEditorIcon").value = icon;
+        pinEditorOriginalDraft = null;
 
         const fields = document.querySelectorAll(
           "#pinEditorPanel input, #pinEditorPanel textarea",
@@ -5444,6 +5742,7 @@
         isPlacingPin = false;
         currentEditIndex = null;
         pinEditOriginalSnapshot = null;
+        pinEditorOriginalDraft = null;
         pinCanvasDragState = null;
         editorDragState = null;
         document.getElementById("pinEditorPanel").style.display = "none";
@@ -5478,6 +5777,7 @@
         document.getElementById("pinEditorIcon").value = pin.icon ?? "";
         document.getElementById("pinEditorColor").value =
           pin.color ?? "#ffcc00";
+        pinEditorOriginalDraft = getPinSnapshotForEditor(pin);
 
         selectedPinIndex = index;
         updatePinEditorState();
@@ -5511,6 +5811,11 @@
           showToast("Enter valid X and Z coordinates before saving.", "warn");
           return;
         }
+        if (!isPinEditorDraftDirty(draft)) {
+          showToast("No pin changes to save.", "warn");
+          updatePinEditorState();
+          return;
+        }
         const pinData = {
           x: draft.x,
           y: draft.y,
@@ -5538,6 +5843,7 @@
         closePinEditor({ commit: true });
         currentEditIndex = null;
         pinEditOriginalSnapshot = null;
+        pinEditorOriginalDraft = null;
         tempPin = null;
         markDirty();
         saveCurrentMap();
@@ -5772,13 +6078,24 @@
 
       // Export current map (pins + optional settings) to a file
       function exportCurrentMap() {
-        const mapName = currentMapName || "unnamed";
+        exportMapByName(currentMapName || "unnamed");
+      }
+
+      function exportMapByName(mapName) {
+        let exportPins = pins;
+        if (mapName !== currentMapName && localStorage.getItem(mapKey(mapName))) {
+          try {
+            exportPins = JSON.parse(localStorage.getItem(mapKey(mapName)) || "[]");
+          } catch {
+            exportPins = [];
+          }
+        }
         const payload = {
           version: 1,
           name: mapName,
           createdAt: new Date().toISOString(),
-          pins: Array.isArray(pins) ? pins : [],
-          settings: collectSettingsSnapshot(),
+          pins: Array.isArray(exportPins) ? exportPins : [],
+          settings: mapName === currentMapName ? collectSettingsSnapshot() : {},
         };
 
         const blob = new Blob([JSON.stringify(payload, null, 2)], {
@@ -5868,7 +6185,10 @@
           applySettingsSnapshot(parsed.settings);
         }
 
-        setMapMeta(finalName, { source: "local" });
+        updateMapMeta(finalName, {
+          source: "local",
+          updatedAt: new Date().toISOString(),
+        });
         loadMapNames({ autoLoadFirst: false });
 
         // Refresh UI
@@ -5954,18 +6274,22 @@
           currentMapName = parsed.name;
           currentFileHandle = handle;
 
-          // Keep a library entry so it appears in the selector without switching pins or breaking the link.
+          // Keep a library entry so it appears in the gallery without switching pins or breaking the link.
           localStorage.setItem(
             mapKey(parsed.name),
             JSON.stringify(parsed.pins),
           );
-          setMapMeta(parsed.name, { source: "disk", fileName: file.name });
+          updateMapMeta(parsed.name, {
+            source: "disk",
+            fileName: file.name,
+            updatedAt: new Date().toISOString(),
+          });
 
           // reflect the name & link
           currentMapName = parsed.name;
           setCurrentMapNameUI(parsed.name);
 
-          // refresh selector without calling loadMap (we already set pins above)
+          // Refresh the library without calling loadMap (we already set pins above).
           loadMapNames({ autoLoadFirst: false });
 
           // enable Save now that we're linked
@@ -5991,6 +6315,7 @@
           const writable = await currentFileHandle.createWritable();
           await writable.write(JSON.stringify(getMapPayloadForDisk(), null, 2));
           await writable.close();
+          touchMapMeta();
           clearDirty();
           if (typeof showToast === "function") showToast("Saved to disk");
         } catch (err) {
@@ -6025,9 +6350,13 @@
           currentMapName = newName;
           setCurrentMapNameUI(newName);
 
-          // Write the local library entry so the selector matches what is on disk.
+          // Write the local library entry so the gallery matches what is on disk.
           localStorage.setItem(mapKey(newName), JSON.stringify(pins));
-          setMapMeta(newName, { source: "disk", fileName: handle.name });
+          updateMapMeta(newName, {
+            source: "disk",
+            fileName: handle.name,
+            updatedAt: new Date().toISOString(),
+          });
           loadMapNames({ autoLoadFirst: false });
 
           // state of menu buttons
@@ -6158,6 +6487,10 @@
         if (pinEditorPanel && pinEditorPanel.style.display !== "none") {
           e.preventDefault();
           closePinEditor();
+          return;
+        }
+        if (clearSelectedPin()) {
+          e.preventDefault();
         }
       });
 
@@ -6206,6 +6539,14 @@
 
       function setDraggingUiState(active) {
         document.body.classList.toggle("is-map-dragging", !!active);
+      }
+
+      function clearSelectedPin() {
+        if (selectedPinIndex === null) return false;
+        selectedPinIndex = null;
+        updatePinListHighlight();
+        draw();
+        return true;
       }
 
       pinEditorHeader?.addEventListener("mousedown", (e) => {
@@ -6420,16 +6761,10 @@
           suppressCanvasClick = false;
           return;
         }
-        if (!isPlacingPin) return;
 
         const rect = canvas.getBoundingClientRect();
         const mx = e.clientX - rect.left;
         const my = e.clientY - rect.top;
-
-        const worldX = Math.round((mx - offsetX) / zoom);
-        const worldZ = Math.round((my - offsetY) / zoom);
-
-        openPinEditor(e.clientX, e.clientY, worldX, worldZ);
 
         // If the click lands on an existing pin, select it
         let found = null;
@@ -6441,9 +6776,25 @@
             break;
           }
         }
+        if (!isPlacingPin) {
+          if (found === null) {
+            clearSelectedPin();
+          } else {
+            selectedPinIndex = found;
+            updatePinListHighlight();
+            draw();
+          }
+          return;
+        }
+
+        const worldX = Math.round((mx - offsetX) / zoom);
+        const worldZ = Math.round((my - offsetY) / zoom);
+
+        openPinEditor(e.clientX, e.clientY, worldX, worldZ);
+
         if (found !== null) {
           selectedPinIndex = found;
-          centerOnPin(pins[found]);
+          updatePinListHighlight();
           draw();
         }
       });
@@ -6524,20 +6875,12 @@
       undoBtn?.addEventListener("click", () => undoPinsChange());
       redoBtn?.addEventListener("click", () => redoPinsChange());
 
-      document.getElementById("mapOpenBtn")?.addEventListener("click", () => {
+      document.getElementById("mapOpenLibraryBtn")?.addEventListener("click", () => {
         openMapFromDisk();
       });
       document.getElementById("mapImportBtn")?.addEventListener("click", () => {
         triggerImportMap();
       });
-      document.getElementById("mapExportBtn")?.addEventListener("click", () => {
-        exportCurrentMap();
-      });
-      document.getElementById("mapSaveBtn")?.addEventListener("click", () => {
-        if (currentFileHandle) saveMapToDisk();
-        else saveAsMapToDisk();
-      });
-
       // Delegated handlers for pin list buttons
       document.getElementById("pinList").addEventListener("click", (e) => {
         const btn = e.target.closest("button");
@@ -6579,7 +6922,7 @@
       });
 
       // Input event hooks
-      // sliders, checkboxes, map selector change
+      // sliders, checkboxes, and map view controls
 
       document
         .getElementById("createNewMapBtn")
@@ -6620,16 +6963,14 @@
         pins = [];
         saveCurrentMap();
 
-        setMapMeta(currentMapName, { source: "local" });
+        updateMapMeta(currentMapName, {
+          source: "local",
+          updatedAt: new Date().toISOString(),
+        });
         loadMapNames({ autoLoadFirst: false });
         loadMap(currentMapName);
         showToast(`Map "${currentMapName}" created.`);
       }
-
-      document.getElementById("mapSelector").addEventListener("change", (e) => {
-        const selected = e.target.value;
-        loadMap(selected);
-      });
 
       window.addEventListener("resize", () => {
         resizeCanvas();

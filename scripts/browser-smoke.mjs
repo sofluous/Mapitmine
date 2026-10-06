@@ -80,10 +80,7 @@ try {
 
   const required = [
     'id="workspaceShell"',
-    'id="mapSelector"',
-    'id="currentMapNameInput"',
-    'id="mapMetaSource"',
-    'id="mapLinkBadge"',
+    'id="mapGallery"',
     'id="pinList"',
     'id="pinSearchInput"',
     'id="pinFilterBtn"',
@@ -98,9 +95,7 @@ try {
     'id="pinEditorHelpBtn"',
     'id="pinEditorSaveBtn"',
     'id="contextMenu"',
-    "Save &amp; Export",
     "Open &amp; Link",
-    "Save Linked",
     "Save As Linked",
     "Export Copy",
     "Fit Pins",

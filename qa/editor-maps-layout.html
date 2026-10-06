@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MapItMine Editor And Maps Layout QA</title>
+    <link rel="stylesheet" href="../design-system/theme.css" />
+    <style>
+      :root {
+        --space-xs: 4px;
+        --space-sm: 8px;
+        --space-md: 12px;
+        --font-sm: 12px;
+        --font-md: 13px;
+        --ui-border-quiet: var(--ds-border-subtle, rgba(255, 255, 255, 0.16));
+      }
+
+      body {
+        margin: 0;
+        padding: 24px;
+        background: var(--ds-bg, #111);
+        color: var(--color-text, #eef);
+        font-family: var(--ds-font-body, system-ui, sans-serif);
+      }
+
+      main {
+        display: grid;
+        gap: 24px;
+        max-width: 1040px;
+      }
+
+      h1,
+      h2,
+      p {
+        margin-top: 0;
+      }
+
+      .fixture-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 340px) minmax(0, 360px);
+        gap: 24px;
+        align-items: start;
+      }
+
+      .app-panel,
+      .ds-card {
+        background: var(--ds-card-bg, #181818);
+        border: var(--ds-border-w, 1px) solid var(--ds-card-border, #76510d);
+        border-radius: var(--ds-card-radius, 4px);
+        box-shadow: var(--ds-card-shadow, none);
+      }
+
+      .control-section {
+        padding: var(--space-md);
+      }
+
+      .control-section + .control-section {
+        margin-top: var(--space-md);
+      }
+
+      .control-section-title {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-xs);
+        color: var(--color-text-heading, #fff);
+        font-size: var(--font-sm);
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .control-form,
+      .pin-editor-fields,
+      .map-data-group {
+        display: grid;
+        gap: var(--space-sm);
+      }
+
+      .pin-editor-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: var(--space-sm);
+        padding: var(--space-sm) var(--space-md);
+        border-bottom: 1px solid var(--ui-border-quiet);
+      }
+
+      .pin-editor-body {
+        padding: var(--space-md);
+      }
+
+      .pin-editor-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--space-sm);
+        padding: var(--space-sm) var(--space-md);
+        border-top: 1px solid var(--ui-border-quiet);
+      }
+
+      .pin-editor-hint {
+        margin-right: auto;
+      }
+
+      .pin-editor-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--space-sm);
+      }
+
+      .editor-span-2 {
+        grid-column: 1 / -1;
+      }
+
+      .control-inline {
+        display: grid;
+        gap: var(--space-sm);
+      }
+
+      .control-inline-triple,
+      .pin-editor-coords {
+        grid-template-columns: repeat(3, minmax(86px, 1fr));
+      }
+
+      .ds-input,
+      .ds-select {
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+      }
+
+      .pin-editor-coords .ds-input {
+        inline-size: 100%;
+        font-variant-numeric: tabular-nums;
+      }
+
+      textarea.ds-input {
+        min-height: 84px;
+        resize: vertical;
+      }
+
+      .pin-editor-mini-group {
+        display: grid;
+        grid-template-columns: 72px 72px;
+        justify-content: end;
+        gap: var(--space-xs);
+      }
+
+      .map-data-copy {
+        margin: 0;
+        color: color-mix(in oklab, var(--color-text, #eef) 72%, transparent);
+        font-size: var(--font-sm);
+      }
+
+      .map-data-title {
+        color: var(--color-text-heading, #fff);
+        font-size: var(--font-sm);
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .map-data-group + .map-data-group {
+        padding-top: var(--space-xs);
+        border-top: 1px solid var(--ui-border-quiet);
+      }
+
+      .map-action-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--space-xs);
+      }
+
+      .map-action-grid .ds-btn {
+        justify-content: center;
+        min-width: 0;
+      }
+
+      .ds-btn {
+        min-height: 36px;
+      }
+
+      .map-gallery-card {
+        display: grid;
+        gap: var(--space-xs);
+        padding: var(--space-sm);
+        border: 1px solid var(--ui-border-quiet);
+      }
+
+      .map-gallery-card.item-card.is-active {
+        background: color-mix(in oklab, var(--ds-card-bg, #181818) 86%, var(--ds-accent, #6cf) 14%);
+      }
+
+      .map-gallery-card-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-xs);
+      }
+
+      @media (max-width: 520px) {
+        .fixture-grid,
+        .pin-editor-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .pin-editor-mini-group {
+          grid-template-columns: 1fr 72px;
+          justify-content: stretch;
+        }
+
+        .pin-editor-mini {
+          width: 100%;
+          min-width: 0;
+        }
+
+        .map-action-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body data-theme="tech-grid">
+    <main>
+      <header>
+        <h1>Editor And Maps Layout QA</h1>
+        <p>
+          Check that coordinates are readable, the editor header has no subtitle
+          or coordinate readout, and Maps uses compact gallery cards with
+          shared overflow actions.
+        </p>
+      </header>
+
+      <section class="fixture-grid">
+        <article class="app-panel" aria-label="Pin editor fixture">
+          <div class="pin-editor-header">
+            <div class="control-section-title">New pin</div>
+            <button class="ds-btn" type="button">X</button>
+          </div>
+          <div class="pin-editor-body">
+            <div class="pin-editor-fields">
+              <div class="control-inline control-inline-triple pin-editor-coords">
+                <input class="ds-input" value="-198" aria-label="Pin X position" />
+                <input class="ds-input" value="72" aria-label="Pin Y position" />
+                <input class="ds-input" value="-127" aria-label="Pin Z position" />
+              </div>
+              <div class="pin-editor-grid">
+                <input class="ds-input editor-span-2" value="Village" />
+                <textarea class="ds-input editor-span-2">Notes</textarea>
+                <select class="ds-select">
+                  <option>Village</option>
+                </select>
+                <div class="pin-editor-mini-group">
+                  <select class="ds-select"><option>Icon</option></select>
+                  <input class="ds-input" type="color" value="#ffcc00" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="pin-editor-actions">
+            <button class="pin-editor-hint ds-btn" type="button">i</button>
+            <button class="ds-btn" type="button">Cancel</button>
+            <button class="ds-btn ds-btn-primary" type="button">Save</button>
+          </div>
+        </article>
+
+        <article class="control-section" aria-label="Maps actions fixture">
+          <div class="control-form">
+            <div class="map-action-grid">
+              <button class="ds-btn" type="button">New</button>
+              <button class="ds-btn" type="button">Import</button>
+              <button class="ds-btn" type="button">Open</button>
+            </div>
+            <div class="map-gallery-card item-card is-active" aria-current="true">
+              <span class="map-gallery-card-actions">
+                <button class="ds-btn" type="button">More</button>
+              </span>
+              <span>Village Route</span>
+              <span>
+                <span>Linked</span>
+                <span>Active</span>
+              </span>
+              <span>12 pins - Linked file - Updated now</span>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>
