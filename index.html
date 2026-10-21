@@ -674,6 +674,60 @@
         font-size: var(--font-md);
       }
 
+      .layer-list {
+        display: grid;
+        align-content: start;
+        gap: var(--space-xs);
+        min-height: 0;
+        overflow-y: auto;
+      }
+
+      .layer-row {
+        display: grid;
+        grid-template-columns: 32px 32px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: var(--space-xs);
+        min-height: 44px;
+        padding: var(--space-xs) var(--space-sm);
+        border-bottom: 1px solid var(--ui-border-quiet);
+      }
+
+      .layer-row:last-child { border-bottom: 0; }
+
+      .layer-row.is-hidden-layer .layer-name,
+      .layer-row.is-hidden-layer .layer-count { opacity: 0.52; }
+
+      .layer-copy {
+        display: grid;
+        gap: 2px;
+        min-width: 0;
+      }
+
+      .layer-name {
+        overflow: hidden;
+        color: var(--color-text-heading);
+        font-weight: 700;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .layer-count {
+        color: color-mix(in oklab, var(--color-text) 62%, transparent);
+        font-size: var(--font-sm);
+      }
+
+      .layer-row-actions {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+      }
+
+      .layer-empty {
+        padding: var(--space-lg) var(--space-md);
+        color: color-mix(in oklab, var(--color-text) 68%, transparent);
+        text-align: center;
+      }
+
       /* 7) Pin list & cards */
       .scrollable-pin-list {
         display: grid;
@@ -1142,9 +1196,12 @@
         position: fixed;
         width: 200px;
         height: 200px;
-        padding: 0;
+        display: grid;
+        grid-template-rows: 26px minmax(0, 1fr) auto;
+        gap: var(--space-xs);
+        padding: var(--space-xs);
         z-index: 180;
-        overflow: visible;
+        overflow: hidden;
         margin: 0;
       }
 
@@ -1171,9 +1228,35 @@
       }
 
       #minimapCanvas {
-        width: 100%;
-        height: 100%;
         display: block;
+        place-self: center;
+        border: 1px solid var(--ui-border-quiet);
+        background: var(--color-bg);
+      }
+
+      .minimap-widget-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-xs);
+        min-width: 0;
+        padding-inline: var(--space-xs);
+      }
+
+      .minimap-widget-title {
+        color: var(--color-text-heading);
+        font-size: var(--font-sm);
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .minimap-widget-mode {
+        overflow: hidden;
+        color: color-mix(in oklab, var(--color-text) 60%, transparent);
+        font-size: 9px;
+        text-overflow: ellipsis;
+        text-transform: uppercase;
+        white-space: nowrap;
       }
 
       #mapScaleChip {
@@ -1188,10 +1271,14 @@
         pointer-events: none;
       }
 
+      #mapScaleChip.is-offset-by-minimap {
+        right: calc(var(--minimap-widget-size, 200px) + var(--space-md) * 2);
+      }
+
       .scale-chip-rule {
         position: relative;
-        flex: 1 1 72px;
-        min-width: 48px;
+        flex: 0 0 72px;
+        min-width: 0;
         height: 10px;
         border-left: 2px solid var(--color-primary);
         border-right: 2px solid var(--color-primary);
@@ -1213,70 +1300,28 @@
         white-space: nowrap;
       }
 
-      #minimapOverlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
+      .minimap-readout {
+        display: grid;
+        gap: 2px;
+        min-width: 0;
+        padding: 3px var(--space-xs);
+        border-top: 1px solid var(--ui-border-quiet);
       }
 
-      .minimap-label-group {
-        position: absolute;
-        display: flex;
-        gap: 6px;
+      #minimapContainer[data-detail="minimal"] .minimap-readout {
+        display: none;
       }
 
-      .minimap-label-group.top {
-        top: -28px;
-        left: 0;
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        width: 100%;
+      #minimapContainer[data-detail="standard"] .minimap-readout-row:not([data-minimap-readout="view"]) {
+        display: none;
       }
 
-      .minimap-label-group.bottom {
-        bottom: -28px;
-        left: 0;
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        width: 100%;
-      }
-
-      .minimap-label-group.left {
-        left: -36px;
-        top: 0;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        align-items: flex-end;
-      }
-
-      .minimap-label-group.right {
-        right: -34px;
-        top: 0;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        align-items: flex-start;
-      }
-
-      .label-column {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 1px;
-        min-width: 34px;
-        padding: 2px 3px;
-        border-radius: 4px;
-        background: color-mix(in oklab, var(--ds-bg-raised) 72%, transparent);
-        border: 1px solid color-mix(in oklab, var(--ui-border) 72%, transparent);
-        text-align: center;
+      .minimap-readout-row {
+        display: grid;
+        grid-template-columns: 34px minmax(0, 1fr) minmax(0, 1fr);
+        gap: var(--space-xs);
+        align-items: baseline;
+        min-width: 0;
       }
 
       .label-header {
@@ -1284,7 +1329,7 @@
         font-size: 8px;
         font-weight: 700;
         letter-spacing: 0;
-        line-height: 1;
+        line-height: 1.2;
         text-transform: uppercase;
       }
 
@@ -1295,6 +1340,9 @@
         font-variant-numeric: tabular-nums;
         font-weight: 700;
         line-height: 1.1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       /* 11) Overlays & context menu */
@@ -1629,7 +1677,8 @@
         align-items: center;
         justify-content: space-between;
         gap: var(--space-sm);
-        min-width: min(460px, calc(100vw - var(--space-md) * 2));
+        width: min(760px, calc(100vw - var(--space-md) * 2));
+        min-width: 0;
         max-width: calc(100vw - var(--space-md) * 2);
         padding: 10px 12px;
         pointer-events: none;
@@ -1659,6 +1708,11 @@
         font-size: var(--font-sm);
       }
 
+      .status-chip-tool { width: 112px; }
+      .status-chip-history { width: 270px; }
+      .status-chip-zoom { width: 104px; }
+      .status-chip-cursor { width: 184px; }
+
       .status-chip strong {
         font-size: var(--font-md);
         color: var(--color-text-heading);
@@ -1667,13 +1721,17 @@
 
       #statusHistoryState {
         display: inline-block;
-        min-width: 210px;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       #statusCursorCoords {
         display: inline-block;
-        min-width: 96px;
+        flex: 1;
+        min-width: 0;
         text-align: right;
+        font-variant-numeric: tabular-nums;
       }
 
       .status-label {
@@ -2080,6 +2138,11 @@
           min-width: 118px;
         }
 
+        #mapScaleChip.is-offset-by-minimap {
+          top: calc(var(--minimap-widget-size, 200px) + var(--space-md));
+          right: var(--space-sm);
+        }
+
         #minimapContainer[data-position="bottom-left"] {
           left: var(--space-sm);
           bottom: calc(var(--space-sm) + 64px + env(safe-area-inset-bottom));
@@ -2104,6 +2167,10 @@
         .status-strip-group,
         .status-strip-group-right {
           justify-content: flex-start;
+        }
+
+        .status-chip {
+          max-width: 100%;
         }
 
         .map-action-grid {
@@ -2178,6 +2245,16 @@
             aria-label="Pins"
           >
             <span class="io iconoir-map-pin" aria-hidden="true"></span>
+          </button>
+          <button
+            class="ds-btn ds-btn-icon ds-icon-action rail-tab-btn"
+            type="button"
+            data-workspace-tab="layers"
+            aria-pressed="false"
+            title="Layers"
+            aria-label="Layers"
+          >
+            <span class="io iconoir-multiple-pages" aria-hidden="true"></span>
           </button>
           <button
             class="ds-btn ds-btn-icon ds-icon-action rail-tab-btn"
@@ -2316,6 +2393,30 @@
             <div id="pinList" class="scrollable-pin-list">
               <!-- Pins will render here -->
             </div>
+          </div>
+        </div>
+
+        <div
+          id="layersPanelSection"
+          class="workspace-section"
+          data-workspace-panel="layers"
+        >
+          <div class="workspace-tab-header">
+            <div class="workspace-tab-title-row">
+              <div class="workspace-section-title">
+                <span class="io iconoir-multiple-pages" aria-hidden="true"></span>
+                Layers
+              </div>
+              <div class="workspace-tab-actions">
+                <button id="createLayerBtn" class="ds-btn ds-btn-sm" type="button">
+                  <span class="io iconoir-plus" aria-hidden="true"></span>
+                  New
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="workspace-section-body">
+            <div id="layerList" class="layer-list" aria-label="Map layers"></div>
           </div>
         </div>
 
@@ -2641,6 +2742,14 @@
                     <option value="lg">Large</option>
                   </select>
                 </div>
+                <div class="control-field no-readout">
+                  <label for="minimapDetail">Detail</label>
+                  <select id="minimapDetail" class="ds-select">
+                    <option value="minimal">Minimal</option>
+                    <option value="standard" selected>Standard</option>
+                    <option value="full">Full</option>
+                  </select>
+                </div>
               </div>
             </section>
           </div>
@@ -2687,67 +2796,28 @@
       id="minimapContainer"
       class="minimap-wrapper app-panel"
       data-position="bottom-right"
+      data-detail="standard"
     >
-      <canvas id="minimapCanvas" width="200" height="200"></canvas>
-
-      <div class="minimap-label-group top">
-        <div class="label-column">
-          <span class="label-header">World</span>
-          <span id="worldMinX" class="label-value"></span>
-        </div>
-        <div class="label-column">
-          <span class="label-header">View</span>
-          <span id="viewMinX" class="label-value"></span>
-        </div>
-        <div class="label-column">
-          <span class="label-header">Crop</span>
-          <span id="cropMinX" class="label-value"></span>
-        </div>
+      <div class="minimap-widget-head">
+        <span class="minimap-widget-title">Minimap</span>
+        <span id="minimapWidgetMode" class="minimap-widget-mode">View</span>
       </div>
-
-      <div class="minimap-label-group right">
-        <div class="label-column">
-          <span class="label-header">Crop</span>
-          <span id="cropMaxZ" class="label-value"></span>
-        </div>
-        <div class="label-column">
+      <canvas id="minimapCanvas" width="134" height="134"></canvas>
+      <div class="minimap-readout" aria-label="Minimap bounds">
+        <div class="minimap-readout-row" data-minimap-readout="view">
           <span class="label-header">View</span>
-          <span id="viewMaxZ" class="label-value"></span>
+          <span class="label-value">X <span id="viewMinX"></span>..<span id="viewMaxX"></span></span>
+          <span class="label-value">Z <span id="viewMinZ"></span>..<span id="viewMaxZ"></span></span>
         </div>
-
-        <div class="label-column">
-          <span class="label-header">World</span>
-          <span id="worldMaxZ" class="label-value"></span>
-        </div>
-      </div>
-
-      <div class="minimap-label-group left">
-        <div class="label-column">
-          <span class="label-header">World</span>
-          <span id="worldMinZ" class="label-value"></span>
-        </div>
-        <div class="label-column">
-          <span class="label-header">View</span>
-          <span id="viewMinZ" class="label-value"></span>
-        </div>
-        <div class="label-column">
+        <div class="minimap-readout-row" data-minimap-readout="crop">
           <span class="label-header">Crop</span>
-          <span id="cropMinZ" class="label-value"></span>
+          <span class="label-value">X <span id="cropMinX"></span>..<span id="cropMaxX"></span></span>
+          <span class="label-value">Z <span id="cropMinZ"></span>..<span id="cropMaxZ"></span></span>
         </div>
-      </div>
-
-      <div class="minimap-label-group bottom">
-        <div class="label-column">
-          <span class="label-header">Crop</span>
-          <span id="cropMaxX" class="label-value"></span>
-        </div>
-        <div class="label-column">
-          <span class="label-header">View</span>
-          <span id="viewMaxX" class="label-value"></span>
-        </div>
-        <div class="label-column">
+        <div class="minimap-readout-row" data-minimap-readout="world">
           <span class="label-header">World</span>
-          <span id="worldMaxX" class="label-value"></span>
+          <span class="label-value">X <span id="worldMinX"></span>..<span id="worldMaxX"></span></span>
+          <span class="label-value">Z <span id="worldMinZ"></span>..<span id="worldMaxZ"></span></span>
         </div>
       </div>
     </div>
@@ -2857,6 +2927,13 @@
                 id="pinEditorID"
                 class="ds-select"
                 aria-label="Pin type"
+              ></select>
+            </div>
+            <div class="control-field">
+              <select
+                id="pinEditorLayer"
+                class="ds-select"
+                aria-label="Pin layer"
               ></select>
             </div>
             <div class="control-field">
@@ -2977,21 +3054,21 @@
     <div id="cursorLabel"></div>
     <div id="mapStatusStrip" class="app-panel" aria-live="polite">
       <div class="status-strip-group">
-        <span class="status-chip">
+        <span class="status-chip status-chip-tool">
           <span class="status-label">Tool</span>
           <strong id="statusToolState">Browse</strong>
         </span>
       </div>
       <div class="status-strip-group status-strip-group-right">
-        <span class="status-chip">
+        <span class="status-chip status-chip-history">
           <span class="status-label">History</span>
           <strong id="statusHistoryState">0 / 0</strong>
         </span>
-        <span class="status-chip">
+        <span class="status-chip status-chip-zoom">
           <span class="status-label">Zoom</span>
           <strong id="statusZoomValue">1.00x</strong>
         </span>
-        <span class="status-chip">
+        <span class="status-chip status-chip-cursor">
           <span class="status-label">Cursor</span>
           <strong id="statusCursorCoords">0, 0</strong>
         </span>
@@ -2999,7 +3076,18 @@
     </div>
     <script src="./design-system/js/theme-registry.js"></script>
     <script src="./design-system/js/theme-selector.js"></script>
+    <script src="./src/map-data.js"></script>
     <script>
+      const {
+        DEFAULT_LAYER_ID,
+        MAP_DOCUMENT_VERSION,
+        createDefaultLayer,
+        formatRelativeDate,
+        getUniqueMapName,
+        normalizeMapDocument,
+        normalizePin,
+        parseMapPayload,
+      } = window.MapitMineData;
       // Global variables
       // canvas, context, zoom, offset, pins, pinTypes, minimap settings...
       let currentFileHandle = null; // set when you use Open or Save As
@@ -3065,8 +3153,11 @@
           label: "Spawn Point",
           description: "Where you begin.",
           icon: "",
+          layerId: DEFAULT_LAYER_ID,
         },
       ];
+      let layers = [createDefaultLayer()];
+      let drawings = [];
       let currentEditIndex = null;
       let isPlacingPin = false;
       let tempPin = null;
@@ -3094,7 +3185,8 @@
       const minimapCtx = minimapCanvas.getContext("2d");
       const MINIMAP_SIZE_PRESETS = { sm: 160, md: 200, lg: 260 };
       let minimapSizePreset = "md";
-      let minimapSize = MINIMAP_SIZE_PRESETS[minimapSizePreset];
+      let minimapDetail = "standard";
+      let minimapSize = 134;
 
       const worldMinX = -30000;
       const worldMaxX = 30000;
@@ -3242,6 +3334,7 @@
       }
       const minimapSizePresetSelect =
         document.getElementById("minimapSizePreset");
+      const minimapDetailSelect = document.getElementById("minimapDetail");
       const useTextScaleBtn = document.getElementById("useTextScaleBtn");
       const statusToolState = document.getElementById("statusToolState");
       const statusHistoryState = document.getElementById("statusHistoryState");
@@ -3374,7 +3467,7 @@
         const oldMap = currentMapName;
         const data = localStorage.getItem(`map:${oldMap}`);
         if (data === null) return false;
-        pushHistoryState("Rename Map");
+        pushHistoryState("Rename Map", "library");
 
         localStorage.setItem(`map:${trimmed}`, data);
         localStorage.removeItem(`map:${oldMap}`);
@@ -3388,7 +3481,7 @@
 
         currentMapName = trimmed;
         loadMapNames({ autoLoadFirst: false });
-        loadMap(currentMapName);
+        loadMap(currentMapName, { preserveHistory: true });
         return true;
       }
 
@@ -3408,7 +3501,7 @@
           confirmText: "Delete",
         });
         if (!confirmDelete) return;
-        pushHistoryState("Delete Map");
+        pushHistoryState("Delete Map", "library");
 
         localStorage.removeItem(mapKey(name));
         localStorage.removeItem(mapMetaKey(name));
@@ -3419,11 +3512,13 @@
           currentMapName =
             name === currentMapName ? remaining[0] : currentMapName || remaining[0];
           loadMapNames();
-          loadMap(currentMapName);
+          loadMap(currentMapName, { preserveHistory: true });
         } else {
           currentMapName = null;
           setCurrentMapNameUI(null);
           pins = [];
+          layers = [createDefaultLayer()];
+          drawings = [];
           loadMapNames();
           updateOverlayVisibility();
         }
@@ -3437,19 +3532,19 @@
           }
 
         const duplicateName = dedupeMapName(`${name} Copy`);
-        const sourcePins =
+        const sourceDocument =
           name === currentMapName
-            ? pins
-            : JSON.parse(localStorage.getItem(mapKey(name)) || "[]");
-        pushHistoryState("Duplicate Map");
-        localStorage.setItem(mapKey(duplicateName), JSON.stringify(sourcePins));
+            ? getCurrentMapDocument()
+            : readStoredMapDocument(name);
+        pushHistoryState("Duplicate Map", "library");
+        writeStoredMapDocument(duplicateName, sourceDocument);
         setMapMeta(duplicateName, {
           source: "local",
           updatedAt: new Date().toISOString(),
         });
         currentMapName = duplicateName;
         loadMapNames();
-        loadMap(duplicateName);
+        loadMap(duplicateName, { preserveHistory: true });
         showToast(`Map duplicated as "${duplicateName}".`);
       }
 
@@ -3504,24 +3599,306 @@
         return `map:${name}`;
       }
 
+      function readStoredMapDocument(name) {
+        if (!name) return null;
+        try {
+          const raw = localStorage.getItem(mapKey(name));
+          return raw === null ? null : normalizeMapDocument(JSON.parse(raw));
+        } catch {
+          return null;
+        }
+      }
+
+      function writeStoredMapDocument(name, document) {
+        if (!name) return null;
+        const normalized = normalizeMapDocument(document);
+        if (!normalized) return null;
+        localStorage.setItem(mapKey(name), JSON.stringify(normalized));
+        return normalized;
+      }
+
+      function getCurrentMapDocument(settings = null) {
+        return normalizeMapDocument({
+          version: MAP_DOCUMENT_VERSION,
+          pins,
+          layers,
+          drawings,
+          settings,
+        });
+      }
+
+      function applyMapDocument(document) {
+        const normalized = normalizeMapDocument(document);
+        if (!normalized) return false;
+        pins = normalized.pins;
+        layers = normalized.layers;
+        drawings = normalized.drawings;
+        return true;
+      }
+
+      function getLayer(layerId) {
+        return layers.find((layer) => layer.id === (layerId || DEFAULT_LAYER_ID));
+      }
+
+      function isLayerVisible(layerId) {
+        return getLayer(layerId)?.visible !== false;
+      }
+
+      function isLayerLocked(layerId) {
+        return getLayer(layerId)?.locked === true;
+      }
+
+      function isPinVisible(pin) {
+        return isLayerVisible(pin?.layerId);
+      }
+
+      function isPinLocked(pin) {
+        return isLayerLocked(pin?.layerId);
+      }
+
+      function createLayerId(label) {
+        const base =
+          String(label || "layer")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-|-$/g, "") || "layer";
+        let id = base;
+        let suffix = 2;
+        while (getLayer(id)) id = `${base}-${suffix++}`;
+        return id;
+      }
+
+      function commitLayerChange(label, change) {
+        pushHistoryState(label);
+        change();
+        markDirty();
+        saveCurrentMap();
+        renderLayers();
+        populatePinLayerOptions();
+        renderPinList();
+        draw();
+      }
+
+      async function createLayer() {
+        const label = await showTextPrompt({
+          title: "New layer",
+          label: "Layer name",
+          value: "New Layer",
+          confirmText: "Create",
+        });
+        const trimmed = label?.trim();
+        if (!trimmed) return;
+        commitLayerChange("Create Layer", () => {
+          layers.push({
+            id: createLayerId(trimmed),
+            label: trimmed,
+            visible: true,
+            locked: false,
+            color: "",
+          });
+        });
+      }
+
+      async function renameLayer(layerId) {
+        const layer = getLayer(layerId);
+        if (!layer) return;
+        const label = await showTextPrompt({
+          title: "Rename layer",
+          label: "Layer name",
+          value: layer.label,
+          confirmText: "Rename",
+        });
+        const trimmed = label?.trim();
+        if (!trimmed || trimmed === layer.label) return;
+        commitLayerChange("Rename Layer", () => {
+          layer.label = trimmed;
+        });
+      }
+
+      function moveLayer(layerId, direction) {
+        const index = layers.findIndex((layer) => layer.id === layerId);
+        const target = index + direction;
+        if (index < 0 || target < 0 || target >= layers.length) return;
+        commitLayerChange("Reorder Layers", () => {
+          [layers[index], layers[target]] = [layers[target], layers[index]];
+        });
+      }
+
+      function toggleLayerVisibility(layerId) {
+        const layer = getLayer(layerId);
+        if (!layer) return;
+        commitLayerChange("Toggle Layer Visibility", () => {
+          layer.visible = !layer.visible;
+          if (
+            selectedPinIndex !== null &&
+            !isPinVisible(pins[selectedPinIndex])
+          ) {
+            selectedPinIndex = null;
+          }
+        });
+      }
+
+      function toggleLayerLock(layerId) {
+        const layer = getLayer(layerId);
+        if (!layer) return;
+        commitLayerChange("Toggle Layer Lock", () => {
+          layer.locked = !layer.locked;
+          if (currentEditIndex !== null && isPinLocked(pins[currentEditIndex])) {
+            closePinEditor();
+          }
+        });
+      }
+
+      async function deleteLayer(layerId) {
+        if (layerId === DEFAULT_LAYER_ID) {
+          showToast("The default layer cannot be deleted.", "warn");
+          return;
+        }
+        const layer = getLayer(layerId);
+        if (!layer) return;
+        const confirmed = await showConfirmDialog({
+          title: "Delete layer?",
+          message: `Pins and drawings in "${layer.label}" will move to Pins.`,
+          confirmText: "Delete",
+        });
+        if (!confirmed) return;
+        commitLayerChange("Delete Layer", () => {
+          pins.forEach((pin) => {
+            if (pin.layerId === layerId) pin.layerId = DEFAULT_LAYER_ID;
+          });
+          drawings.forEach((drawing) => {
+            if (drawing.layerId === layerId) drawing.layerId = DEFAULT_LAYER_ID;
+          });
+          layers = layers.filter((entry) => entry.id !== layerId);
+        });
+      }
+
+      function getLayerActionItems(layerId) {
+        const items = [
+          {
+            label: "Rename",
+            iconClass: "iconoir-edit-pencil",
+            action: () => renameLayer(layerId),
+          },
+        ];
+        if (layerId !== DEFAULT_LAYER_ID) {
+          items.push({
+            label: "Delete",
+            iconClass: "iconoir-trash",
+            action: () => deleteLayer(layerId),
+          });
+        }
+        return items;
+      }
+
+      function renderLayers() {
+        const container = document.getElementById("layerList");
+        if (!container) return;
+        container.replaceChildren();
+        if (!layers.length) {
+          const empty = document.createElement("p");
+          empty.className = "layer-empty";
+          empty.textContent = "No layers";
+          container.appendChild(empty);
+          return;
+        }
+
+        layers.forEach((layer, index) => {
+          const row = document.createElement("div");
+          row.className = `layer-row${layer.visible ? "" : " is-hidden-layer"}`;
+          row.dataset.layerId = layer.id;
+
+          const visibility = document.createElement("button");
+          visibility.className = "ds-btn ds-btn-icon ds-icon-action ds-btn-sm";
+          visibility.type = "button";
+          visibility.title = layer.visible ? "Hide layer" : "Show layer";
+          visibility.setAttribute("aria-label", visibility.title);
+          visibility.setAttribute("aria-pressed", String(layer.visible));
+          visibility.innerHTML = `<span class="io ${layer.visible ? "iconoir-eye" : "iconoir-eye-closed"}" aria-hidden="true"></span>`;
+          visibility.addEventListener("click", () => toggleLayerVisibility(layer.id));
+
+          const lock = document.createElement("button");
+          lock.className = "ds-btn ds-btn-icon ds-icon-action ds-btn-sm";
+          lock.type = "button";
+          lock.title = layer.locked ? "Unlock layer" : "Lock layer";
+          lock.setAttribute("aria-label", lock.title);
+          lock.setAttribute("aria-pressed", String(layer.locked));
+          lock.innerHTML = `<span class="io ${layer.locked ? "iconoir-lock" : "iconoir-lock-slash"}" aria-hidden="true"></span>`;
+          lock.addEventListener("click", () => toggleLayerLock(layer.id));
+
+          const copy = document.createElement("div");
+          copy.className = "layer-copy";
+          const name = document.createElement("span");
+          name.className = "layer-name";
+          name.textContent = layer.label;
+          const count = document.createElement("span");
+          count.className = "layer-count";
+          const pinCount = pins.filter((pin) => pin.layerId === layer.id).length;
+          const drawingCount = drawings.filter(
+            (drawing) => drawing.layerId === layer.id,
+          ).length;
+          count.textContent = `${pinCount} pin${pinCount === 1 ? "" : "s"}${drawingCount ? `, ${drawingCount} drawing${drawingCount === 1 ? "" : "s"}` : ""}`;
+          copy.append(name, count);
+
+          const actions = document.createElement("div");
+          actions.className = "layer-row-actions";
+          for (const [direction, icon, title] of [
+            [-1, "iconoir-nav-arrow-up", "Move layer up"],
+            [1, "iconoir-nav-arrow-down", "Move layer down"],
+          ]) {
+            const button = document.createElement("button");
+            button.className = "ds-btn ds-btn-icon ds-icon-action ds-btn-sm";
+            button.type = "button";
+            button.title = title;
+            button.setAttribute("aria-label", title);
+            button.disabled = direction < 0 ? index === 0 : index === layers.length - 1;
+            button.innerHTML = `<span class="io ${icon}" aria-hidden="true"></span>`;
+            button.addEventListener("click", () => moveLayer(layer.id, direction));
+            actions.appendChild(button);
+          }
+          const more = document.createElement("button");
+          more.className = "ds-btn ds-btn-icon ds-icon-action ds-btn-sm";
+          more.type = "button";
+          more.title = "Layer actions";
+          more.setAttribute("aria-label", "Layer actions");
+          more.innerHTML = '<span class="io iconoir-more-horiz" aria-hidden="true"></span>';
+          more.addEventListener("click", () => {
+            const rect = more.getBoundingClientRect();
+            showContextMenu(getLayerActionItems(layer.id), rect.right, rect.bottom + 4);
+          });
+          actions.appendChild(more);
+          row.append(visibility, lock, copy, actions);
+          container.appendChild(row);
+        });
+      }
+
+      function populatePinLayerOptions(selectedId) {
+        const select = document.getElementById("pinEditorLayer");
+        if (!select) return;
+        const target = selectedId || select.value || DEFAULT_LAYER_ID;
+        select.replaceChildren();
+        layers.forEach((layer) => {
+          const option = document.createElement("option");
+          option.value = layer.id;
+          option.textContent = layer.locked ? `${layer.label} (locked)` : layer.label;
+          option.disabled = layer.locked && layer.id !== target;
+          select.appendChild(option);
+        });
+        select.value = getLayer(target) ? target : DEFAULT_LAYER_ID;
+      }
+
       function mapExists(name) {
         return localStorage.getItem(mapKey(name)) !== null;
       }
 
       function dedupeMapName(baseName) {
-        let name = baseName || "imported";
-        if (!mapExists(name)) return name;
-        let i = 2;
-        while (mapExists(`${name}-${i}`)) i++;
-        return `${name}-${i}`;
+        return getUniqueMapName(baseName, mapExists);
       }
 
-      function saveMapAs(name, pinsArray) {
+      function saveMapAs(name, document) {
         const finalName = dedupeMapName(name);
-        localStorage.setItem(
-          mapKey(finalName),
-          JSON.stringify(pinsArray || []),
-        );
+        writeStoredMapDocument(finalName, document || []);
         currentMapName = finalName;
         setCurrentMapNameUI(finalName);
         loadMapNames({ autoLoadFirst: false });
@@ -3556,47 +3933,16 @@
         updateMapMeta(name, { updatedAt: new Date().toISOString() });
       }
 
-      function formatRelativeDate(value) {
-        if (!value) return "Not edited";
-        const date = new Date(value);
-        if (Number.isNaN(date.getTime())) return "Not edited";
-        const diffMs = Date.now() - date.getTime();
-        const minute = 60 * 1000;
-        const hour = 60 * minute;
-        const day = 24 * hour;
-        if (diffMs < minute) return "Updated now";
-        if (diffMs < hour) {
-          const minutes = Math.max(1, Math.floor(diffMs / minute));
-          return `Updated ${minutes}m ago`;
-        }
-        if (diffMs < day) {
-          const hours = Math.floor(diffMs / hour);
-          return `Updated ${hours}h ago`;
-        }
-        if (diffMs < 7 * day) {
-          const days = Math.floor(diffMs / day);
-          return `Updated ${days}d ago`;
-        }
-        return `Updated ${date.toLocaleDateString(undefined, {
-          month: "short",
-          day: "numeric",
-        })}`;
-      }
-
       function getStoredMapSummary(name) {
-        let mapPins = [];
-        try {
-          mapPins = JSON.parse(localStorage.getItem(mapKey(name)) || "[]");
-        } catch {
-          mapPins = [];
-        }
+        const document = readStoredMapDocument(name);
+        const mapPins = document?.pins || [];
         const meta = getMapMeta(name) || {};
         const linked = meta.source === "disk";
         const selected = name === currentMapName;
         const dirty = selected && !!__dirty;
         return {
           name,
-          pinCount: Array.isArray(mapPins) ? mapPins.length : 0,
+          pinCount: mapPins.length,
           source: linked ? "Linked" : "Local",
           detail: meta.fileName || (linked ? "Linked file" : "Browser storage"),
           updated: formatRelativeDate(meta.updatedAt),
@@ -3880,39 +4226,44 @@
 
       function saveCurrentMap() {
         if (!currentMapName) return; // skip saving if no valid name
-        localStorage.setItem(`map:${currentMapName}`, JSON.stringify(pins));
+        writeStoredMapDocument(currentMapName, getCurrentMapDocument());
         touchMapMeta(currentMapName);
+        renderLayers();
         queueDiskSave();
       }
 
-      function loadMap(name) {
+      function loadMap(name, { preserveHistory = false } = {}) {
         currentFileHandle = null;
         if (window.__refreshSaveState) window.__refreshSaveState();
         if (window.__reflectLinkUI) window.__reflectLinkUI();
-        if (!isApplyingHistory) resetHistoryState();
+        if (!isApplyingHistory && !preserveHistory) resetHistoryState();
 
         if (!name || !localStorage.getItem(`map:${name}`)) {
           currentMapName = null;
           setCurrentMapNameUI(null);
           pins = [];
+          layers = [createDefaultLayer()];
+          drawings = [];
           hoveredPinIndex = null;
           selectedPinIndex = null;
+          renderLayers();
           renderPinList();
           updateOverlayVisibility();
           draw();
           return;
         }
 
-        const data = localStorage.getItem(`map:${name}`);
-        try {
-          pins = JSON.parse(data);
-        } catch {
+        const document = readStoredMapDocument(name);
+        if (!document || !applyMapDocument(document)) {
           showToast("Error loading map data.", "error");
           pins = [];
+          layers = [createDefaultLayer()];
+          drawings = [];
         }
 
         currentMapName = name;
         setCurrentMapNameUI(name);
+        renderLayers();
         renderPinList();
         updateOverlayVisibility();
         clearDirty();
@@ -4068,6 +4419,7 @@
         }
 
         for (let i = 0; i < pins.length; i++) {
+          if (!isPinVisible(pins[i])) continue;
           if (i !== hoveredPinIndex)
             drawPin(
               ctx,
@@ -4078,7 +4430,11 @@
               pinStrokeDefault,
             );
         }
-        if (hoveredPinIndex !== null && pins[hoveredPinIndex]) {
+        if (
+          hoveredPinIndex !== null &&
+          pins[hoveredPinIndex] &&
+          isPinVisible(pins[hoveredPinIndex])
+        ) {
           drawPin(
             ctx,
             pins[hoveredPinIndex],
@@ -4090,6 +4446,7 @@
         }
 
         for (const p of pins) {
+          if (!isPinVisible(p)) continue;
           if (
             p.x < view.minX ||
             p.x > view.maxX ||
@@ -4285,27 +4642,31 @@
         ctx.stroke();
       }
 
+      function getScaleBarMetrics(currentZoom, targetPixels = 92) {
+        if (!Number.isFinite(currentZoom) || currentZoom <= 0) return null;
+        const rawDistance = targetPixels / currentZoom;
+        const magnitude = 10 ** Math.floor(Math.log10(rawDistance));
+        const normalized = rawDistance / magnitude;
+        const niceStep =
+          normalized >= 7.5 ? 10 : normalized >= 3.5 ? 5 : normalized >= 1.5 ? 2 : 1;
+        const distance = niceStep * magnitude;
+        return { distance, pixelLength: distance * currentZoom };
+      }
+
       function updateScaleChip() {
-        const showGridEl = document.getElementById("showGrid");
-        const gridSpacingEl = document.getElementById("gridSpacing");
         const scaleChip = document.getElementById("mapScaleChip");
         const scaleRule = document.getElementById("mapScaleRule");
         const scaleLabel = document.getElementById("mapScaleLabel");
-        if (!showGridEl || !gridSpacingEl || !scaleChip || !scaleRule || !scaleLabel)
-          return;
-        scaleChip.hidden = !showGridEl.checked;
-        if (!showGridEl.checked) return;
-
-        const spacing = parseInt(gridSpacingEl.value || "16", 10);
-        if (!Number.isFinite(spacing) || spacing <= 0) {
+        if (!scaleChip || !scaleRule || !scaleLabel) return;
+        const metrics = getScaleBarMetrics(zoom);
+        if (!metrics) {
           scaleChip.hidden = true;
           return;
         }
 
-        const px = spacing * zoom; // screen length of one grid cell
-        const len = Math.max(32, Math.min(px, 160));
-        scaleRule.style.flexBasis = `${len}px`;
-        scaleLabel.textContent = `${spacing} blocks`;
+        scaleChip.hidden = false;
+        scaleRule.style.flexBasis = `${metrics.pixelLength}px`;
+        scaleLabel.textContent = `${Number(metrics.distance.toPrecision(4))} blocks`;
       }
 
       function drawMiniGrid() {
@@ -4420,6 +4781,7 @@
 
         // Draw all pins except the hovered one.
         for (let i = 0; i < pins.length; i++) {
+          if (!isPinVisible(pins[i])) continue;
           if (i === hoveredPinIndex) continue;
 
           const p = pins[i];
@@ -4441,7 +4803,11 @@
         }
 
         // Draw the hovered pin on top.
-        if (hoveredPinIndex !== null && pins[hoveredPinIndex]) {
+        if (
+          hoveredPinIndex !== null &&
+          pins[hoveredPinIndex] &&
+          isPinVisible(pins[hoveredPinIndex])
+        ) {
           const p = pins[hoveredPinIndex];
           const px = worldOffsetX + p.x * scale;
           const pz = worldOffsetZ + p.z * scale;
@@ -4462,12 +4828,14 @@
         minimapCtx.lineWidth = 1;
         minimapCtx.strokeRect(viewX, viewZ, viewWidth, viewHeight);
 
-        drawMinimapLabels(
-          minimapCtx,
-          minimapCanvas.width,
-          minimapCanvas.height,
-          miniText,
-        );
+        if (minimapDetail !== "minimal") {
+          drawMinimapLabels(
+            minimapCtx,
+            minimapCanvas.width,
+            minimapCanvas.height,
+            miniText,
+          );
+        }
 
         // World limits
         document.getElementById("worldMinX").textContent = worldMinX;
@@ -4579,12 +4947,16 @@
           "showDescription",
           "showTags",
           "showMinimap",
+          "minimapDetail",
           "themeSelect",
           "glowIntensitySelect",
         ]);
         syncMinimapOverlay();
         syncMinimapSizeButtons();
+        syncMinimapDetail();
         syncTextScaleToggleButton();
+        renderLayers();
+        populatePinLayerOptions(DEFAULT_LAYER_ID);
         syncMapMetaUI();
         updateStatusStrip();
         updateOverlayVisibility();
@@ -4625,8 +4997,13 @@
         minimap.classList.toggle("is-hidden", !visible);
         minimap.dataset.position =
           positionSelect?.value || minimap.dataset.position || "bottom-right";
+        const scaleChip = document.getElementById("mapScaleChip");
+        const overlapsScale =
+          visible && minimap.dataset.position === "top-right";
+        scaleChip?.classList.toggle("is-offset-by-minimap", overlapsScale);
         syncMinimapPositionButtons();
         syncMinimapSizeButtons();
+        syncMinimapDetail();
         resizeMinimapCanvas();
 
         if (visible) drawMinimap();
@@ -4753,6 +5130,7 @@
         });
         syncMinimapPositionButtons();
         syncMinimapSizeButtons();
+        syncMinimapDetail();
       }
 
       function syncPanelToggleStates() {
@@ -4892,6 +5270,7 @@
         return pins
           .map((pin, index) => ({ pin, index }))
           .filter(({ pin }) => {
+            if (!isPinVisible(pin)) return false;
             if (
               activeTypeSelection &&
               !activeTypeSelection.has(pin.id || "custom")
@@ -5061,8 +5440,8 @@
         return "Browse";
       }
 
-      function clonePinsState() {
-        return JSON.parse(JSON.stringify(Array.isArray(pins) ? pins : []));
+      function cloneMapDocumentState() {
+        return JSON.parse(JSON.stringify(getCurrentMapDocument()));
       }
 
       function getStoredMapsSnapshot() {
@@ -5070,27 +5449,29 @@
           .filter((key) => key.startsWith("map:"))
           .map((key) => {
             const name = key.slice(4);
-            let mapPins = [];
-            try {
-              mapPins = JSON.parse(localStorage.getItem(key) || "[]");
-            } catch {
-              mapPins = [];
-            }
             return {
               name,
-              pins: JSON.parse(JSON.stringify(mapPins)),
+              document: readStoredMapDocument(name),
               meta: getMapMeta(name),
             };
           })
           .sort((a, b) => a.name.localeCompare(b.name));
       }
 
-      function captureHistoryState() {
-        return {
+      function captureHistoryState(scope = "active-map") {
+        const base = {
+          scope,
           currentMapName: currentMapName || null,
-          maps: getStoredMapsSnapshot(),
           selectedPinIndex,
           settings: collectSettingsSnapshot(),
+        };
+        if (scope === "library") {
+          return { ...base, maps: getStoredMapsSnapshot() };
+        }
+        return {
+          ...base,
+          document: cloneMapDocumentState(),
+          meta: currentMapName ? getMapMeta(currentMapName) : null,
         };
       }
 
@@ -5100,8 +5481,8 @@
         updateStatusStrip();
       }
 
-      function pushHistoryState(label = "Change") {
-        const snapshot = captureHistoryState();
+      function pushHistoryState(label = "Change", scope = "active-map") {
+        const snapshot = captureHistoryState(scope);
         const last = undoStack[undoStack.length - 1];
         if (
           last &&
@@ -5110,7 +5491,7 @@
           refreshHistoryButtons();
           return;
         }
-        undoStack.push({ label, snapshot });
+        undoStack.push({ label, scope, snapshot });
         if (undoStack.length > HISTORY_LIMIT) undoStack.shift();
         redoStack = [];
         refreshHistoryButtons();
@@ -5126,23 +5507,35 @@
         if (!snapshot) return;
         isApplyingHistory = true;
         try {
-          Object.keys(localStorage)
-            .filter(
-              (key) => key.startsWith("map:") || key.startsWith("mapmeta:"),
-            )
-            .forEach((key) => localStorage.removeItem(key));
+          const scope =
+            snapshot.scope ||
+            (Array.isArray(snapshot.maps) ? "library" : "active-map");
+          if (scope === "library") {
+            Object.keys(localStorage)
+              .filter(
+                (key) => key.startsWith("map:") || key.startsWith("mapmeta:"),
+              )
+              .forEach((key) => localStorage.removeItem(key));
 
-          (snapshot.maps || []).forEach((entry) => {
-            localStorage.setItem(
-              mapKey(entry.name),
-              JSON.stringify(entry.pins || []),
+            (snapshot.maps || []).forEach((entry) => {
+              writeStoredMapDocument(
+                entry.name,
+                entry.document || entry.pins || [],
+              );
+              if (entry.meta) setMapMeta(entry.name, entry.meta);
+            });
+
+            currentFileHandle = null;
+            if (window.__refreshSaveState) window.__refreshSaveState();
+            if (window.__reflectLinkUI) window.__reflectLinkUI();
+          } else if (snapshot.currentMapName) {
+            writeStoredMapDocument(
+              snapshot.currentMapName,
+              snapshot.document || snapshot.pins || [],
             );
-            if (entry.meta) setMapMeta(entry.name, entry.meta);
-          });
-
-          currentFileHandle = null;
-          if (window.__refreshSaveState) window.__refreshSaveState();
-          if (window.__reflectLinkUI) window.__reflectLinkUI();
+            if (snapshot.meta) setMapMeta(snapshot.currentMapName, snapshot.meta);
+            else localStorage.removeItem(mapMetaKey(snapshot.currentMapName));
+          }
 
           loadMapNames({ autoLoadFirst: false });
 
@@ -5155,6 +5548,8 @@
             currentMapName = null;
             setCurrentMapNameUI(null);
             pins = [];
+            layers = [createDefaultLayer()];
+            drawings = [];
             selectedPinIndex = null;
             hoveredPinIndex = null;
             renderPinList();
@@ -5177,7 +5572,12 @@
       function undoPinsChange() {
         if (undoStack.length === 0) return;
         const entry = undoStack.pop();
-        redoStack.push({ label: entry.label, snapshot: captureHistoryState() });
+        const scope = entry.scope || entry.snapshot?.scope || "library";
+        redoStack.push({
+          label: entry.label,
+          scope,
+          snapshot: captureHistoryState(scope),
+        });
         applyHistoryState(entry.snapshot);
         refreshHistoryButtons();
         showToast(`Undo: ${entry.label}`);
@@ -5186,7 +5586,12 @@
       function redoPinsChange() {
         if (redoStack.length === 0) return;
         const entry = redoStack.pop();
-        undoStack.push({ label: entry.label, snapshot: captureHistoryState() });
+        const scope = entry.scope || entry.snapshot?.scope || "library";
+        undoStack.push({
+          label: entry.label,
+          scope,
+          snapshot: captureHistoryState(scope),
+        });
         applyHistoryState(entry.snapshot);
         refreshHistoryButtons();
         showToast(`Redo: ${entry.label}`);
@@ -5227,16 +5632,42 @@
       }
 
       function resizeMinimapCanvas() {
-        minimapSize =
+        const widgetSize =
           MINIMAP_SIZE_PRESETS[minimapSizePreset] || MINIMAP_SIZE_PRESETS.md;
+        const reservedHeight =
+          minimapDetail === "full" ? 88 : minimapDetail === "standard" ? 62 : 42;
+        minimapSize = Math.max(64, widgetSize - reservedHeight);
         minimapCanvas.width = minimapSize;
         minimapCanvas.height = minimapSize;
         minimapCanvas.style.width = `${minimapSize}px`;
         minimapCanvas.style.height = `${minimapSize}px`;
         const container = document.getElementById("minimapContainer");
         if (container) {
-          container.style.width = `${minimapSize}px`;
-          container.style.height = `${minimapSize}px`;
+          container.style.width = `${widgetSize}px`;
+          container.style.height = `${widgetSize}px`;
+          container.dataset.detail = minimapDetail;
+        }
+        document.documentElement.style.setProperty(
+          "--minimap-widget-size",
+          `${widgetSize}px`,
+        );
+      }
+
+      function syncMinimapDetail() {
+        const value = minimapDetailSelect?.value || minimapDetail;
+        minimapDetail = ["minimal", "standard", "full"].includes(value)
+          ? value
+          : "standard";
+        const container = document.getElementById("minimapContainer");
+        if (container) container.dataset.detail = minimapDetail;
+        const mode = document.getElementById("minimapWidgetMode");
+        if (mode) {
+          mode.textContent =
+            minimapDetail === "minimal"
+              ? "Map"
+              : minimapDetail === "full"
+                ? "World / Crop / View"
+                : "View";
         }
       }
 
@@ -5287,6 +5718,16 @@
         }
 
         if (filteredPins.length === 0) {
+          const hiddenByLayer =
+            !hasSearch && !hasFilters && pins.some((pin) => !isPinVisible(pin));
+          if (hiddenByLayer) {
+            container.innerHTML =
+              '<div class="section-note"><div class="pin-empty-title">No visible pins</div><div>All pins belong to hidden layers.</div><div class="pin-empty-actions"><button id="openLayersBtn" class="ds-btn ds-btn-sm" type="button">Open layers</button></div></div>';
+            document
+              .getElementById("openLayersBtn")
+              ?.addEventListener("click", () => setWorkspaceTab("layers"));
+            return;
+          }
           const searchCopy = hasSearch
             ? ` for "${escapeHtml(search)}"`
             : "";
@@ -5484,6 +5925,8 @@
         ).value;
         const icon = document.getElementById("pinEditorIcon").value;
         const color = document.getElementById("pinEditorColor").value;
+        const layerId =
+          document.getElementById("pinEditorLayer")?.value || DEFAULT_LAYER_ID;
         return {
           x,
           y: Number.isFinite(y) ? y : null,
@@ -5493,6 +5936,7 @@
           description,
           icon,
           color,
+          layerId,
           valid: Number.isFinite(x) && Number.isFinite(z),
         };
       }
@@ -5507,6 +5951,7 @@
           description: draft.description || "",
           icon: draft.icon || "",
           color: draft.color || "#ffcc00",
+          layerId: draft.layerId || DEFAULT_LAYER_ID,
         };
       }
 
@@ -5520,6 +5965,7 @@
           description: pin?.description ?? "",
           icon: pin?.icon ?? "",
           color: pin?.color ?? "#ffcc00",
+          layerId: pin?.layerId ?? DEFAULT_LAYER_ID,
         });
       }
 
@@ -5613,6 +6059,7 @@
 
         if (currentEditIndex !== null && pins[currentEditIndex]) {
           const pin = pins[currentEditIndex];
+          if (isPinLocked(pin) || !isPinVisible(pin)) return null;
           const sx = offsetX + pin.x * zoom;
           const sy = offsetY + pin.z * zoom;
           if (Math.hypot(mx - sx, my - sy) < 12) {
@@ -5632,7 +6079,7 @@
       }
 
       // Pin management
-      // openPinEditor(), submitPinEditor(), closePinEditor(), editPin(), addPin()
+      // openPinEditor(), submitPinEditor(), closePinEditor(), editPin()
       function openPinEditor(
         _,
         __,
@@ -5664,6 +6111,7 @@
         document.getElementById("pinEditorLabel").value = label || typeID;
         document.getElementById("pinEditorDescription").value = "";
         document.getElementById("pinEditorIcon").value = icon;
+        populatePinLayerOptions(DEFAULT_LAYER_ID);
         pinEditorOriginalDraft = null;
 
         const fields = document.querySelectorAll(
@@ -5707,6 +6155,10 @@
       }
 
       function deletePin(index) {
+        if (isPinLocked(pins[index])) {
+          showToast("Unlock this pin's layer before deleting it.", "warn");
+          return;
+        }
         showConfirmDialog({
           title: "Delete pin?",
           message: "This pin will be removed from the current map.",
@@ -5753,6 +6205,10 @@
       }
       function editPin(index) {
         const pin = pins[index];
+        if (isPinLocked(pin)) {
+          showToast("Unlock this pin's layer before editing it.", "warn");
+          return;
+        }
         currentEditIndex = index;
         pinEditOriginalSnapshot = {
           x: pin.x,
@@ -5777,6 +6233,7 @@
         document.getElementById("pinEditorIcon").value = pin.icon ?? "";
         document.getElementById("pinEditorColor").value =
           pin.color ?? "#ffcc00";
+        populatePinLayerOptions(pin.layerId || DEFAULT_LAYER_ID);
         pinEditorOriginalDraft = getPinSnapshotForEditor(pin);
 
         selectedPinIndex = index;
@@ -5785,27 +6242,16 @@
         drawMinimap();
       }
 
-      function addPin() {
-        const x = parseInt(document.getElementById("pinX").value);
-        const y = parseInt(document.getElementById("pinY").value) || null;
-        const z = parseInt(document.getElementById("pinZ").value);
-        const id = document.getElementById("pinType").value || "custom";
-        const label = document.getElementById("pinLabel").value || "(no label)";
-        const description = document.getElementById("pinDescription").value;
-        const icon = document.getElementById("pinIcon").value;
-        if (isNaN(x) || isNaN(z)) {
-          showToast("X and Z are required.", "warn");
-          return;
-        }
-        pins.push({ x, y, z, id, label, description: description, icon });
-        draw();
-        renderPinList();
-        markDirty();
-        saveCurrentMap();
-      }
-
       function submitPinEditor() {
         const draft = getPinEditorDraft();
+        if (currentEditIndex !== null && isPinLocked(pins[currentEditIndex])) {
+          showToast("Unlock this pin's layer before editing it.", "warn");
+          return;
+        }
+        if (isLayerLocked(draft.layerId)) {
+          showToast("Choose an unlocked layer before saving.", "warn");
+          return;
+        }
         if (!draft.valid) {
           updatePinEditorState();
           showToast("Enter valid X and Z coordinates before saving.", "warn");
@@ -5825,6 +6271,7 @@
           description: draft.description,
           icon: draft.icon,
           color: draft.color,
+          layerId: draft.layerId,
         };
 
         pushHistoryState(currentEditIndex !== null ? "Edit Pin" : "Add Pin");
@@ -5893,12 +6340,15 @@
       }
 
       function fitViewToPins() {
-        if (!Array.isArray(pins) || pins.length === 0) {
-          showToast("No pins to fit.", "warn");
+        const visiblePins = Array.isArray(pins)
+          ? pins.filter(isPinVisible)
+          : [];
+        if (visiblePins.length === 0) {
+          showToast("No visible pins to fit.", "warn");
           return;
         }
-        const xs = pins.map((pin) => Number(pin.x)).filter(Number.isFinite);
-        const zs = pins.map((pin) => Number(pin.z)).filter(Number.isFinite);
+        const xs = visiblePins.map((pin) => Number(pin.x)).filter(Number.isFinite);
+        const zs = visiblePins.map((pin) => Number(pin.z)).filter(Number.isFinite);
         if (!xs.length || !zs.length) {
           showToast("No pin coordinates to fit.", "warn");
           return;
@@ -6031,6 +6481,8 @@
           minimapSizePreset:
             document.getElementById("minimapSizePreset")?.value ||
             minimapSizePreset,
+          minimapDetail:
+            document.getElementById("minimapDetail")?.value || minimapDetail,
           zoom,
           offsetX,
           offsetY,
@@ -6065,9 +6517,12 @@
         if ("showMinimap" in s) check("showMinimap", s.showMinimap);
         if (s.minimapPosition) set("minimapPosition", s.minimapPosition);
         if (s.minimapSizePreset) set("minimapSizePreset", s.minimapSizePreset);
+        if (s.minimapDetail) set("minimapDetail", s.minimapDetail);
         minimapSizePreset =
           document.getElementById("minimapSizePreset")?.value ||
           minimapSizePreset;
+        minimapDetail =
+          document.getElementById("minimapDetail")?.value || minimapDetail;
         if (Number.isFinite(s.zoom)) zoom = s.zoom;
         if (Number.isFinite(s.offsetX)) offsetX = s.offsetX;
         if (Number.isFinite(s.offsetY)) offsetY = s.offsetY;
@@ -6082,19 +6537,15 @@
       }
 
       function exportMapByName(mapName) {
-        let exportPins = pins;
-        if (mapName !== currentMapName && localStorage.getItem(mapKey(mapName))) {
-          try {
-            exportPins = JSON.parse(localStorage.getItem(mapKey(mapName)) || "[]");
-          } catch {
-            exportPins = [];
-          }
-        }
+        const document =
+          mapName === currentMapName
+            ? getCurrentMapDocument()
+            : readStoredMapDocument(mapName) || normalizeMapDocument([]);
         const payload = {
-          version: 1,
+          ...document,
+          version: MAP_DOCUMENT_VERSION,
           name: mapName,
           createdAt: new Date().toISOString(),
-          pins: Array.isArray(exportPins) ? exportPins : [],
           settings: mapName === currentMapName ? collectSettingsSnapshot() : {},
         };
 
@@ -6108,56 +6559,6 @@
         a.click();
         a.remove();
         URL.revokeObjectURL(a.href);
-      }
-
-      function normalizePin(rawPin) {
-        const pin = rawPin && typeof rawPin === "object" ? rawPin : {};
-        const x = Number(pin.x);
-        const hasY = pin.y !== undefined && pin.y !== null && pin.y !== "";
-        const y = hasY ? Number(pin.y) : NaN;
-        const z = Number(pin.z);
-        const color = String(pin.color ?? "").trim();
-        const normalized = {
-          x: Number.isFinite(x) ? x : 0,
-          z: Number.isFinite(z) ? z : 0,
-          y: Number.isFinite(y) ? y : undefined,
-          id: String(pin.id ?? ""),
-          label: String(pin.label ?? ""),
-          description: String(pin.description ?? ""),
-          icon: String(pin.icon ?? ""),
-          color: /^#[0-9a-f]{3,8}$/i.test(color) ? color : "",
-          tags: Array.isArray(pin.tags) ? pin.tags.map(String) : undefined,
-          timestamp: pin.timestamp || new Date().toISOString(),
-        };
-        return normalized;
-      }
-
-      function parseMapPayload(data, fallbackName) {
-        const importedName = String(fallbackName || "imported").replace(
-          /\.json$/i,
-          "",
-        );
-
-        if (Array.isArray(data)) {
-          return {
-            name: importedName,
-            pins: data.map(normalizePin),
-            settings: null,
-          };
-        }
-
-        if (data && typeof data === "object") {
-          const name = data.name ? String(data.name) : importedName;
-          return {
-            name,
-            pins: Array.isArray(data.pins)
-              ? data.pins.map(normalizePin)
-              : [],
-            settings: data.settings || null,
-          };
-        }
-
-        return null;
       }
 
       // Import map JSON (supports array-of-pins or object-with-pins)
@@ -6178,7 +6579,7 @@
         }
 
         // Import creates a new saved map as an unlinked copy.
-        const finalName = saveMapAs(parsed.name, parsed.pins);
+        const finalName = saveMapAs(parsed.name, parsed);
 
         // Apply settings if provided (optional)
         if (parsed.settings) {
@@ -6218,16 +6619,11 @@
       // File system access (Open / Save / Save As)
 
       function getMapPayloadForDisk() {
-        // what you want written to disk; keep it simple & compatible with your importer
         return {
-          version: 1,
+          ...getCurrentMapDocument(collectSettingsSnapshot()),
+          version: MAP_DOCUMENT_VERSION,
           name: currentMapName || "unnamed",
           createdAt: new Date().toISOString(),
-          pins: Array.isArray(pins) ? pins : [],
-          settings:
-            typeof collectSettingsSnapshot === "function"
-              ? collectSettingsSnapshot()
-              : undefined,
         };
       }
 
@@ -6270,15 +6666,12 @@
           }
 
           // Set app state
-          pins = parsed.pins;
+          applyMapDocument(parsed);
           currentMapName = parsed.name;
           currentFileHandle = handle;
 
           // Keep a library entry so it appears in the gallery without switching pins or breaking the link.
-          localStorage.setItem(
-            mapKey(parsed.name),
-            JSON.stringify(parsed.pins),
-          );
+          writeStoredMapDocument(parsed.name, parsed);
           updateMapMeta(parsed.name, {
             source: "disk",
             fileName: file.name,
@@ -6351,7 +6744,7 @@
           setCurrentMapNameUI(newName);
 
           // Write the local library entry so the gallery matches what is on disk.
-          localStorage.setItem(mapKey(newName), JSON.stringify(pins));
+          writeStoredMapDocument(newName, getCurrentMapDocument());
           updateMapMeta(newName, {
             source: "disk",
             fileName: handle.name,
@@ -6507,6 +6900,7 @@
         lastCursor = { x: worldX, z: worldZ };
 
         const found = pins.find((pin) => {
+          if (!isPinVisible(pin)) return false;
           const sx = offsetX + pin.x * zoom;
           const sy = offsetY + pin.z * zoom;
           return Math.hypot(mx - sx, my - sy) < 10;
@@ -6528,6 +6922,7 @@
 
         for (let i = 0; i < pins.length; i++) {
           const pin = pins[i];
+          if (!isPinVisible(pin)) continue;
           const sx = offsetX + pin.x * zoom;
           const sy = offsetY + pin.z * zoom;
           const dx = mx - sx;
@@ -6692,6 +7087,7 @@
         let found = null;
         for (let i = 0; i < pins.length; i++) {
           const pin = pins[i];
+          if (!isPinVisible(pin)) continue;
           const sx = offsetX + pin.x * zoom;
           const sy = offsetY + pin.z * zoom;
           const dx = mx - sx;
@@ -6769,6 +7165,7 @@
         // If the click lands on an existing pin, select it
         let found = null;
         for (let i = 0; i < pins.length; i++) {
+          if (!isPinVisible(pins[i])) continue;
           const sx = offsetX + pins[i].x * zoom;
           const sy = offsetY + pins[i].z * zoom;
           if (Math.hypot(mx - sx, my - sy) < 10) {
@@ -6927,6 +7324,9 @@
       document
         .getElementById("createNewMapBtn")
         .addEventListener("click", createNewMapFlow);
+      document
+        .getElementById("createLayerBtn")
+        ?.addEventListener("click", createLayer);
 
       async function createNewMapFlow() {
         let name = await showTextPrompt({
@@ -6958,9 +7358,11 @@
           name = `${base} (${suffix++})`;
         }
 
-        pushHistoryState("Create Map");
+        pushHistoryState("Create Map", "library");
         currentMapName = name;
         pins = [];
+        layers = [createDefaultLayer()];
+        drawings = [];
         saveCurrentMap();
 
         updateMapMeta(currentMapName, {
@@ -6968,7 +7370,7 @@
           updatedAt: new Date().toISOString(),
         });
         loadMapNames({ autoLoadFirst: false });
-        loadMap(currentMapName);
+        loadMap(currentMapName, { preserveHistory: true });
         showToast(`Map "${currentMapName}" created.`);
       }
 
@@ -7014,6 +7416,7 @@
         "showLabelBackground",
         "minimapPosition",
         "minimapSizePreset",
+        "minimapDetail",
       ].forEach((id) => {
         const el = document.getElementById(id);
         if (!el) return;
@@ -7029,11 +7432,15 @@
           if (
             id === "showMinimap" ||
             id === "minimapPosition" ||
-            id === "minimapSizePreset"
+            id === "minimapSizePreset" ||
+            id === "minimapDetail"
           ) {
             minimapSizePreset =
               document.getElementById("minimapSizePreset")?.value ||
               minimapSizePreset;
+            minimapDetail =
+              document.getElementById("minimapDetail")?.value ||
+              minimapDetail;
             syncMinimapOverlay();
           }
           draw();
