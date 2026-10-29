@@ -76,7 +76,7 @@ const layered = normalizeMapDocument({
     },
   ],
 });
-assert.equal(layered.version, 2);
+assert.equal(layered.version, MAP_DOCUMENT_VERSION);
 assert.equal(layered.layers.length, 2);
 assert.equal(layered.pins[0].layerId, "routes");
 assert.equal(layered.pins[1].layerId, DEFAULT_LAYER_ID);
@@ -92,5 +92,23 @@ assert.equal(getUniqueMapName("New", (name) => existingNames.has(name)), "New");
 
 const now = Date.parse("2026-10-20T12:00:00.000Z");
 assert.equal(formatRelativeDate("2026-10-20T11:55:00.000Z", now), "Updated 5m ago");
+
+const identities = normalizeMapDocument({ version: 2, pins: [
+  { id: "village", uid: "same", x: 1, z: 2 },
+  { id: "village", uid: "same", x: 3, z: 4 },
+  { id: "mine", uid: "pin-legacy-2", x: 5, z: 6 },
+  { id: "village", x: 7, z: 8 },
+], drawings: [
+  { id: "route", type: "line", name: "Market Road", points: [] },
+  { id: "route", type: "path", points: [] },
+] });
+assert.equal(new Set(identities.pins.map((pin) => pin.uid)).size, 4);
+assert.equal(identities.pins[2].uid, "pin-legacy-2");
+assert.equal(identities.pins[1].id, "village");
+assert.notEqual(identities.drawings[0].id, identities.drawings[1].id);
+assert.equal(identities.drawings[0].name, "Market Road");
+assert.equal(JSON.stringify(normalizeMapDocument(JSON.parse(JSON.stringify(identities)))), JSON.stringify(identities));
+assert.equal(normalizeMapDocument({ version: 999, pins: [] }), null);
+assert.equal(parseMapPayload({ version: 999, pins: [] }, "future.json"), null);
 
 console.log("Map data contract check passed.");

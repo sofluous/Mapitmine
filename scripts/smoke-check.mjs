@@ -19,6 +19,7 @@ const requiredSnippets = [
   'Open & Link',
   'Export Copy',
   '<script src="./src/map-data.js"></script>',
+  '<script src="./src/workspace-state.js"></script>',
   'normalizePin,',
   'parseMapPayload,',
   'normalizeMapDocument,',

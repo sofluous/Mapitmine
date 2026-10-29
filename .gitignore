@@ -1,2 +1,6 @@
 _archive/
 _docs/
+node_modules/
+debug.log
+.DS_Store
+Thumbs.db

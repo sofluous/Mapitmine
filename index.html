@@ -14,7 +14,7 @@
     />
     <link
       rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/iconoir@latest/css/iconoir.css"
+      href="./assets/iconoir.css"
     />
     <link rel="stylesheet" href="./design-system/theme.css" />
 
@@ -198,8 +198,8 @@
         bottom: var(--space-md);
         z-index: 320;
         display: grid;
-        grid-template-columns: 56px minmax(0, 320px);
-        gap: var(--space-sm);
+        grid-template-columns: 56px minmax(0, 420px);
+        gap: 0;
         align-items: stretch;
         pointer-events: auto;
       }
@@ -207,6 +207,17 @@
       #workspaceShell.is-collapsed {
         grid-template-columns: 56px 0;
       }
+
+      #appRail, #workspacePanel {
+        background: transparent;
+        background-image: none;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        backdrop-filter: none;
+      }
+      #appRail { border-right: 1px solid var(--ui-border-quiet); }
+      #workspaceShell.is-collapsed #appRail { border-right: 0; }
 
       #appRail {
         width: 56px;
@@ -559,14 +570,17 @@
 
       #hud {
         position: fixed;
-        top: var(--space-md);
-        left: 50%;
+        top: 56px;
+        left: clamp(172px, var(--toolbar-x, 50%), calc(100vw - 172px));
+        right: auto;
         transform: translateX(-50%);
         color: var(--color-text);
         z-index: 200;
         display: flex;
-        gap: var(--space-md);
+        gap: var(--space-sm);
         align-items: center;
+        flex-wrap: wrap;
+        width: 320px;
       }
 
       /* 5) Pin list header */
@@ -682,9 +696,34 @@
         overflow-y: auto;
       }
 
+      .object-children { display: grid; gap: 3px; padding: 4px 8px 8px 22px; }
+      .object-layer { min-width: 0; outline: none; }
+      .object-layer:focus-visible > .layer-row { outline: 2px solid var(--color-primary); outline-offset: -2px; }
+      .object-layer.is-selected > .layer-row { background: var(--item-card-active-bg); box-shadow: inset 3px 0 0 var(--item-card-selected-color); }
+      .object-entry {
+        display: flex; align-items: center; gap: 8px; min-width: 0;
+        min-height: 34px; padding: 5px 8px; text-align: left;
+        border: 1px solid var(--ui-border-quiet); border-radius: var(--ds-radius-2);
+      }
+      .object-entry .object-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .object-entry .object-state { font-size: var(--font-sm); color: color-mix(in oklab, var(--color-text) 60%, transparent); }
+      .object-filter-row { display: grid; grid-template-columns: minmax(0, 1fr) 110px; gap: var(--space-xs); }
+      #layersPanelSection .workspace-section-body > * { flex-shrink: 0; }
+      #layersPanelSection .layer-list { overflow: visible; }
+
+      #drawingEditor[hidden] { display: none; }
+      #objectInspector[hidden] { display: none; }
+      #drawingPanel [hidden], .object-children[hidden] { display: none !important; }
+      .layer-copy > .layer-name { padding: 0; border: 0; box-shadow: none; background: transparent; text-align: left; }
+
+      #drawingPoints {
+        max-height: 240px;
+        overflow-y: auto;
+      }
+
       .layer-row {
         display: grid;
-        grid-template-columns: 32px 32px minmax(0, 1fr) auto;
+        grid-template-columns: minmax(0, 1fr) auto;
         align-items: center;
         gap: var(--space-xs);
         min-height: 44px;
@@ -693,6 +732,18 @@
       }
 
       .layer-row:last-child { border-bottom: 0; }
+      #layerList .layer-action, #layerList .layer-action[aria-pressed="true"] {
+        display: grid; place-items: center; width: 32px; height: 32px; padding: 0;
+        color: var(--color-text); background: transparent; background-image: none;
+        border: 1px solid transparent; box-shadow: none; text-shadow: none; border-radius: var(--ds-radius-2);
+      }
+      #layerList .layer-action:hover { background: var(--ui-surface-hover); border-color: var(--ui-border-quiet); }
+      #layerList .layer-action:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
+      .layer-disclosure.is-collapsed { transform: rotate(-90deg); }
+      .layer-row[data-drop-edge="before"] { box-shadow: inset 0 2px var(--color-primary); }
+      .layer-row[data-drop-edge="after"] { box-shadow: inset 0 -2px var(--color-primary); }
+      body.is-layer-reordering { cursor: grabbing; user-select: none; }
+      #contextMenu [aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
 
       .layer-row.is-hidden-layer .layer-name,
       .layer-row.is-hidden-layer .layer-count { opacity: 0.52; }
@@ -704,6 +755,7 @@
       }
 
       .layer-name {
+        padding: 0; border: 0; background: transparent; text-align: left;
         overflow: hidden;
         color: var(--color-text-heading);
         font-weight: 700;
@@ -1433,6 +1485,69 @@
         z-index: 10;
       }
 
+      #drawingPanel {
+        position: fixed;
+        top: 132px;
+        right: 12px;
+        z-index: 200;
+        width: min(320px, calc(100vw - 24px));
+        max-height: calc(100dvh - 180px);
+        overflow: auto;
+        padding: 12px;
+        background: var(--ui-surface);
+        border: 1px solid var(--ui-border-quiet);
+      }
+      #contextInspector {
+        position: fixed; top: var(--inspector-top, 132px); right: 12px; z-index: 210;
+        width: min(340px, calc(100vw - 24px));
+        max-height: calc(100dvh - var(--inspector-top, 132px) - 28px); overflow: auto;
+        padding: var(--space-md);
+      }
+      #contextInspector[hidden] { display: none; }
+      .inspector-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); }
+      #contextInspector #drawingPanel, #contextInspector #pinEditorPanel {
+        position: static; width: 100%; max-height: none; padding: 0;
+        background: transparent; border: 0; box-shadow: none; overflow: visible;
+      }
+      #contextInspector #pinEditorHeader { cursor: default; }
+      #contextInspector #pinEditorHeader, #contextInspector #drawingEditorTitle,
+      #contextInspector #objectInspectorKind { display: none; }
+      .drawing-point-field { display: grid; gap: 4px; min-width: 0; }
+      .drawing-point-field > span { color: var(--color-text-muted); font-size: var(--font-sm); }
+      #contextInspector #objectInspector { padding: 0; border: 0; }
+      #objectInspectorDetails { color: var(--color-text-muted); overflow-wrap: anywhere; }
+      #layerInspectorControls[hidden] { display: none; }
+      @media (max-width: 900px) {
+        #contextInspector { top: auto; bottom: 64px; max-height: min(55dvh, 480px); }
+        body:has(#workspaceShell:not(.is-collapsed)) #contextInspector { display: none; }
+      }
+      #drawingToolStrip { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+      #workspaceTools, #historyTools { display: flex; gap: 4px; align-items: center; }
+      #workspaceTools { flex: 4; }
+      #historyTools { flex: 3; }
+      #historyTools { padding-left: var(--space-sm); border-left: 1px solid var(--ui-border-quiet); }
+      #workspaceTools button, #historyTools button { flex: 1; min-width: 36px; width: 36px; height: 36px; }
+      #workspaceTools button[aria-pressed="true"] { background: var(--ui-surface-active); }
+      #drawingCommands { display: grid; gap: var(--space-sm); flex-basis: 100%; padding-top: var(--space-sm); border-top: 1px solid var(--ui-border-quiet); }
+      #drawingCommands label { display: flex; align-items: center; gap: var(--space-sm); }
+      #drawingCommands select { flex: 1; min-width: 0; }
+      #drawingCommands #drawingToolStrip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      #drawingCommands button { min-width: 0; padding-inline: 4px; }
+      #drawingProgress:empty { display: none; }
+      #hud[data-tool="select"] #drawingCommands,
+      #hud[data-tool="pan"] #drawingCommands,
+      #hud[data-tool="pin"] #drawingCommands { display: none; }
+      #draftResolutionDialog .ds-toolbar { flex-wrap: wrap; justify-content: flex-end; }
+      #draftResolutionDialog .ds-modal-panel { max-width: calc(100vw - 32px); }
+      #drawingPanel > .control-section-title { display: none; }
+      #drawingPanel[hidden] { display: none; }
+      #drawingPanel #drawingEditor { padding-top: 12px; }
+      #drawingPanel #drawingPoints .control-inline { display: grid; grid-template-columns: 1fr 1fr; }
+      #drawingPanel #drawingPoints input { min-width: 0; width: 100%; }
+      @media (max-width: 760px) {
+        #drawingPanel { top: 124px; max-height: min(36dvh, 320px); }
+      }
+
       /* 13) Pin editor panel */
       #pinEditorPanel {
         position: fixed;
@@ -2026,24 +2141,30 @@
 
       @media (max-width: 900px) {
         #hud {
-          top: auto;
+          top: 56px;
           left: var(--space-sm);
           right: var(--space-sm);
-          bottom: calc(env(safe-area-inset-bottom) + var(--space-sm));
+          bottom: auto;
           transform: none;
           justify-content: space-between;
           gap: var(--space-xs);
           padding: var(--space-sm);
           z-index: 500;
-          flex-wrap: nowrap;
+          flex-wrap: wrap;
+          width: auto;
         }
 
-        #hud > .icon-only {
-          min-width: 44px;
-          min-height: 44px;
-          inline-size: 44px;
-          block-size: 44px;
+        #workspaceTools { flex: 4; }
+        #historyTools { flex: 3; }
+        #workspaceTools button, #historyTools button {
+          min-width: 0;
+          width: 36px;
+          min-height: 40px;
+          height: 40px;
+          inline-size: auto;
+          block-size: 40px;
         }
+        #appRail { border-right: 0; border-top: 1px solid var(--ui-border-quiet); }
 
         #workspaceShell {
           top: auto;
@@ -2109,7 +2230,7 @@
           width: auto;
           height: min(42dvh, 420px);
           max-height: min(42dvh, 420px);
-          border-radius: var(--ds-radius-3) var(--ds-radius-3) 0 0;
+          border-radius: 0;
         }
 
         #workspaceShell.is-collapsed #workspacePanel {
@@ -2211,7 +2332,7 @@
   </head>
 
   <body>
-    <div id="workspaceShell">
+    <div id="workspaceShell" class="app-panel">
       <aside id="appRail" class="app-panel" aria-label="Primary workspace rail">
         <div class="rail-header">
           <button
@@ -2251,8 +2372,8 @@
             type="button"
             data-workspace-tab="layers"
             aria-pressed="false"
-            title="Layers"
-            aria-label="Layers"
+            title="Objects"
+            aria-label="Objects"
           >
             <span class="io iconoir-multiple-pages" aria-hidden="true"></span>
           </button>
@@ -2405,7 +2526,7 @@
             <div class="workspace-tab-title-row">
               <div class="workspace-section-title">
                 <span class="io iconoir-multiple-pages" aria-hidden="true"></span>
-                Layers
+                Objects
               </div>
               <div class="workspace-tab-actions">
                 <button id="createLayerBtn" class="ds-btn ds-btn-sm" type="button">
@@ -2416,7 +2537,52 @@
             </div>
           </div>
           <div class="workspace-section-body">
-            <div id="layerList" class="layer-list" aria-label="Map layers"></div>
+            <div class="object-filter-row">
+              <input id="objectSearch" class="ds-input" type="search" placeholder="Find objects" aria-label="Find objects" />
+              <select id="objectFilter" class="ds-select" aria-label="Object type filter"><option value="all">All</option><option value="pin">Pins</option><option value="drawing">Drawings</option></select>
+            </div>
+            <div id="layerList" class="layer-list" role="tree" aria-label="Map objects"></div>
+            <section id="objectInspector" class="control-section ds-stack" hidden>
+              <div id="objectInspectorKind" class="control-section-title"></div>
+              <div id="objectInspectorName"></div>
+              <div id="objectInspectorDetails"></div>
+              <div id="layerInspectorControls" class="ds-stack" hidden>
+                <label><input id="inspectorLayerVisible" type="checkbox" /> Visible</label>
+                <label><input id="inspectorLayerLocked" type="checkbox" /> Locked</label>
+              </div>
+              <button id="objectInspectorEdit" type="button" class="ds-btn ds-btn-sm">Edit</button>
+            </section>
+            <section id="drawingPanel" class="control-section ds-stack" aria-label="Drawing tools">
+              <div id="workspaceTools" role="group" aria-label="Canvas tools">
+                <button type="button" class="ds-btn ds-icon-btn" data-canvas-tool="select" aria-label="Select" title="Select" aria-pressed="true"><span class="io iconoir-cursor-pointer" aria-hidden="true"></span></button>
+                <button type="button" class="ds-btn ds-icon-btn" data-canvas-tool="pin" aria-label="Pin" title="Place pin" aria-pressed="false"><span class="io iconoir-map-pin" aria-hidden="true"></span></button>
+                <button type="button" class="ds-btn ds-icon-btn" data-canvas-tool="path" aria-label="Draw" title="Draw" aria-pressed="false"><span class="io iconoir-edit-pencil" aria-hidden="true"></span></button>
+                <button type="button" class="ds-btn ds-icon-btn" data-canvas-tool="pan" aria-label="Pan" title="Pan" aria-pressed="false"><span class="io iconoir-drag-hand-gesture" aria-hidden="true"></span></button>
+              </div>
+              <div class="control-section-title">Drawings</div>
+              <label class="control-field no-readout" for="drawingLayer">
+                <span>Layer</span><select id="drawingLayer" class="ds-select"></select>
+              </label>
+              <div class="toolbar-actions" role="group" aria-label="Drawing tools">
+                <button type="button" class="ds-btn ds-btn-sm" data-draw-tool="line" aria-pressed="false" title="Place two endpoints"><span class="io iconoir-edit-pencil" aria-hidden="true"></span>Line</button>
+                <button type="button" class="ds-btn ds-btn-sm" data-draw-tool="path" aria-pressed="false" title="Place path points, then Finish"><span class="io iconoir-edit-pencil" aria-hidden="true"></span>Path</button>
+                <button type="button" id="drawingCancel" class="ds-btn ds-btn-sm" disabled>Cancel</button>
+                <button type="button" id="drawingFinish" class="ds-btn ds-btn-sm" disabled>Finish</button>
+              </div>
+              <output id="drawingProgress" class="control-readout" aria-live="polite"></output>
+              <label class="control-field no-readout" for="drawingSelection" hidden><span>Drawing</span><select id="drawingSelection" class="ds-select"><option value="">None</option></select></label>
+              <div id="drawingEditor" class="ds-stack" hidden>
+                <div id="drawingEditorTitle" class="control-section-title">Drawing</div>
+                <label class="control-field no-readout" for="drawingName"><span>Name</span><input id="drawingName" class="ds-input" type="text" /></label>
+                <label class="control-field no-readout" for="drawingColor"><span>Color</span><input id="drawingColor" class="ds-input" type="color" value="#55bb99" /></label>
+                <label class="control-field no-readout" for="drawingWidth"><span>Width</span><input id="drawingWidth" class="ds-input" type="number" min="1" max="12" value="2" /></label>
+                <div id="drawingPoints" class="ds-stack" aria-label="Drawing points"></div>
+                <div class="toolbar-actions">
+                  <button type="button" id="drawingDelete" class="ds-btn ds-btn-sm ds-btn-danger">Delete</button>
+                  <button type="button" id="drawingApply" class="ds-btn ds-btn-sm">Apply</button>
+                </div>
+              </div>
+            </section>
           </div>
         </div>
 
@@ -3000,6 +3166,17 @@
       aria-live="polite"
     ></div>
 
+    <dialog id="draftResolutionDialog" class="ds-modal" aria-labelledby="draftResolutionTitle">
+      <div class="ds-modal-panel ds-stack">
+        <h2 id="draftResolutionTitle">Unfinished work</h2>
+        <div class="ds-toolbar">
+          <button type="button" class="ds-btn" data-draft-choice="keep" autofocus>Keep editing</button>
+          <button type="button" class="ds-btn ds-btn-danger" data-draft-choice="discard">Discard</button>
+          <button type="button" class="ds-btn ds-btn-primary" data-draft-choice="finish">Finish</button>
+        </div>
+      </div>
+    </dialog>
+
     <dialog id="confirmDialog" class="ds-modal">
       <div class="ds-modal-panel ds-stack">
         <div class="app-modal-copy">
@@ -3077,6 +3254,10 @@
     <script src="./design-system/js/theme-registry.js"></script>
     <script src="./design-system/js/theme-selector.js"></script>
     <script src="./src/map-data.js"></script>
+    <script src="./src/workspace-state.js"></script>
+    <script src="./src/object-outline.js"></script>
+    <script src="./src/layer-reorder.js"></script>
+    <script src="./src/drawing-tools.js"></script>
     <script>
       const {
         DEFAULT_LAYER_ID,
@@ -3113,18 +3294,18 @@
       const ctx = canvas.getContext("2d");
 
       canvas.addEventListener("dblclick", (e) => {
+        if (drawingTools?.active() || workspaceState.get().tool === "pan") return;
         const rect = canvas.getBoundingClientRect();
         const mx = e.clientX - rect.left;
         const my = e.clientY - rect.top;
         pins.forEach((pin, i) => {
+          if (!isPinVisible(pin)) return;
           const sx = offsetX + pin.x * zoom;
           const sy = offsetY + pin.z * zoom;
           const dx = mx - sx,
             dy = my - sy;
           if (Math.hypot(dx, dy) < 10) {
-            selectedPinIndex = i;
-            updatePinListHighlight();
-            editPin(i);
+            editPin(i, { center: false });
           }
         });
       });
@@ -3151,6 +3332,7 @@
           y: 64,
           id: "spawn",
           label: "Spawn Point",
+          uid: "pin-spawn",
           description: "Where you begin.",
           icon: "",
           layerId: DEFAULT_LAYER_ID,
@@ -3158,6 +3340,12 @@
       ];
       let layers = [createDefaultLayer()];
       let drawings = [];
+      let drawingTools = null;
+      const workspaceState = window.MapitMineWorkspace.create();
+      const collapsedObjectLayers = new Set();
+      const filteredCollapsedObjectLayers = new Set();
+      let objectOutline = null;
+      let layerReorder = null;
       let currentEditIndex = null;
       let isPlacingPin = false;
       let tempPin = null;
@@ -3361,6 +3549,87 @@
         window.setTimeout(() => toast.remove(), ms);
       }
 
+      function resolveWorkspaceDraft({ title, canFinish, finishText = "Finish" }) {
+        const dialog = document.getElementById("draftResolutionDialog");
+        if (dialog.open) return Promise.resolve("keep");
+        document.getElementById("draftResolutionTitle").textContent = title;
+        const finish = dialog.querySelector('[data-draft-choice="finish"]');
+        finish.disabled = !canFinish;
+        finish.textContent = finishText;
+        return new Promise((resolve) => {
+          const complete = (choice) => {
+            dialog.removeEventListener("click", onClick);
+            dialog.removeEventListener("cancel", onCancel);
+            dialog.close();
+            resolve(choice);
+          };
+          const onClick = (event) => {
+            const button = event.target.closest("[data-draft-choice]");
+            if (button && !button.disabled) complete(button.dataset.draftChoice);
+          };
+          const onCancel = (event) => { event.preventDefault(); complete("keep"); };
+          dialog.addEventListener("click", onClick);
+          dialog.addEventListener("cancel", onCancel);
+          dialog.showModal();
+        });
+      }
+
+      async function resolvePinToolDraft() {
+        if (pinEditorPanel.style.display === "none" || (!tempPin && currentEditIndex === null)) return true;
+        const draft = getPinEditorDraft();
+        const changed = currentEditIndex === null ||
+          JSON.stringify(getComparablePinDraft(draft)) !== JSON.stringify(pinEditorOriginalDraft);
+        if (!changed) { closePinEditor(); return true; }
+        const choice = await resolveWorkspaceDraft({
+          title: "Unfinished pin", canFinish: draft.valid && !isLayerLocked(draft.layerId), finishText: "Save pin",
+        });
+        if (choice === "keep") return false;
+        if (choice === "finish") {
+          submitPinEditor();
+          return pinEditorPanel.style.display === "none";
+        }
+        closePinEditor();
+        return true;
+      }
+
+      let workspaceToolSwitching = false;
+      let pendingChangeResolution = false;
+      async function resolvePendingWorkspaceChanges() {
+        if (pendingChangeResolution || document.getElementById("draftResolutionDialog").open) return false;
+        pendingChangeResolution = true;
+        try {
+          if (drawingTools && !await drawingTools.leave()) return false;
+          return await resolvePinToolDraft();
+        } finally { pendingChangeResolution = false; }
+      }
+
+      async function requestPinPlacement(clientX, clientY, x, z, typeID = "", icon = "") {
+        if (!await resolvePendingWorkspaceChanges()) return false;
+        openPinEditor(clientX, clientY, x, z, typeID, icon);
+        return true;
+      }
+
+      async function requestWorkspaceTool(tool) {
+        if (workspaceToolSwitching || document.getElementById("draftResolutionDialog").open) return;
+        if (!["select", "pin", "pan", "line", "path"].includes(tool)) return;
+        if (["pin", "line", "path"].includes(tool) && !currentMapName) return;
+        if (tool === "pin" && !layers.some((layer) => layer.visible && !layer.locked)) {
+          showToast("Show and unlock a layer before placing a pin.", "warn");
+          return;
+        }
+        workspaceToolSwitching = true;
+        try {
+          if (["line", "path"].includes(tool)) { await drawingTools.start(tool); return; }
+          if (!await drawingTools.leave() || !await resolvePinToolDraft()) return;
+          closePinEditor();
+          isPlacingPin = tool === "pin";
+          workspaceState.setTool(tool);
+          canvas.style.cursor = tool === "pan" ? "grab" : tool === "pin" ? "crosshair" : "";
+          document.body.style.cursor = "";
+          updateStatusStrip();
+        } finally { workspaceToolSwitching = false; }
+      }
+
       function showConfirmDialog({
         title = "Confirm action",
         message = "",
@@ -3447,7 +3716,7 @@
         updateStatusStrip();
       }
 
-      function renameCurrentMap(newNameRaw) {
+      async function renameCurrentMap(newNameRaw) {
         if (!currentMapName) {
           showToast("No map selected.", "warn");
           return false;
@@ -3463,6 +3732,7 @@
           showToast("A map with that name already exists.", "warn");
           return false;
         }
+        if (!await resolvePendingWorkspaceChanges()) return false;
 
         const oldMap = currentMapName;
         const data = localStorage.getItem(`map:${oldMap}`);
@@ -3486,9 +3756,10 @@
       }
 
       window.addEventListener("keydown", (e) => {
+        if (e.defaultPrevented || e.isComposing || e.ctrlKey || e.metaKey || e.altKey) return;
+        if (e.target.closest?.("input, textarea, select, dialog")) return;
         if (e.key === "p") {
-          isPlacingPin = true;
-          document.body.style.cursor = "crosshair";
+          requestWorkspaceTool("pin");
         }
       });
 
@@ -3501,6 +3772,7 @@
           confirmText: "Delete",
         });
         if (!confirmDelete) return;
+        if (!await resolvePendingWorkspaceChanges()) return;
         pushHistoryState("Delete Map", "library");
 
         localStorage.removeItem(mapKey(name));
@@ -3514,28 +3786,26 @@
           loadMapNames();
           loadMap(currentMapName, { preserveHistory: true });
         } else {
-          currentMapName = null;
-          setCurrentMapNameUI(null);
-          pins = [];
-          layers = [createDefaultLayer()];
-          drawings = [];
+          loadMap(null, { preserveHistory: true });
           loadMapNames();
           updateOverlayVisibility();
         }
         showToast("Map deleted.");
       }
 
-      function duplicateMapByName(name = currentMapName) {
+      async function duplicateMapByName(name = currentMapName) {
         if (!name || !localStorage.getItem(mapKey(name))) {
             showToast("No map selected.", "warn");
             return;
           }
 
+        if (!await resolvePendingWorkspaceChanges()) return;
         const duplicateName = dedupeMapName(`${name} Copy`);
         const sourceDocument =
           name === currentMapName
             ? getCurrentMapDocument()
             : readStoredMapDocument(name);
+        if (!sourceDocument) { showToast("Cannot duplicate an unsupported map version.", "error"); return; }
         pushHistoryState("Duplicate Map", "library");
         writeStoredMapDocument(duplicateName, sourceDocument);
         setMapMeta(duplicateName, {
@@ -3613,6 +3883,17 @@
         if (!name) return null;
         const normalized = normalizeMapDocument(document);
         if (!normalized) return null;
+        const original = localStorage.getItem(mapKey(name));
+        if (original !== null) {
+          const source = JSON.parse(original);
+          if (Number(source?.version) > MAP_DOCUMENT_VERSION) {
+            throw new Error("Refusing to overwrite a newer map document.");
+          }
+          if ((Array.isArray(source) || Number(source?.version || 1) < MAP_DOCUMENT_VERSION) &&
+              localStorage.getItem(`mapbackup:${name}`) === null) {
+            localStorage.setItem(`mapbackup:${name}`, original);
+          }
+        }
         localStorage.setItem(mapKey(name), JSON.stringify(normalized));
         return normalized;
       }
@@ -3628,11 +3909,13 @@
       }
 
       function applyMapDocument(document) {
+        drawingTools?.reset();
         const normalized = normalizeMapDocument(document);
         if (!normalized) return false;
         pins = normalized.pins;
         layers = normalized.layers;
         drawings = normalized.drawings;
+        workspaceState.reset();
         return true;
       }
 
@@ -3669,7 +3952,12 @@
         return id;
       }
 
-      function commitLayerChange(label, change) {
+      async function commitLayerChange(label, change, { mapName = currentMapName, valid = () => true } = {}) {
+        if (!mapName || mapName !== currentMapName || !valid()) return false;
+        if (!await resolvePendingWorkspaceChanges() || mapName !== currentMapName || !valid()) {
+          renderObjectInspector();
+          return false;
+        }
         pushHistoryState(label);
         change();
         markDirty();
@@ -3678,9 +3966,12 @@
         populatePinLayerOptions();
         renderPinList();
         draw();
+        return true;
       }
 
       async function createLayer() {
+        const mapName = currentMapName;
+        if (!mapName) return false;
         const label = await showTextPrompt({
           title: "New layer",
           label: "Layer name",
@@ -3689,7 +3980,7 @@
         });
         const trimmed = label?.trim();
         if (!trimmed) return;
-        commitLayerChange("Create Layer", () => {
+        return commitLayerChange("Create Layer", () => {
           layers.push({
             id: createLayerId(trimmed),
             label: trimmed,
@@ -3697,10 +3988,11 @@
             locked: false,
             color: "",
           });
-        });
+        }, { mapName });
       }
 
       async function renameLayer(layerId) {
+        const mapName = currentMapName;
         const layer = getLayer(layerId);
         if (!layer) return;
         const label = await showTextPrompt({
@@ -3711,24 +4003,24 @@
         });
         const trimmed = label?.trim();
         if (!trimmed || trimmed === layer.label) return;
-        commitLayerChange("Rename Layer", () => {
+        return commitLayerChange("Rename Layer", () => {
           layer.label = trimmed;
-        });
+        }, { mapName, valid: () => getLayer(layerId) === layer });
       }
 
       function moveLayer(layerId, direction) {
         const index = layers.findIndex((layer) => layer.id === layerId);
         const target = index + direction;
         if (index < 0 || target < 0 || target >= layers.length) return;
-        commitLayerChange("Reorder Layers", () => {
+        return commitLayerChange("Reorder Layers", () => {
           [layers[index], layers[target]] = [layers[target], layers[index]];
-        });
+        }, { valid: () => layers[index]?.id === layerId && target < layers.length });
       }
 
       function toggleLayerVisibility(layerId) {
         const layer = getLayer(layerId);
         if (!layer) return;
-        commitLayerChange("Toggle Layer Visibility", () => {
+        return commitLayerChange("Toggle Layer Visibility", () => {
           layer.visible = !layer.visible;
           if (
             selectedPinIndex !== null &&
@@ -3736,21 +4028,19 @@
           ) {
             selectedPinIndex = null;
           }
-        });
+        }, { valid: () => getLayer(layerId) === layer });
       }
 
       function toggleLayerLock(layerId) {
         const layer = getLayer(layerId);
         if (!layer) return;
-        commitLayerChange("Toggle Layer Lock", () => {
+        return commitLayerChange("Toggle Layer Lock", () => {
           layer.locked = !layer.locked;
-          if (currentEditIndex !== null && isPinLocked(pins[currentEditIndex])) {
-            closePinEditor();
-          }
-        });
+        }, { valid: () => getLayer(layerId) === layer });
       }
 
       async function deleteLayer(layerId) {
+        const mapName = currentMapName;
         if (layerId === DEFAULT_LAYER_ID) {
           showToast("The default layer cannot be deleted.", "warn");
           return;
@@ -3763,7 +4053,7 @@
           confirmText: "Delete",
         });
         if (!confirmed) return;
-        commitLayerChange("Delete Layer", () => {
+        return commitLayerChange("Delete Layer", () => {
           pins.forEach((pin) => {
             if (pin.layerId === layerId) pin.layerId = DEFAULT_LAYER_ID;
           });
@@ -3771,16 +4061,19 @@
             if (drawing.layerId === layerId) drawing.layerId = DEFAULT_LAYER_ID;
           });
           layers = layers.filter((entry) => entry.id !== layerId);
-        });
+        }, { mapName, valid: () => getLayer(layerId) === layer });
       }
 
       function getLayerActionItems(layerId) {
+        const index = layers.findIndex((layer) => layer.id === layerId);
         const items = [
           {
             label: "Rename",
             iconClass: "iconoir-edit-pencil",
             action: () => renameLayer(layerId),
           },
+          { label: "Move Up", iconClass: "iconoir-nav-arrow-up", disabled: index <= 0, action: () => moveLayer(layerId, -1) },
+          { label: "Move Down", iconClass: "iconoir-nav-arrow-down", disabled: index < 0 || index === layers.length - 1, action: () => moveLayer(layerId, 1) },
         ];
         if (layerId !== DEFAULT_LAYER_ID) {
           items.push({
@@ -3792,26 +4085,62 @@
         return items;
       }
 
+      function reorderLayer(source, target, edge, mapName = currentMapName) {
+        const ids = layers.map((layer) => layer.id);
+        const order = window.MapitMineLayerReorder.plan(ids, source, target, edge);
+        if (!order) return false;
+        return commitLayerChange("Reorder Layers", () => {
+          layers = order.map((id) => getLayer(id));
+        }, { mapName, valid: () => ids.length === layers.length && ids.every((id, index) => layers[index]?.id === id) });
+      }
+
+      function getCollapsedOutlineLayers() {
+        const search = document.getElementById("objectSearch")?.value.trim() || "";
+        const filter = document.getElementById("objectFilter")?.value || "all";
+        return search || filter !== "all" ? filteredCollapsedObjectLayers : collapsedObjectLayers;
+      }
+
       function renderLayers() {
+        syncWorkspaceToolControls();
+        const reference = workspaceState.get().selection;
+        if (reference && !(reference.kind === "pin" ? pins.some((pin) => pin.uid === reference.id)
+          : reference.kind === "drawing" ? drawings.some((drawing) => drawing.id === reference.id)
+          : layers.some((layer) => layer.id === reference.id))) workspaceState.select(null);
+        drawingTools?.refresh();
         const container = document.getElementById("layerList");
         if (!container) return;
+        layerReorder?.cancel();
+        objectOutline?.beforeRender();
         container.replaceChildren();
         if (!layers.length) {
           const empty = document.createElement("p");
           empty.className = "layer-empty";
           empty.textContent = "No layers";
           container.appendChild(empty);
+          objectOutline?.afterRender();
           return;
         }
 
-        layers.forEach((layer, index) => {
+        layers.forEach((layer) => {
+          const branch = document.createElement("div");
+          branch.className = "object-layer";
+          branch.setAttribute("role", "treeitem");
+          branch.setAttribute("aria-level", "1");
+          branch.setAttribute("aria-label", layer.label);
+          branch.setAttribute("aria-selected", String(reference?.kind === "layer" && reference.id === layer.id));
+          branch.classList.toggle("is-selected", reference?.kind === "layer" && reference.id === layer.id);
+          branch.dataset.objectKind = "layer";
+          branch.dataset.objectId = layer.id;
+          branch.dataset.outlineName = layer.label;
+          branch.tabIndex = -1;
           const row = document.createElement("div");
           row.className = `layer-row${layer.visible ? "" : " is-hidden-layer"}`;
           row.dataset.layerId = layer.id;
 
           const visibility = document.createElement("button");
-          visibility.className = "ds-btn ds-btn-icon ds-icon-action ds-btn-sm";
+          visibility.className = "layer-action";
           visibility.type = "button";
+          visibility.dataset.outlineAction = "visibility";
           visibility.title = layer.visible ? "Hide layer" : "Show layer";
           visibility.setAttribute("aria-label", visibility.title);
           visibility.setAttribute("aria-pressed", String(layer.visible));
@@ -3819,8 +4148,9 @@
           visibility.addEventListener("click", () => toggleLayerVisibility(layer.id));
 
           const lock = document.createElement("button");
-          lock.className = "ds-btn ds-btn-icon ds-icon-action ds-btn-sm";
+          lock.className = "layer-action";
           lock.type = "button";
+          lock.dataset.outlineAction = "lock";
           lock.title = layer.locked ? "Unlock layer" : "Lock layer";
           lock.setAttribute("aria-label", lock.title);
           lock.setAttribute("aria-pressed", String(layer.locked));
@@ -3829,7 +4159,13 @@
 
           const copy = document.createElement("div");
           copy.className = "layer-copy";
-          const name = document.createElement("span");
+          const name = document.createElement("button");
+          name.type = "button";
+          name.tabIndex = -1;
+          name.addEventListener("click", () => {
+            branch.focus();
+            selectWorkspaceObject({ kind: "layer", id: layer.id });
+          });
           name.className = "layer-name";
           name.textContent = layer.label;
           const count = document.createElement("span");
@@ -3843,34 +4179,125 @@
 
           const actions = document.createElement("div");
           actions.className = "layer-row-actions";
-          for (const [direction, icon, title] of [
-            [-1, "iconoir-nav-arrow-up", "Move layer up"],
-            [1, "iconoir-nav-arrow-down", "Move layer down"],
-          ]) {
-            const button = document.createElement("button");
-            button.className = "ds-btn ds-btn-icon ds-icon-action ds-btn-sm";
-            button.type = "button";
-            button.title = title;
-            button.setAttribute("aria-label", title);
-            button.disabled = direction < 0 ? index === 0 : index === layers.length - 1;
-            button.innerHTML = `<span class="io ${icon}" aria-hidden="true"></span>`;
-            button.addEventListener("click", () => moveLayer(layer.id, direction));
-            actions.appendChild(button);
-          }
           const more = document.createElement("button");
-          more.className = "ds-btn ds-btn-icon ds-icon-action ds-btn-sm";
+          more.className = "layer-action";
           more.type = "button";
+          more.dataset.outlineAction = "more";
           more.title = "Layer actions";
           more.setAttribute("aria-label", "Layer actions");
           more.innerHTML = '<span class="io iconoir-more-horiz" aria-hidden="true"></span>';
-          more.addEventListener("click", () => {
+          more.addEventListener("click", (event) => {
+            event.stopPropagation();
             const rect = more.getBoundingClientRect();
             showContextMenu(getLayerActionItems(layer.id), rect.right, rect.bottom + 4);
           });
           actions.appendChild(more);
-          row.append(visibility, lock, copy, actions);
-          container.appendChild(row);
+          actions.append(lock, visibility);
+          const expand = document.createElement("button");
+          expand.className = "layer-action";
+          expand.type = "button";
+          expand.dataset.outlineAction = "expand";
+          const collapsed = getCollapsedOutlineLayers();
+          expand.title = collapsed.has(layer.id) ? "Expand layer" : "Collapse layer";
+          expand.setAttribute("aria-label", expand.title);
+          expand.setAttribute("aria-expanded", String(!collapsed.has(layer.id)));
+          branch.setAttribute("aria-expanded", String(!collapsed.has(layer.id)));
+          expand.innerHTML = `<span class="io iconoir-nav-arrow-down layer-disclosure${collapsed.has(layer.id) ? " is-collapsed" : ""}" aria-hidden="true"></span>`;
+          expand.addEventListener("click", () => {
+            if (collapsed.has(layer.id)) collapsed.delete(layer.id);
+            else collapsed.add(layer.id);
+            renderLayers();
+          });
+          actions.appendChild(expand);
+          row.append(copy, actions);
+          branch.appendChild(row);
+          container.appendChild(branch);
+          const children = document.createElement("div");
+          children.className = "object-children";
+          children.setAttribute("role", "group");
+          const search = document.getElementById("objectSearch")?.value.trim().toLowerCase() || "";
+          const filter = document.getElementById("objectFilter")?.value || "all";
+          children.hidden = collapsed.has(layer.id);
+          const entries = [
+            ...pins.map((pin) => ({ kind: "pin", id: pin.uid, name: pin.label || "Untitled pin", object: pin })),
+            ...drawings.map((drawing) => ({ kind: "drawing", id: drawing.id, name: drawing.name || drawing.type, object: drawing })),
+          ].filter((entry) => entry.object.layerId === layer.id &&
+            (filter === "all" || filter === entry.kind) &&
+            (!search || `${entry.name} ${entry.object.id || ""} ${layer.label}`.toLowerCase().includes(search)));
+          entries.forEach((entry) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "object-entry item-card";
+            button.dataset.objectId = entry.id;
+            button.dataset.objectKind = entry.kind;
+            button.dataset.parentKey = `layer:${layer.id}`;
+            button.dataset.outlineName = entry.name;
+            button.setAttribute("role", "treeitem");
+            button.setAttribute("aria-level", "2");
+            button.tabIndex = -1;
+            const selected = workspaceState.get().selection;
+            button.classList.toggle("is-selected", selected?.kind === entry.kind && selected?.id === entry.id);
+            button.setAttribute("aria-selected", String(selected?.kind === entry.kind && selected?.id === entry.id));
+            const mark = document.createElement("span");
+            mark.className = `io ${entry.kind === "pin" ? "iconoir-map-pin" : "iconoir-edit-pencil"}`;
+            mark.setAttribute("aria-hidden", "true");
+            const title = document.createElement("span"); title.className = "object-name"; title.textContent = entry.name;
+            const status = document.createElement("span"); status.className = "object-state";
+            status.textContent = !layer.visible ? "Hidden" : layer.locked ? "Locked" : entry.kind === "drawing" ? entry.object.type : "";
+            button.append(mark, title, status);
+            button.addEventListener("click", () => selectWorkspaceObject({ kind: entry.kind, id: entry.id }));
+            button.addEventListener("dblclick", async () => {
+              if (!await selectWorkspaceObject({ kind: entry.kind, id: entry.id })) return;
+              if (entry.kind === "pin") editPin(pins.findIndex((pin) => pin.uid === entry.id), { center: true });
+              else document.getElementById("drawingName")?.focus();
+            });
+            children.appendChild(button);
+          });
+          if (!entries.length) {
+            const empty = document.createElement("span"); empty.className = "layer-count";
+            empty.textContent = search || filter !== "all" ? "No matching objects" : "Empty layer";
+            children.appendChild(empty);
+          }
+          branch.appendChild(children);
         });
+        objectOutline?.afterRender();
+        renderObjectInspector();
+      }
+
+      function renderObjectInspector() {
+        const selection = workspaceState.get().selection;
+        const object = selection?.kind === "pin" ? pins.find((pin) => pin.uid === selection.id)
+          : selection?.kind === "drawing" ? drawings.find((drawing) => drawing.id === selection.id)
+          : selection?.kind === "layer" ? getLayer(selection.id) : null;
+        const panel = document.getElementById("objectInspector");
+        const pinEditing = pinEditorPanel && pinEditorPanel.style.display === "block";
+        panel.hidden = !object || selection.kind === "drawing" || pinEditing;
+        syncContextInspector();
+        if (!object || selection.kind === "drawing") return;
+        document.getElementById("objectInspectorKind").textContent = selection.kind === "pin" ? "Pin" : "Layer";
+        document.getElementById("objectInspectorName").textContent = object.label || object.name || "Untitled";
+        const edit = document.getElementById("objectInspectorEdit");
+        edit.disabled = selection.kind === "pin" && (isPinLocked(object) || !isPinVisible(object));
+        edit.textContent = selection.kind === "pin" ? "Edit pin" : "Rename layer";
+        document.getElementById("objectInspectorDetails").textContent = selection.kind === "pin"
+          ? `X ${object.x}   Y ${object.y ?? "-"}   Z ${object.z} | ${getLayer(object.layerId)?.label || "Pins"}${object.description ? ` | ${object.description}` : ""}`
+          : `${pins.filter((pin) => pin.layerId === object.id).length} pins | ${drawings.filter((drawing) => drawing.layerId === object.id).length} drawings`;
+        document.getElementById("layerInspectorControls").hidden = selection.kind !== "layer";
+        document.getElementById("inspectorLayerVisible").checked = !!object.visible;
+        document.getElementById("inspectorLayerLocked").checked = !!object.locked;
+      }
+
+      async function selectWorkspaceObject(reference) {
+        const selected = workspaceState.get().selection;
+        if (reference && reference.kind === selected?.kind && reference.id === selected?.id) return true;
+        if (!await resolvePendingWorkspaceChanges()) return false;
+        workspaceState.select(reference);
+        renderObjectInspector();
+        if (reference && window.innerWidth <= 900) {
+          setWorkspaceCollapsed(true, false);
+          document.getElementById("inspectorClose")?.focus({ preventScroll: true });
+        }
+        return true;
       }
 
       function populatePinLayerOptions(selectedId) {
@@ -3896,7 +4323,8 @@
         return getUniqueMapName(baseName, mapExists);
       }
 
-      function saveMapAs(name, document) {
+      async function saveMapAs(name, document) {
+        if (!await resolvePendingWorkspaceChanges()) return null;
         const finalName = dedupeMapName(name);
         writeStoredMapDocument(finalName, document || []);
         currentMapName = finalName;
@@ -4019,9 +4447,16 @@
         gallery.querySelector("[data-map-rename-input]")?.select();
       }
 
-      function selectMapByName(name) {
-        if (name === currentMapName) return;
+      async function selectMapByName(name) {
+        if (name === currentMapName) return true;
+        if (!name) return false;
+        if (!readStoredMapDocument(name)) {
+          showToast("This map is invalid or uses a newer unsupported version. It was not opened or changed.", "error");
+          return false;
+        }
+        if (!await resolvePendingWorkspaceChanges()) return false;
         loadMap(name);
+        return true;
       }
 
       function saveSelectedMapToDisk() {
@@ -4029,8 +4464,8 @@
         else saveAsMapToDisk();
       }
 
-      function startMapCardRename(name) {
-        if (name !== currentMapName) selectMapByName(name);
+      async function startMapCardRename(name) {
+        if (name !== currentMapName && !await selectMapByName(name)) return;
         editingMapName = name;
         renderMapGallery();
       }
@@ -4047,17 +4482,17 @@
         }
       }
 
-      function runMapCardAction(actionName, name) {
+      async function runMapCardAction(actionName, name) {
         switch (actionName) {
           case "open":
             selectMapByName(name);
             break;
           case "save":
-            if (name !== currentMapName) selectMapByName(name);
+            if (name !== currentMapName && !await selectMapByName(name)) return;
             saveSelectedMapToDisk();
             break;
           case "save-as":
-            if (name !== currentMapName) selectMapByName(name);
+            if (name !== currentMapName && !await selectMapByName(name)) return;
             saveAsMapToDisk();
             break;
           case "open-disk":
@@ -4085,13 +4520,13 @@
         if (selected) {
           items.push({
             label: hasLiveFileLink ? "Save Linked" : "Save As Linked",
-            iconClass: "iconoir-save-floppy-disk",
+            iconClass: "iconoir-download",
             action: () => runMapCardAction("save", name),
           });
           if (hasLiveFileLink && window.showSaveFilePicker) {
             items.push({
               label: "Save As Linked",
-              iconClass: "iconoir-save-floppy-disk",
+              iconClass: "iconoir-download",
               action: () => runMapCardAction("save-as", name),
             });
           }
@@ -4227,12 +4662,25 @@
       function saveCurrentMap() {
         if (!currentMapName) return; // skip saving if no valid name
         writeStoredMapDocument(currentMapName, getCurrentMapDocument());
+        const selection = workspaceState.get().selection;
+        if (selection?.kind === "pin") {
+          const index = pins.findIndex((pin) => pin.uid === selection.id);
+          selectedPinIndex = index < 0 ? null : index;
+          if (index < 0) workspaceState.select(null);
+        }
         touchMapMeta(currentMapName);
         renderLayers();
         queueDiskSave();
       }
 
       function loadMap(name, { preserveHistory = false } = {}) {
+        const nextDocument = name ? readStoredMapDocument(name) : null;
+        if (name && localStorage.getItem(mapKey(name)) !== null && !nextDocument) {
+          showToast("This map is invalid or uses a newer unsupported version. It was not opened or changed.", "error");
+          return;
+        }
+        closePinEditor();
+        drawingTools?.reset();
         currentFileHandle = null;
         if (window.__refreshSaveState) window.__refreshSaveState();
         if (window.__reflectLinkUI) window.__reflectLinkUI();
@@ -4253,7 +4701,7 @@
           return;
         }
 
-        const document = readStoredMapDocument(name);
+        const document = nextDocument;
         if (!document || !applyMapDocument(document)) {
           showToast("Error loading map data.", "error");
           pins = [];
@@ -4418,6 +4866,7 @@
           ctx.stroke();
         }
 
+        drawingTools?.render(ctx);
         for (let i = 0; i < pins.length; i++) {
           if (!isPinVisible(pins[i])) continue;
           if (i !== hoveredPinIndex)
@@ -5247,7 +5696,7 @@
           },
           {
             label: "Center on Pin",
-            iconClass: "iconoir-crosshair",
+            iconClass: "iconoir-map-pin",
             action: () => centerOnPin(pin),
           },
           {
@@ -5433,7 +5882,8 @@
       }
 
       function getActiveToolLabel() {
-        if (isPanning) return "Pan";
+        if (drawingTools?.active()) return "Draw";
+        if (isPanning || workspaceState.get().tool === "pan") return "Pan";
         if (isPlacingPin) return "Place Pin";
         if (crosshairMode) return "Crosshair";
         if (currentEditIndex !== null) return "Edit Pin";
@@ -5451,7 +5901,7 @@
             const name = key.slice(4);
             return {
               name,
-              document: readStoredMapDocument(name),
+              raw: localStorage.getItem(key),
               meta: getMapMeta(name),
             };
           })
@@ -5463,6 +5913,7 @@
           scope,
           currentMapName: currentMapName || null,
           selectedPinIndex,
+          selection: workspaceState.get().selection,
           settings: collectSettingsSnapshot(),
         };
         if (scope === "library") {
@@ -5518,10 +5969,8 @@
               .forEach((key) => localStorage.removeItem(key));
 
             (snapshot.maps || []).forEach((entry) => {
-              writeStoredMapDocument(
-                entry.name,
-                entry.document || entry.pins || [],
-              );
+              if (typeof entry.raw === "string") localStorage.setItem(mapKey(entry.name), entry.raw);
+              else writeStoredMapDocument(entry.name, entry.document || entry.pins || []);
               if (entry.meta) setMapMeta(entry.name, entry.meta);
             });
 
@@ -5562,6 +6011,9 @@
             ? snapshot.selectedPinIndex
             : null;
           hoveredPinIndex = null;
+          const reference = snapshot.selection || (pins[selectedPinIndex] ? { kind: "pin", id: pins[selectedPinIndex].uid } : null);
+          workspaceState.select(reference);
+          renderLayers();
           markDirty();
           draw();
         } finally {
@@ -5569,8 +6021,9 @@
         }
       }
 
-      function undoPinsChange() {
+      async function undoPinsChange() {
         if (undoStack.length === 0) return;
+        if (!await resolvePendingWorkspaceChanges() || undoStack.length === 0) return;
         const entry = undoStack.pop();
         const scope = entry.scope || entry.snapshot?.scope || "library";
         redoStack.push({
@@ -5583,8 +6036,9 @@
         showToast(`Undo: ${entry.label}`);
       }
 
-      function redoPinsChange() {
+      async function redoPinsChange() {
         if (redoStack.length === 0) return;
+        if (!await resolvePendingWorkspaceChanges() || redoStack.length === 0) return;
         const entry = redoStack.pop();
         const scope = entry.scope || entry.snapshot?.scope || "library";
         undoStack.push({
@@ -5792,10 +6246,10 @@
 
           // Single click centers; double click opens editor without an extra camera jump.
           let cardClickTimer = null;
-          item.addEventListener("click", (event) => {
+          item.addEventListener("click", async (event) => {
             if (event.target.closest("button")) return;
-            selectedPinIndex = index;
-            updatePinListHighlight();
+            if (!await selectWorkspaceObject({ kind: "pin", id: pin.uid })) return;
+            if (cardClickTimer) window.clearTimeout(cardClickTimer);
             cardClickTimer = window.setTimeout(() => {
               centerOnPin(pin);
               cardClickTimer = null;
@@ -5807,7 +6261,7 @@
               window.clearTimeout(cardClickTimer);
               cardClickTimer = null;
             }
-            editPin(index);
+            editPin(index, { center: true });
           });
           item.addEventListener("contextmenu", (event) => {
             event.preventDefault();
@@ -5819,7 +6273,7 @@
             const key = event.key.toLowerCase();
             if (key === "enter") {
               event.preventDefault();
-              editPin(index);
+              editPin(index, { center: true });
             } else if (key === "c") {
               event.preventDefault();
               copyPinCoords(pin);
@@ -5876,6 +6330,11 @@
         draw();
       }
       function updatePinListHighlight() {
+        if (selectedPinIndex !== null && pins[selectedPinIndex]) {
+          workspaceState.select({ kind: "pin", id: pins[selectedPinIndex].uid });
+        } else if (workspaceState.get().selection?.kind === "pin") {
+          workspaceState.select(null);
+        }
         const pinCards = document.querySelectorAll(".pin-card");
         pinCards.forEach((card) => {
           const index = Number(card.dataset.index);
@@ -5981,6 +6440,7 @@
 
       function updatePinEditorState() {
         if (!pinEditorPanel || pinEditorPanel.style.display === "none") return;
+        renderObjectInspector();
         const draft = getPinEditorDraft();
         const mode = currentEditIndex !== null ? "Editing pin" : "New pin";
         const dirty = isPinEditorDraftDirty(draft);
@@ -6025,6 +6485,7 @@
         const panel =
           pinEditorPanel || document.getElementById("pinEditorPanel");
         if (!panel) return;
+        if (panel.closest("#contextInspector")) return;
         const clamped = clampPinEditorPosition(screenX, screenY);
         panel.style.left = `${clamped.x}px`;
         panel.style.top = `${clamped.y}px`;
@@ -6090,6 +6551,7 @@
         label = "",
       ) {
         const panel = document.getElementById("pinEditorPanel");
+        workspaceState.setTool("pin");
 
         // Convert world coordinates to canvas coordinates, then to screen position.
         const px = offsetX + worldX * zoom;
@@ -6144,7 +6606,7 @@
       function startPinPlacement(typeID) {
         const pinType = pinTypes.find((p) => p.id === typeID);
         if (!pinType) return;
-        openPinEditor(
+        requestPinPlacement(
           lastCursor.x,
           lastCursor.z,
           lastCursor.x,
@@ -6154,25 +6616,29 @@
         );
       }
 
-      function deletePin(index) {
+      async function deletePin(index) {
+        const uid = pins[index]?.uid;
+        if (!uid) return;
         if (isPinLocked(pins[index])) {
           showToast("Unlock this pin's layer before deleting it.", "warn");
           return;
         }
-        showConfirmDialog({
+        const confirmed = await showConfirmDialog({
           title: "Delete pin?",
           message: "This pin will be removed from the current map.",
           confirmText: "Delete",
-        }).then((confirmed) => {
-          if (!confirmed) return;
-          pushHistoryState("Delete Pin");
-          pins.splice(index, 1);
-          markDirty();
-          saveCurrentMap();
-          renderPinList();
-          draw();
-          showToast("Pin deleted.");
         });
+        if (!confirmed) return;
+        if (!await resolvePendingWorkspaceChanges()) return;
+        index = pins.findIndex((pin) => pin.uid === uid);
+        if (index < 0 || isPinLocked(pins[index])) return;
+        pushHistoryState("Delete Pin");
+        pins.splice(index, 1);
+        markDirty();
+        saveCurrentMap();
+        renderPinList();
+        draw();
+        showToast("Pin deleted.");
       }
 
       function closePinEditor(options = {}) {
@@ -6200,10 +6666,18 @@
         document.getElementById("pinEditorPanel").style.display = "none";
         document.body.style.cursor = "default";
         tempPin = null;
+        workspaceState.setTool("select");
+        renderObjectInspector();
         updateStatusStrip();
         draw();
       }
-      function editPin(index) {
+      async function editPin(index, { center = false } = {}) {
+        const uid = pins[index]?.uid;
+        if (!uid) return false;
+        if (currentEditIndex === index && pinEditorPanel.style.display === "block") return true;
+        if (!await resolvePendingWorkspaceChanges()) return false;
+        index = pins.findIndex((pin) => pin.uid === uid);
+        if (index < 0) return false;
         const pin = pins[index];
         if (isPinLocked(pin)) {
           showToast("Unlock this pin's layer before editing it.", "warn");
@@ -6215,7 +6689,7 @@
           y: pin.y ?? "",
           z: pin.z,
         };
-        centerOnPin(pin);
+        if (center) centerOnPin(pin);
 
         const screenX = canvas.width / 2;
         const screenY = canvas.height / 2;
@@ -6238,6 +6712,7 @@
 
         selectedPinIndex = index;
         updatePinEditorState();
+        updatePinListHighlight();
         draw();
         drawMinimap();
       }
@@ -6263,6 +6738,8 @@
           return;
         }
         const pinData = {
+          ...(currentEditIndex !== null ? pins[currentEditIndex] : {}),
+          uid: currentEditIndex !== null ? pins[currentEditIndex].uid : `pin-${crypto.randomUUID()}`,
           x: draft.x,
           y: draft.y,
           z: draft.z,
@@ -6274,6 +6751,10 @@
           layerId: draft.layerId,
         };
 
+        // Live pin dragging changes coordinates before Save; history needs the original position.
+        if (currentEditIndex !== null && pinEditOriginalSnapshot) {
+          pins[currentEditIndex] = { ...pins[currentEditIndex], ...pinEditOriginalSnapshot };
+        }
         pushHistoryState(currentEditIndex !== null ? "Edit Pin" : "Add Pin");
 
         if (currentEditIndex !== null) {
@@ -6294,6 +6775,7 @@
         tempPin = null;
         markDirty();
         saveCurrentMap();
+        workspaceState.select({ kind: "pin", id: pinData.uid });
         draw();
       }
 
@@ -6540,7 +7022,8 @@
         const document =
           mapName === currentMapName
             ? getCurrentMapDocument()
-            : readStoredMapDocument(mapName) || normalizeMapDocument([]);
+            : readStoredMapDocument(mapName);
+        if (!document) { showToast("Cannot export an unsupported map version.", "error"); return; }
         const payload = {
           ...document,
           version: MAP_DOCUMENT_VERSION,
@@ -6579,7 +7062,8 @@
         }
 
         // Import creates a new saved map as an unlinked copy.
-        const finalName = saveMapAs(parsed.name, parsed);
+        const finalName = await saveMapAs(parsed.name, parsed);
+        if (!finalName) return;
 
         // Apply settings if provided (optional)
         if (parsed.settings) {
@@ -6665,13 +7149,15 @@
             return;
           }
 
-          // Set app state
+          // Validate/write before changing active state, including version guards.
+          if (!await resolvePendingWorkspaceChanges()) return;
+          closePinEditor();
+          writeStoredMapDocument(parsed.name, parsed);
           applyMapDocument(parsed);
           currentMapName = parsed.name;
           currentFileHandle = handle;
 
           // Keep a library entry so it appears in the gallery without switching pins or breaking the link.
-          writeStoredMapDocument(parsed.name, parsed);
           updateMapMeta(parsed.name, {
             source: "disk",
             fileName: file.name,
@@ -6738,13 +7224,13 @@
           if (!handle) return;
 
           // Update the file link state and visible name.
-          currentFileHandle = handle;
           const newName = handle.name.replace(/\.json$/i, "");
+          writeStoredMapDocument(newName, getCurrentMapDocument());
+          currentFileHandle = handle;
           currentMapName = newName;
           setCurrentMapNameUI(newName);
 
           // Write the local library entry so the gallery matches what is on disk.
-          writeStoredMapDocument(newName, getCurrentMapDocument());
           updateMapMeta(newName, {
             source: "disk",
             fileName: handle.name,
@@ -6797,9 +7283,10 @@
 
         // Build items
         list.innerHTML = "";
-        items.forEach(({ label, action, iconClass }, index) => {
+        items.forEach(({ label, action, iconClass, disabled }, index) => {
           const li = document.createElement("li");
           li.setAttribute("role", "menuitem");
+          if (disabled) li.setAttribute("aria-disabled", "true");
           li.tabIndex = index === 0 ? 0 : -1;
           if (iconClass) {
             const icon = document.createElement("span");
@@ -6810,6 +7297,7 @@
           li.appendChild(document.createTextNode(label));
           const activate = (ev) => {
             ev?.stopPropagation();
+            if (disabled) return;
             try {
               action && action();
             } finally {
@@ -6872,6 +7360,7 @@
       window.addEventListener("click", hideContextMenu);
       window.addEventListener("keydown", (e) => {
         if (e.key !== "Escape") return;
+        if (e.target.closest?.("dialog")) return;
         const menu = document.getElementById("contextMenu");
         if (menu && menu.style.display !== "none") {
           hideContextMenu();
@@ -6884,6 +7373,17 @@
         }
         if (clearSelectedPin()) {
           e.preventDefault();
+          return;
+        }
+        if (workspaceState.get().selection) {
+          workspaceState.select(null);
+          e.preventDefault();
+          return;
+        }
+        if (["pan", "pin"].includes(workspaceState.get().tool)) {
+          e.preventDefault();
+          requestWorkspaceTool("select");
+          return;
         }
       });
 
@@ -6933,18 +7433,26 @@
       }
 
       function setDraggingUiState(active) {
+        if (active) {
+          panToolBeforeDrag = workspaceState.get().tool;
+          workspaceState.setTool("pan");
+        } else if (!active && workspaceState.get().tool === "pan") {
+          workspaceState.setTool(panToolBeforeDrag);
+        }
         document.body.classList.toggle("is-map-dragging", !!active);
       }
 
       function clearSelectedPin() {
         if (selectedPinIndex === null) return false;
         selectedPinIndex = null;
+        workspaceState.select(null);
         updatePinListHighlight();
         draw();
         return true;
       }
 
       pinEditorHeader?.addEventListener("mousedown", (e) => {
+        if (pinEditorHeader.closest("#contextInspector")) return;
         if (e.button !== 0) return;
         if (e.target.closest("button, input, select, textarea")) return;
         const panelRect = pinEditorPanel?.getBoundingClientRect();
@@ -6959,10 +7467,45 @@
       // Interaction: zoom, pan, click
       // mouse event listeners for panning, zoom, placing pins, hover cursor
       let touchPanPointerId = null;
+      let panToolBeforeDrag = "select";
+      let panOrigin = null;
+
+      function beginCanvasPan(clientX, clientY) {
+        suppressCanvasClick = false;
+        panOrigin = { x: clientX, y: clientY };
+        panStart = { ...panOrigin };
+      }
+
+      function moveCanvasPan(clientX, clientY) {
+        if (!panOrigin) return;
+        if (!isPanning) {
+          if (Math.hypot(clientX - panOrigin.x, clientY - panOrigin.y) < 4) return;
+          isPanning = true;
+          setDraggingUiState(true);
+        }
+        offsetX += clientX - panStart.x;
+        offsetY += clientY - panStart.y;
+        panStart = { x: clientX, y: clientY };
+        draw();
+      }
+
+      function endCanvasPan() {
+        panOrigin = null;
+        if (!isPanning) return;
+        suppressCanvasClick = true;
+        isPanning = false;
+        setDraggingUiState(false);
+      }
+
+      function consumeCanvasDragClick() {
+        if (!suppressCanvasClick) return false;
+        suppressCanvasClick = false;
+        return true;
+      }
 
       canvas.addEventListener("mousedown", (e) => {
         if (e.button !== 0) return;
-        const draggablePin = getEditablePinHit(e.clientX, e.clientY);
+        const draggablePin = workspaceState.get().tool === "pan" ? null : getEditablePinHit(e.clientX, e.clientY);
         if (draggablePin) {
           pinCanvasDragState = draggablePin;
           selectedPinIndex =
@@ -6971,17 +7514,13 @@
           draw();
           return;
         }
-        isPanning = true;
-        panStart = { x: e.clientX, y: e.clientY };
-        setDraggingUiState(true);
+        beginCanvasPan(e.clientX, e.clientY);
       });
 
       canvas.addEventListener("pointerdown", (e) => {
         if (e.pointerType !== "touch") return;
         touchPanPointerId = e.pointerId;
-        isPanning = true;
-        panStart = { x: e.clientX, y: e.clientY };
-        setDraggingUiState(true);
+        beginCanvasPan(e.clientX, e.clientY);
         try {
           canvas.setPointerCapture(e.pointerId);
         } catch {}
@@ -6989,27 +7528,22 @@
 
       canvas.addEventListener("pointermove", (e) => {
         if (e.pointerType !== "touch") return;
-        if (!isPanning || touchPanPointerId !== e.pointerId) return;
-        offsetX += e.clientX - panStart.x;
-        offsetY += e.clientY - panStart.y;
-        panStart = { x: e.clientX, y: e.clientY };
-        draw();
+        if (touchPanPointerId !== e.pointerId) return;
+        moveCanvasPan(e.clientX, e.clientY);
       });
 
       canvas.addEventListener("pointerup", (e) => {
         if (e.pointerType !== "touch") return;
         if (touchPanPointerId !== e.pointerId) return;
-        isPanning = false;
         touchPanPointerId = null;
-        setDraggingUiState(false);
+        endCanvasPan();
       });
 
       canvas.addEventListener("pointercancel", (e) => {
         if (e.pointerType !== "touch") return;
         if (touchPanPointerId !== e.pointerId) return;
-        isPanning = false;
         touchPanPointerId = null;
-        setDraggingUiState(false);
+        endCanvasPan();
       });
 
       window.addEventListener("mousemove", (e) => {
@@ -7039,11 +7573,7 @@
           draw();
           return;
         }
-        if (!isPanning) return;
-        offsetX += e.clientX - panStart.x;
-        offsetY += e.clientY - panStart.y;
-        panStart = { x: e.clientX, y: e.clientY };
-        draw();
+        if (touchPanPointerId === null) moveCanvasPan(e.clientX, e.clientY);
       });
 
       window.addEventListener("mouseup", () => {
@@ -7060,17 +7590,14 @@
           updateStatusStrip();
           return;
         }
-        if (!isPanning) return;
-        isPanning = false;
-        setDraggingUiState(false);
+        if (touchPanPointerId === null) endCanvasPan();
       });
 
       window.addEventListener("blur", () => {
         editorDragState = null;
         pinCanvasDragState = null;
-        if (!isPanning) return;
-        isPanning = false;
-        setDraggingUiState(false);
+        touchPanPointerId = null;
+        endCanvasPan();
       });
 
       canvas.addEventListener("mousemove", (e) => {
@@ -7152,11 +7679,13 @@
         updateStatusStrip();
       });
 
-      canvas.addEventListener("click", (e) => {
+      canvas.addEventListener("click", async (e) => {
         if (suppressCanvasClick) {
           suppressCanvasClick = false;
           return;
         }
+
+        if (workspaceState.get().tool === "pan") return;
 
         const rect = canvas.getBoundingClientRect();
         const mx = e.clientX - rect.left;
@@ -7173,7 +7702,12 @@
             break;
           }
         }
-        if (!isPlacingPin) {
+        const placing = isPlacingPin;
+        if (!placing && (tempPin || currentEditIndex !== null)) {
+          if (found === currentEditIndex) return;
+          if (!await resolvePendingWorkspaceChanges()) return;
+        }
+        if (!placing) {
           if (found === null) {
             clearSelectedPin();
           } else {
@@ -7187,7 +7721,7 @@
         const worldX = Math.round((mx - offsetX) / zoom);
         const worldZ = Math.round((my - offsetY) / zoom);
 
-        openPinEditor(e.clientX, e.clientY, worldX, worldZ);
+        if (!await requestPinPlacement(e.clientX, e.clientY, worldX, worldZ)) return;
 
         if (found !== null) {
           selectedPinIndex = found;
@@ -7358,6 +7892,7 @@
           name = `${base} (${suffix++})`;
         }
 
+        if (!await resolvePendingWorkspaceChanges()) return;
         pushHistoryState("Create Map", "library");
         currentMapName = name;
         pins = [];
@@ -7527,6 +8062,188 @@
       // Final init calls
       // loadMapNames(), draw(), resizeCanvas()
 
+      // Keep drawing commands available independently of workspace navigation.
+      const drawingPanel = document.getElementById("drawingPanel");
+      const contextInspector = document.createElement("aside");
+      contextInspector.id = "contextInspector";
+      contextInspector.className = "app-panel ds-stack";
+      contextInspector.setAttribute("aria-label", "Object properties");
+      contextInspector.hidden = true;
+      const inspectorHeader = document.createElement("div");
+      inspectorHeader.className = "inspector-header";
+      inspectorHeader.innerHTML = '<span id="contextInspectorTitle" class="control-section-title">Properties</span><button id="inspectorClose" type="button" class="ds-btn ds-btn-icon" title="Close properties" aria-label="Close properties"><span class="io iconoir-xmark" aria-hidden="true"></span></button>';
+      contextInspector.append(inspectorHeader, document.getElementById("objectInspector"), drawingPanel, pinEditorPanel);
+      document.body.appendChild(contextInspector);
+      document.getElementById("inspectorClose").addEventListener("click", async () => {
+        if (!await selectWorkspaceObject(null)) return;
+        if (!workspaceState.get().selection && window.innerWidth <= 900) setWorkspaceCollapsed(false, false);
+      });
+      const hud = document.getElementById("hud");
+      const historyTools = document.createElement("div");
+      historyTools.id = "historyTools";
+      historyTools.setAttribute("role", "group");
+      historyTools.setAttribute("aria-label", "History and view");
+      historyTools.append(...hud.children);
+      hud.append(document.getElementById("workspaceTools"), historyTools);
+      hud.setAttribute("role", "toolbar");
+      hud.setAttribute("aria-label", "Canvas tools and history");
+      drawingPanel.querySelector(".toolbar-actions").id = "drawingToolStrip";
+      const drawingCommands = document.createElement("div");
+      drawingCommands.id = "drawingCommands";
+      drawingCommands.setAttribute("role", "group");
+      drawingCommands.setAttribute("aria-label", "Drawing commands");
+      drawingCommands.append(
+        drawingPanel.querySelector('label[for="drawingLayer"]'),
+        document.getElementById("drawingToolStrip"),
+        document.getElementById("drawingProgress"),
+      );
+      hud.appendChild(drawingCommands);
+      drawingPanel.setAttribute("aria-label", "Drawing tools and properties");
+      drawingTools = window.MapitMineDrawing.install({
+        workspace: workspaceState,
+        canvas,
+        panel: document.getElementById("drawingPanel"),
+        tools: hud,
+        drawings: () => drawings,
+        layers: () => layers,
+        hasMap: () => !!currentMapName,
+        camera: () => ({ zoom, offsetX, offsetY }),
+        world: getWorldCoordsFromClient,
+        canSelect: () => !isPlacingPin && currentEditIndex === null && workspaceState.get().tool !== "pan",
+        consumeClick: consumeCanvasDragClick,
+        selectCanvasPin: (event) => {
+          selectedPinIndex = getHoveredPinIndex(event);
+          updatePinListHighlight();
+        },
+        pinHit: (event) => getHoveredPinIndex(event) !== null,
+        color: () => getRenderColors().pinTextColor,
+        redraw: draw,
+        history: pushHistoryState,
+        save: () => { markDirty(); saveCurrentMap(); renderLayers(); },
+        toast: showToast,
+        confirm: showConfirmDialog,
+        resolveDraft: resolveWorkspaceDraft,
+        prepareTool: resolvePinToolDraft,
+        closePinEditor,
+        openLayers: () => { setWorkspaceTab("layers", { openPanel: window.innerWidth > 760 }); },
+      });
+      let lastWorkspaceSelection = "";
+      function syncContextInspector() {
+        const inspector = document.getElementById("contextInspector");
+        if (!inspector) return;
+        const selection = workspaceState.get().selection;
+        const editing = pinEditorPanel.style.display === "block";
+        const key = editing ? `edit:${currentEditIndex ?? "new"}` : selection ? `${selection.kind}:${selection.id}` : "";
+        const changed = inspector.dataset.context !== key;
+        inspector.dataset.context = key;
+        inspector.hidden = !key;
+        document.getElementById("contextInspectorTitle").textContent = editing
+          ? currentEditIndex === null ? "New pin" : "Editing pin"
+          : selection?.kind === "drawing" ? "Drawing" : selection?.kind === "layer" ? "Layer" : "Pin";
+        document.getElementById("objectInspector").hidden = editing || !selection || selection.kind === "drawing";
+        drawingPanel.hidden = editing || selection?.kind !== "drawing";
+        if (key && changed && window.innerWidth <= 900) setWorkspaceCollapsed(true, false);
+      }
+      function syncWorkspaceToolControls() {
+        const tool = workspaceState.get().tool;
+        drawingPanel.dataset.tool = tool;
+        hud.dataset.tool = tool;
+        drawingPanel.hidden = workspaceState.get().selection?.kind !== "drawing";
+        syncContextInspector();
+        document.querySelectorAll("[data-canvas-tool]").forEach((button) => {
+          button.setAttribute("aria-pressed", String(button.dataset.canvasTool === tool ||
+            (button.dataset.canvasTool === "path" && tool === "line")));
+          button.disabled = ["pin", "path"].includes(button.dataset.canvasTool) &&
+            (!currentMapName || !layers.some((layer) => layer.visible && !layer.locked));
+        });
+      }
+      document.querySelectorAll("[data-canvas-tool]").forEach((button) => {
+        button.addEventListener("click", () => requestWorkspaceTool(button.dataset.canvasTool));
+      });
+      syncWorkspaceToolControls();
+      workspaceState.subscribe(({ selection }) => {
+        syncWorkspaceToolControls();
+        const index = selection?.kind === "pin" ? pins.findIndex((pin) => pin.uid === selection.id) : -1;
+        selectedPinIndex = index < 0 ? null : index;
+        document.querySelectorAll(".pin-card").forEach((card) => {
+          card.classList.toggle("is-selected", Number(card.dataset.index) === selectedPinIndex);
+        });
+        document.querySelectorAll("[data-object-id]").forEach((row) => {
+          const selected = row.dataset.objectId === selection?.id && row.dataset.objectKind === selection?.kind;
+          row.classList.toggle("is-selected", selected);
+          row.setAttribute(row.getAttribute("role") === "treeitem" ? "aria-selected" : "aria-pressed", String(selected));
+        });
+        const key = selection ? `${selection.kind}:${selection.id}` : "";
+        if (key !== lastWorkspaceSelection) {
+          lastWorkspaceSelection = key;
+          drawingTools.refresh();
+          renderObjectInspector();
+        }
+        draw();
+      });
+      objectOutline = window.MapitMineOutline.install({
+        root: document.getElementById("layerList"),
+        select: selectWorkspaceObject,
+        expand: (id, expanded) => {
+          const collapsed = getCollapsedOutlineLayers();
+          if (expanded) collapsed.delete(id); else collapsed.add(id);
+          renderLayers();
+        },
+        edit: async (reference) => {
+          if (!await selectWorkspaceObject(reference)) return;
+          if (reference.kind === "pin") {
+            const index = pins.findIndex((pin) => pin.uid === reference.id);
+            if (index < 0 || !isPinVisible(pins[index]) || isPinLocked(pins[index])) {
+              showToast("Show and unlock this pin's layer before editing.", "warn"); return;
+            }
+            await editPin(index, { center: true });
+            document.getElementById("pinEditorLabel").focus();
+          } else if (reference.kind === "drawing") {
+            const field = document.getElementById("drawingName");
+            if (!field.disabled) field.focus();
+            else showToast("Show and unlock this drawing's layer before editing.", "warn");
+          } else await renameLayer(reference.id);
+        },
+      });
+      layerReorder = window.MapitMineLayerReorder.install({
+        root: document.getElementById("layerList"),
+        map: () => currentMapName,
+        enabled: () => !!currentMapName && !document.getElementById("objectSearch").value.trim() && document.getElementById("objectFilter").value === "all",
+        commit: reorderLayer,
+      });
+      function positionWorkspaceToolbar() {
+        if (window.innerWidth <= 900) return;
+        const width = hud.getBoundingClientRect().width;
+        const shell = document.getElementById("workspaceShell").getBoundingClientRect();
+        const inspector = contextInspector.getBoundingClientRect();
+        const left = shell.width ? shell.right + 12 : 12;
+        let right = inspector.width ? inspector.left - 12 : window.innerWidth - 12;
+        if (right - left < width) right = window.innerWidth - 12;
+        const center = Math.max(width / 2 + 12, Math.min(window.innerWidth - width / 2 - 12, (left + right) / 2));
+        hud.style.setProperty("--toolbar-x", `${center}px`);
+        const toolbar = hud.getBoundingClientRect();
+        const overlap = inspector.width && toolbar.right > inspector.left && toolbar.left < inspector.right;
+        contextInspector.style.setProperty("--inspector-top", `${overlap ? Math.max(132, toolbar.bottom + 12) : 132}px`);
+      }
+      const toolbarLayoutObserver = new ResizeObserver(positionWorkspaceToolbar);
+      [hud, contextInspector, document.getElementById("workspaceShell")].forEach((element) => toolbarLayoutObserver.observe(element));
+      window.addEventListener("resize", positionWorkspaceToolbar);
+      positionWorkspaceToolbar();
+      document.getElementById("objectSearch").addEventListener("input", () => { filteredCollapsedObjectLayers.clear(); renderLayers(); });
+      document.getElementById("objectFilter").addEventListener("change", () => { filteredCollapsedObjectLayers.clear(); renderLayers(); });
+      document.getElementById("inspectorLayerVisible").addEventListener("change", () => {
+        const selection = workspaceState.get().selection;
+        if (selection?.kind === "layer") toggleLayerVisibility(selection.id);
+      });
+      document.getElementById("inspectorLayerLocked").addEventListener("change", () => {
+        const selection = workspaceState.get().selection;
+        if (selection?.kind === "layer") toggleLayerLock(selection.id);
+      });
+      document.getElementById("objectInspectorEdit").addEventListener("click", () => {
+        const selection = workspaceState.get().selection;
+        if (selection?.kind === "pin") editPin(pins.findIndex((pin) => pin.uid === selection.id));
+        else if (selection?.kind === "layer") renameLayer(selection.id);
+      });
       window.addEventListener("DOMContentLoaded", initApp);
     </script>
     <script>

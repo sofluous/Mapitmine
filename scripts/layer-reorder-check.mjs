@@ -1,0 +1,16 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import vm from "node:vm";
+const context = { globalThis: {} };
+vm.runInNewContext(await readFile(new URL("../src/layer-reorder.js", import.meta.url), "utf8"), context);
+const { plan } = context.globalThis.MapitMineLayerReorder;
+const ids = ["default", "work", "locked"];
+assert.equal(JSON.stringify(plan(ids, "locked", "default", "before")), '["locked","default","work"]');
+assert.equal(JSON.stringify(plan(ids, "default", "locked", "after")), '["work","locked","default"]');
+assert.equal(plan(ids, "work", "default", "after"), null);
+assert.equal(plan(ids, "default", "default", "before"), null);
+assert.equal(plan(ids, "missing", "work", "before"), null);
+assert.equal(plan(ids, "work", "missing", "after"), null);
+assert.equal(plan(ids, "work", "default", "inside"), null);
+assert.deepEqual(ids, ["default", "work", "locked"]);
+console.log("Layer reorder planning checks passed.");

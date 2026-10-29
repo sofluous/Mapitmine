@@ -1,7 +1,7 @@
 (function attachMapData(global) {
   "use strict";
 
-  const MAP_DOCUMENT_VERSION = 2;
+  const MAP_DOCUMENT_VERSION = 3;
   const DEFAULT_LAYER_ID = "default";
 
   function createDefaultLayer() {
@@ -22,6 +22,7 @@
     const z = Number(pin.z);
     const color = String(pin.color ?? "").trim();
     return {
+      uid: String(pin.uid || ""),
       x: Number.isFinite(x) ? x : 0,
       z: Number.isFinite(z) ? z : 0,
       y: Number.isFinite(y) ? y : undefined,
@@ -68,6 +69,7 @@
     return {
       id,
       type,
+      name: String(drawing.name || `${type === "line" ? "Line" : "Path"} ${id}`),
       layerId: String(drawing.layerId || DEFAULT_LAYER_ID),
       points,
       style,
@@ -77,6 +79,7 @@
   function normalizeMapDocument(data) {
     const source = Array.isArray(data) ? { pins: data } : data;
     if (!source || typeof source !== "object") return null;
+    if (Number(source.version) > MAP_DOCUMENT_VERSION) return null;
 
     const layersById = new Map();
     const sourceLayers = Array.isArray(source.layers) ? source.layers : [];
@@ -92,6 +95,29 @@
     const drawings = (Array.isArray(source.drawings) ? source.drawings : [])
       .map(normalizeDrawing)
       .filter(Boolean);
+    // Reserve existing identities first so repairing a duplicate cannot steal one.
+    const reservedPins = new Set(pins.map((pin) => pin.uid).filter(Boolean));
+    const usedPins = new Set();
+    pins.forEach((pin, index) => {
+      if (!pin.uid || usedPins.has(pin.uid)) {
+        let suffix = index + 1;
+        while (reservedPins.has(`pin-legacy-${suffix}`)) suffix += 1;
+        pin.uid = `pin-legacy-${suffix}`;
+        reservedPins.add(pin.uid);
+      }
+      usedPins.add(pin.uid);
+    });
+    const reservedDrawings = new Set(drawings.map((drawing) => drawing.id));
+    const usedDrawings = new Set();
+    drawings.forEach((drawing, index) => {
+      if (usedDrawings.has(drawing.id)) {
+        let suffix = index + 1;
+        while (reservedDrawings.has(`drawing-legacy-${suffix}`)) suffix += 1;
+        drawing.id = `drawing-legacy-${suffix}`;
+        reservedDrawings.add(drawing.id);
+      }
+      usedDrawings.add(drawing.id);
+    });
     for (const item of [...pins, ...drawings]) {
       if (!layersById.has(item.layerId)) item.layerId = DEFAULT_LAYER_ID;
     }

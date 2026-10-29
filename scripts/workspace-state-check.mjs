@@ -1,0 +1,28 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import vm from "node:vm";
+
+const context = { globalThis: {} };
+vm.runInNewContext(await readFile(new URL("../src/workspace-state.js", import.meta.url), "utf8"), context);
+const state = context.globalThis.MapitMineWorkspace.create();
+const changes = [];
+const unsubscribe = state.subscribe((value) => changes.push(value));
+state.select({ kind: "pin", id: "pin-1" });
+state.select({ kind: "pin", id: "pin-1" });
+assert.equal(changes.length, 1, "Repeated selection must not publish recursive refreshes");
+state.select({ kind: "drawing", id: "path-1" });
+assert.equal(state.get().selection.kind, "drawing");
+state.setTool("path");
+assert.equal(state.get().selection.id, "path-1", "Tool and selection are independent");
+const copy = state.get(); copy.selection.id = "changed";
+assert.equal(state.get().selection.id, "path-1");
+assert.throws(() => state.select({ kind: "pin", id: 0 }));
+assert.throws(() => state.setTool("invalid"));
+state.reset();
+assert.equal(state.get().selection, null);
+assert.equal(state.get().tool, "select");
+unsubscribe();
+const count = changes.length;
+state.select({ kind: "layer", id: "default" });
+assert.equal(changes.length, count);
+console.log("Shared workspace state checks passed.");
