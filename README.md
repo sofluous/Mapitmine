@@ -13,10 +13,11 @@ Open [index.html](index.html) in a browser. No build, development server or depe
 - `assets/`: pinned runtime icons and upstream license.
 - `design-system/`: vendored design-system package; retain its installation/version files and assets together.
 - `scripts/`: application-specific automated checks.
-- `qa/`: retained visual fixtures and the drawing workspace prototype; see [QA fixtures](qa/README.md).
-- `_docs/`: product, roadmap, QA, migration and implementation records. Start at the [documentation index](_docs/README.md).
-- `_docs/data/`: ignored generated reports/screenshots. Browser checks overwrite their named artifacts; retain useful evidence locally rather than committing every run.
-- `_archive/` and `_docs/scratchpad.md`: ignored local history/working notes, not application or deployment inputs. Do not delete them as generated scratch work.
+- `qa/`: required repository-owned layout/state fixtures; see [QA fixtures](qa/README.md). Package checks consume these inputs.
+- Optional outer workspace `../_docs/`: product/roadmap/QA/history and local drawing prototype. This context may be absent in clones and is not required by normal checks. Local archives/scratchpads remain historical/working material; do not delete them as generated scratch work.
+- Repository `_docs/data/`: ignored output currently written by optional browser checks. Browser checks overwrite their named artifacts; retain useful evidence locally rather than committing every run. Output routing to outer evidence is a separate follow-up.
+
+See [AGENTS.md](AGENTS.md) for product engineering guidance. No hosting provider configuration is supplied here; publish intended static runtime inputs and review exclusions for development fixtures/scripts separately from Git ignore rules.
 
 ## Checks
 
@@ -30,6 +31,6 @@ $env:CHROMIUM_EXECUTABLE = '<path-to-compatible-chromium>'
 npm run qa:browser
 ```
 
-These checks use isolated browser storage, not the user's map library. See [QA guidance](_docs/QA.md) for scope and remaining manual checks. `smoke:browser` is an older browser-CLI diagnostic, not a substitute for interaction checks.
+These checks use isolated browser storage, not the user's map library. Optional local [QA guidance](../_docs/QA.md) records remaining manual checks; that document may be absent in a clone. `smoke:browser` is an older browser-CLI diagnostic, not a substitute for interaction checks.
 
 The individual suites remain available as `qa:workspace-browser`, `qa:pending-browser`, `qa:outline-browser` and `qa:layers-browser` for focused changes.
