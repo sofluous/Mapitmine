@@ -33,4 +33,6 @@ npm run qa:browser
 
 These checks use isolated browser storage, not the user's map library. Optional local [QA guidance](../_docs/QA.md) records remaining manual checks; that document may be absent in a clone. `smoke:browser` is an older browser-CLI diagnostic, not a substitute for interaction checks.
 
-The individual suites remain available as `qa:workspace-browser`, `qa:pending-browser`, `qa:outline-browser` and `qa:layers-browser` for focused changes.
+The individual suites remain available as `qa:workspace-browser`, `qa:pending-browser`, `qa:outline-browser`, `qa:layers-browser` and `qa:unload-browser` for focused changes.
+
+Reload/close requests a native warning for pending pin/drawing edits, locally unpersisted map content or unsaved linked-file changes. Clean local maps need no file link. Unload does not save drafts; browser warnings are not guaranteed, especially during mobile/OS termination.

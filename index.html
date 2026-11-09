@@ -3276,8 +3276,10 @@
       const WORKSPACE_COLLAPSE_STORAGE_KEY = "mapitmine.workspaceCollapsed";
 
       let __dirty = false;
+      let mapChangeRevision = 0;
       const HISTORY_LIMIT = 60;
       function markDirty() {
+        mapChangeRevision += 1;
         __dirty = true;
         updateStatusStrip?.();
         window.__reflectLinkUI?.();
@@ -3355,6 +3357,7 @@
       let pinCanvasDragState = null;
       let pinEditOriginalSnapshot = null;
       let pinEditorOriginalDraft = null;
+      let pinEditorOriginalInputs = null;
       let editingMapName = null;
       let suppressCanvasClick = false;
       let crosshairMode = false;
@@ -6438,6 +6441,34 @@
         );
       }
 
+      function readPinEditorInputs() {
+        return JSON.stringify(Array.from(document.querySelectorAll(
+          "#pinEditorPanel input, #pinEditorPanel select, #pinEditorPanel textarea",
+        ), (field) => [field.value, !!field.validity?.badInput]));
+      }
+
+      function hasPendingPinEdits() {
+        if (pinEditorPanel.style.display !== "block" || (!tempPin && currentEditIndex === null)) return false;
+        return currentEditIndex === null || pinEditorOriginalInputs !== readPinEditorInputs();
+      }
+
+      function hasUnpersistedMapChanges() {
+        if (!currentMapName) return false;
+        try {
+          const stored = readStoredMapDocument(currentMapName);
+          if (!stored) return true;
+          const current = getCurrentMapDocument();
+          // Legacy pins receive generated timestamps on read; compare editable content only.
+          const content = map => [map.pins.map(({ timestamp, ...pin }) => pin), map.layers, map.drawings];
+          return JSON.stringify(content(stored)) !== JSON.stringify(content(current));
+        } catch (_) { return true; }
+      }
+
+      function shouldWarnBeforeUnload() {
+        return hasPendingPinEdits() || !!drawingTools?.hasPendingChanges() ||
+          !!(currentFileHandle && __dirty) || hasUnpersistedMapChanges();
+      }
+
       function updatePinEditorState() {
         if (!pinEditorPanel || pinEditorPanel.style.display === "none") return;
         renderObjectInspector();
@@ -6598,6 +6629,7 @@
           document.getElementById("pinEditorLabel").focus();
         }, 0);
 
+        pinEditorOriginalInputs = readPinEditorInputs();
         updatePinEditorState();
         updateStatusStrip();
         draw();
@@ -6662,6 +6694,7 @@
         pinEditOriginalSnapshot = null;
         pinEditorOriginalDraft = null;
         pinCanvasDragState = null;
+        pinEditorOriginalInputs = null;
         editorDragState = null;
         document.getElementById("pinEditorPanel").style.display = "none";
         document.body.style.cursor = "default";
@@ -6709,6 +6742,7 @@
           pin.color ?? "#ffcc00";
         populatePinLayerOptions(pin.layerId || DEFAULT_LAYER_ID);
         pinEditorOriginalDraft = getPinSnapshotForEditor(pin);
+        pinEditorOriginalInputs = readPinEditorInputs();
 
         selectedPinIndex = index;
         updatePinEditorState();
@@ -7191,11 +7225,18 @@
       async function saveMapToDisk() {
         try {
           if (!currentFileHandle) return saveAsMapToDisk(); // fallback to Save As
-          const writable = await currentFileHandle.createWritable();
-          await writable.write(JSON.stringify(getMapPayloadForDisk(), null, 2));
+          const handle = currentFileHandle;
+          const mapName = currentMapName;
+          const revision = mapChangeRevision;
+          const payload = JSON.stringify(getMapPayloadForDisk(), null, 2);
+          const writable = await handle.createWritable();
+          await writable.write(payload);
           await writable.close();
-          touchMapMeta();
-          clearDirty();
+          // A completed older write must not clear newer edits or a different file link.
+          if (handle === currentFileHandle && mapName === currentMapName && revision === mapChangeRevision) {
+            touchMapMeta();
+            clearDirty();
+          }
           if (typeof showToast === "function") showToast("Saved to disk");
         } catch (err) {
           console.warn(err);
@@ -8052,8 +8093,7 @@
       });
 
       window.addEventListener("beforeunload", (e) => {
-        const risky = !currentFileHandle || __dirty;
-        if (risky) {
+        if (shouldWarnBeforeUnload()) {
           e.preventDefault();
           e.returnValue = "";
         }

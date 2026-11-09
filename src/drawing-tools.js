@@ -367,7 +367,8 @@
     }
 
     refresh();
-    return { render, refresh, reset, start, leave, resolveEdits, hasPendingEdits, active: () => !!draft };
+    return { render, refresh, reset, start, leave, resolveEdits, hasPendingEdits,
+      hasPendingChanges: () => !!draft?.points.length || hasPendingEdits(), active: () => !!draft };
   }
 
   global.MapitMineDrawing = Object.freeze({ hitTest, validPoints, install });
