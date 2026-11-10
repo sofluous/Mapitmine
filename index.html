@@ -3303,6 +3303,7 @@
     <script src="./src/object-outline.js"></script>
     <script src="./src/layer-reorder.js"></script>
     <script src="./src/drawing-tools.js"></script>
+    <script src="./src/touch-navigation.js"></script>
     <script src="./src/mobile-layout.js"></script>
     <script src="./src/coordinate-rulers.js"></script>
     <script>
@@ -7568,7 +7569,6 @@
 
       // Interaction: zoom, pan, click
       // mouse event listeners for panning, zoom, placing pins, hover cursor
-      let touchPanPointerId = null;
       let panToolBeforeDrag = "select";
       let panOrigin = null;
 
@@ -7619,33 +7619,20 @@
         beginCanvasPan(e.clientX, e.clientY);
       });
 
-      canvas.addEventListener("pointerdown", (e) => {
-        if (e.pointerType !== "touch") return;
-        touchPanPointerId = e.pointerId;
-        beginCanvasPan(e.clientX, e.clientY);
-        try {
-          canvas.setPointerCapture(e.pointerId);
-        } catch {}
-      });
-
-      canvas.addEventListener("pointermove", (e) => {
-        if (e.pointerType !== "touch") return;
-        if (touchPanPointerId !== e.pointerId) return;
-        moveCanvasPan(e.clientX, e.clientY);
-      });
-
-      canvas.addEventListener("pointerup", (e) => {
-        if (e.pointerType !== "touch") return;
-        if (touchPanPointerId !== e.pointerId) return;
-        touchPanPointerId = null;
-        endCanvasPan();
-      });
-
-      canvas.addEventListener("pointercancel", (e) => {
-        if (e.pointerType !== "touch") return;
-        if (touchPanPointerId !== e.pointerId) return;
-        touchPanPointerId = null;
-        endCanvasPan();
+      const touchNavigation = window.MapitMineTouchNavigation.install({
+        canvas,
+        camera: () => ({ zoom, offsetX, offsetY }),
+        updateCamera: (next) => {
+          ({ zoom, offsetX, offsetY } = next);
+          document.getElementById("zoom").value = zoom;
+          draw();
+        },
+        beginPan: beginCanvasPan,
+        movePan: moveCanvasPan,
+        endPan: endCanvasPan,
+        interruptEdit: () => drawingTools?.cancelPointerGesture(),
+        suppressClick: () => { suppressCanvasClick = true; },
+        resetClick: () => { suppressCanvasClick = false; },
       });
 
       window.addEventListener("mousemove", (e) => {
@@ -7675,7 +7662,7 @@
           draw();
           return;
         }
-        if (touchPanPointerId === null) moveCanvasPan(e.clientX, e.clientY);
+        if (!touchNavigation.active()) moveCanvasPan(e.clientX, e.clientY);
       });
 
       window.addEventListener("mouseup", () => {
@@ -7692,13 +7679,12 @@
           updateStatusStrip();
           return;
         }
-        if (touchPanPointerId === null) endCanvasPan();
+        if (!touchNavigation.active()) endCanvasPan();
       });
 
       window.addEventListener("blur", () => {
         editorDragState = null;
         pinCanvasDragState = null;
-        touchPanPointerId = null;
         endCanvasPan();
       });
 

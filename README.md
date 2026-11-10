@@ -33,7 +33,9 @@ npm run qa:browser
 
 These checks use isolated browser storage, not the user's map library. Optional local [QA guidance](../_docs/QA.md) records remaining manual checks; that document may be absent in a clone. `smoke:browser` is an older browser-CLI diagnostic, not a substitute for interaction checks.
 
-The individual suites remain available as `qa:workspace-browser`, `qa:pending-browser`, `qa:outline-browser`, `qa:layers-browser`, `qa:unload-browser`, `qa:vertices-browser`, `qa:mobile-browser` and `qa:rulers-browser` for focused changes.
+The individual suites remain available as `qa:workspace-browser`, `qa:pending-browser`, `qa:outline-browser`, `qa:layers-browser`, `qa:unload-browser`, `qa:vertices-browser`, `qa:mobile-browser`, `qa:rulers-browser` and `qa:touch-browser` for focused changes.
+
+Canvas touch navigation supports one-finger panning and two-finger pinch zoom within 0.25-5x, preserving the world point beneath the moving midpoint. A second finger takes ownership from drawing/vertex gestures: live vertex previews roll back, while selection, unfinished drawings and pin fields remain. Lifting one finger resumes panning without a camera jump. Cancellation/blur clean up navigation; pinch compatibility clicks cannot place pins/vertices. `src/touch-navigation.js` owns this coordination. Browser automation is not real-phone acceptance.
 
 Coordinate rulers are visible by default along exposed horizontal X and vertical Z edges. Pan/zoom updates their values and intervals; panels and widgets reserve space or suppress obscured labels. Map View > Coordinate Rulers controls visibility independently of grid lines and snapping, with an explicit browser-local preference and settings snapshot/export support. `src/coordinate-rulers.js` owns read-only ruler layout and bounded tick generation.
 

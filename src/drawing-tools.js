@@ -627,6 +627,7 @@
 
     refresh();
     return { render, refresh, reset, start, leave, resolveEdits, hasPendingEdits, editVertices,
+      cancelPointerGesture: rollbackVertexGesture,
       hasPendingChanges: () => !!draft?.points.length || !!vertexDrag || hasPendingEdits(), active: () => !!draft };
   }
 
