@@ -3,31 +3,9 @@ import { readFile } from "node:fs/promises";
 
 const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
 
-function extractFunction(name) {
-  const start = html.indexOf(`function ${name}(`);
-  assert.notEqual(start, -1, `Missing function ${name}`);
-  const bodyStart = html.indexOf("{", start);
-  let depth = 0;
-  for (let index = bodyStart; index < html.length; index += 1) {
-    if (html[index] === "{") depth += 1;
-    if (html[index] === "}" && --depth === 0) {
-      return html.slice(start, index + 1);
-    }
-  }
-  throw new Error(`Could not extract function ${name}`);
-}
-
-const getScaleBarMetrics = new Function(
-  `return (${extractFunction("getScaleBarMetrics")})`,
-)();
-const zoomedOut = getScaleBarMetrics(1);
-const zoomedIn = getScaleBarMetrics(4);
-assert.equal(zoomedOut.distance, 100);
-assert.equal(zoomedIn.distance, 20);
-assert.notEqual(zoomedOut.distance, zoomedIn.distance);
-assert.ok(zoomedOut.pixelLength >= 60 && zoomedOut.pixelLength <= 130);
-assert.ok(zoomedIn.pixelLength >= 60 && zoomedIn.pixelLength <= 130);
-assert.equal(getScaleBarMetrics(0), null);
+assert.ok(!/mapScaleChip|scale-chip|getScaleBarMetrics|updateScaleChip/.test(html), "Obsolete distance scale and consumers are removed");
+assert.ok(html.includes('hud.append(historyTools, document.getElementById("workspaceTools"))'));
+assert.ok(html.includes('hud.appendChild(document.getElementById("mapStatusStrip"))'));
 
 const required = [
   'id="minimapDetail"',

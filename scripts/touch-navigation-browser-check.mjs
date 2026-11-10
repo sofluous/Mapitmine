@@ -124,9 +124,11 @@ try {
     await page.touchscreen.tap(280, 380);
     assert.equal((await read()).dragging, false);
   }
-  // Source review candidates are not automatically defects: retain measured focus audit output.
+  // Keep panel focus checks at a consistent page scale after emulated touch sequences.
+  await session.send("Emulation.setPageScaleFactor", { pageScaleFactor: 1 });
   const focusAudit = [];
-  for (const width of [390, 1440]) {
+  for (const theme of ["paper-mint", "steel-night", "amber-terminal"]) for (const width of [320, 390, 901, 1440]) {
+    await page.evaluate((value) => MapItTheme.setTheme(value), theme);
     await page.setViewportSize({ width, height: 900 });
     for (const tab of ["maps", "pins", "layers", "map-view", "settings", "inspector"]) {
       await page.evaluate((value) => {
@@ -150,10 +152,11 @@ try {
             return { control: element.id || element.getAttribute("aria-label") || element.textContent.trim().slice(0, 50), ring, clips };
           }).filter((entry) => entry.ring > 0 && entry.clips.length);
       }, tab === "inspector" ? "#contextInspector" : "#workspacePanel");
-      focusAudit.push({ width, tab, candidates: results });
+      focusAudit.push({ theme, width, tab, candidates: results });
     }
   }
   await writeFile(resolve(output, "focus-audit.json"), JSON.stringify(focusAudit, null, 2));
+  assert.deepEqual(focusAudit.filter((entry) => entry.candidates.length), [], "Focus rings clear scroll containers across tabs, inspector and themes");
   for (const width of [390, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await page.evaluate(() => setWorkspaceTab("layers", { persist: false, openPanel: true }));
@@ -163,5 +166,5 @@ try {
     await page.screenshot({ path: resolve(output, `amber-terminal-focus-${width}.png`) });
   }
   assert.deepEqual(errors, []);
-  console.log("Touch navigation browser checks passed; focus clipping candidates retained for visual confirmation.");
+  console.log("Touch navigation and three-theme panel/inspector focus-clearance checks passed.");
 } finally { await browser.close(); }

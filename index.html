@@ -102,6 +102,8 @@
         --color-input: var(--ds-input-bg, var(--ds-bg-raised, #141a22));
         --color-control-bg: transparent;
         --color-text: var(--ds-text, #d7e4f7);
+        --color-text-muted: var(--ds-text-muted, var(--ds-text));
+        --focus-clearance: max(6px, var(--space-xs));
         --color-text-heading: var(--ds-text, #d7e4f7);
         --color-border: var(--ds-border, #2b3950);
         --color-primary: var(--ds-accent, #67b7ff);
@@ -310,7 +312,8 @@
         flex-direction: column;
         gap: var(--space-sm);
         overflow: auto;
-        padding-right: 2px;
+        padding: var(--focus-clearance);
+        scroll-padding: var(--focus-clearance);
       }
 
       .item-card {
@@ -519,6 +522,12 @@
         padding-inline: var(--ds-space-2);
         justify-content: center;
       }
+      .control-segment .ds-btn:focus-visible {
+        outline: 2px solid var(--color-primary);
+        outline-offset: -3px;
+        position: relative;
+        z-index: 1;
+      }
 
       .control-readout {
         justify-self: end;
@@ -532,18 +541,20 @@
         font-size: 24px;
       }
 
-      .ds-switch:not(.ruler-switch) input {
-        display: none !important;
-        appearance: none !important;
-        width: 0 !important;
-        height: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border: 0 !important;
-        opacity: 0 !important;
-        position: absolute !important;
-        pointer-events: none !important;
+      .ds-switch { position: relative; }
+      .ds-switch input {
+        display: block;
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        opacity: 0;
+        cursor: pointer;
       }
+      .ds-switch input:focus-visible + .ds-switch-track { outline: 2px solid var(--ds-focus, var(--color-primary)); outline-offset: 2px; }
+      .ds-switch input:disabled + .ds-switch-track { opacity: 0.5; cursor: not-allowed; }
+      @media (max-width: 900px) { .ds-switch { min-height: 44px; } }
 
       #pinListPanel .workspace-section-body {
         overflow: hidden;
@@ -717,9 +728,16 @@
       .layer-copy > .layer-name { padding: 0; border: 0; box-shadow: none; background: transparent; text-align: left; }
 
       #drawingPoints {
-        max-height: 240px;
-        overflow-y: auto;
+        padding: var(--focus-clearance);
       }
+      #drawingPoints [data-vertex][hidden] { display: none; }
+      .drawing-points-toggle { align-self: flex-start; order: 1; }
+      .drawing-points-toggle[aria-expanded="true"] { order: -1; }
+      .drawing-points-toggle[aria-expanded="false"] .io { transform: rotate(-90deg); }
+      .drawing-details { border: 0; padding: 0; }
+      .drawing-details > summary { cursor: pointer; padding-block: var(--space-xs); color: var(--color-text-muted); }
+      .drawing-details[open] > summary { margin-bottom: var(--space-xs); }
+      #drawingEditor > .toolbar-actions { justify-content: space-between; }
       .vertex-tools { display: flex; align-items: center; gap: var(--space-xs); flex-wrap: wrap; }
       .vertex-tools .ds-select { flex: 1; min-width: 100px; }
       #drawingPoints .is-active-vertex { background: var(--item-card-active-bg); box-shadow: inset 3px 0 0 var(--item-card-selected-color); }
@@ -1242,9 +1260,7 @@
 
       /* 10) Minimap */
       .minimap-wrapper {
-        position: relative;
-        display: inline-block;
-        margin: 20px;
+        margin: 0;
       }
 
       #minimapContainer {
@@ -1252,22 +1268,23 @@
         width: 200px;
         height: 200px;
         display: grid;
-        grid-template-rows: 26px minmax(0, 1fr) auto;
+        grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+        align-items: center;
         gap: var(--space-xs);
-        padding: var(--space-xs);
+        padding: 0;
         z-index: 180;
         overflow: hidden;
         margin: 0;
       }
 
       #minimapContainer[data-position="top-left"] {
-        top: var(--space-md);
+        top: calc(var(--space-md) + 18px);
         left: 50%;
         transform: translateX(-50%);
       }
 
       #minimapContainer[data-position="top-right"] {
-        top: var(--space-md);
+        top: calc(var(--space-md) + 18px);
         right: var(--space-md);
       }
 
@@ -1289,83 +1306,22 @@
         background: var(--color-bg);
       }
 
-      .minimap-widget-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: var(--space-xs);
-        min-width: 0;
-        padding-inline: var(--space-xs);
-      }
-
-      .minimap-widget-title {
-        color: var(--color-text-heading);
-        font-size: var(--font-sm);
-        font-weight: 700;
-        text-transform: uppercase;
-      }
-
-      .minimap-widget-mode {
-        overflow: hidden;
-        color: color-mix(in oklab, var(--color-text) 60%, transparent);
-        font-size: 9px;
-        text-overflow: ellipsis;
-        text-transform: uppercase;
-        white-space: nowrap;
-      }
-
-      #mapScaleChip {
-        position: fixed;
-        top: var(--space-md);
-        right: var(--space-md);
-        z-index: 205;
-        display: flex;
-        align-items: center;
-        gap: var(--space-sm);
-        min-width: 132px;
-        pointer-events: none;
-      }
-
-      #mapScaleChip.is-offset-by-minimap {
-        right: calc(var(--minimap-widget-size, 200px) + var(--space-md) * 2);
-      }
-
-      .scale-chip-rule {
-        position: relative;
-        flex: 0 0 72px;
-        min-width: 0;
-        height: 10px;
-        border-left: 2px solid var(--color-primary);
-        border-right: 2px solid var(--color-primary);
-      }
-
-      .scale-chip-rule::before {
-        content: "";
-        position: absolute;
-        left: 0;
-        right: 0;
-        top: 4px;
-        border-top: 2px solid var(--color-primary);
-      }
-
-      .scale-chip-label {
-        color: var(--color-primary);
-        font-family: var(--font-mono, monospace);
-        font-size: var(--font-sm);
-        white-space: nowrap;
-      }
-
       .minimap-readout {
         display: grid;
         gap: 2px;
         min-width: 0;
-        padding: 3px var(--space-xs);
-        border-top: 1px solid var(--ui-border-quiet);
+        padding: 0;
+        max-height: 100%;
+        min-height: 0;
+        overflow: auto;
+        scrollbar-width: thin;
       }
+      .minimap-readout:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
 
       #minimapContainer[data-detail="minimal"] .minimap-readout {
         display: none;
       }
+      #minimapContainer[data-detail="minimal"] { grid-template-columns: minmax(0, 1fr); }
 
       #minimapContainer[data-detail="standard"] .minimap-readout-row:not([data-minimap-readout="view"]) {
         display: none;
@@ -1373,8 +1329,8 @@
 
       .minimap-readout-row {
         display: grid;
-        grid-template-columns: 34px minmax(0, 1fr) minmax(0, 1fr);
-        gap: var(--space-xs);
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1px;
         align-items: baseline;
         min-width: 0;
       }
@@ -1391,13 +1347,12 @@
       .label-value {
         color: var(--color-text-heading);
         font-family: var(--font-mono, monospace);
-        font-size: 10px;
+        font-size: 9px;
         font-variant-numeric: tabular-nums;
         font-weight: 700;
         line-height: 1.1;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        overflow-wrap: anywhere;
+        white-space: normal;
       }
 
       /* 11) Overlays & context menu */
@@ -1507,22 +1462,23 @@
         padding: var(--space-md);
       }
       #contextInspector[hidden] { display: none; }
+      #contextInspector { scroll-padding: var(--focus-clearance); }
+      :is(.workspace-section-body, #contextInspector) :is(button, input, select, textarea, [tabindex="0"]) { scroll-margin: var(--focus-clearance); }
       #mobileDock { display: none; }
       #coordinateRulers { pointer-events: none; position: fixed; inset: 0; z-index: 190; }
       #coordinateRulers[hidden], .coordinate-ruler[hidden] { display: none; }
-      .coordinate-ruler { position: absolute; background: var(--ui-surface); color: var(--color-text); font: var(--font-sm) var(--font-family-mono, monospace); font-variant-numeric: tabular-nums; overflow: hidden; }
-      .ruler-x { height: 24px; border-bottom: 1px solid var(--ui-border-quiet); }
+      .coordinate-ruler { position: absolute; background: var(--ui-surface); color: var(--color-text); font: 10px var(--font-family-mono, monospace); line-height: 12px; font-variant-numeric: tabular-nums; overflow: hidden; }
+      .ruler-x { height: 18px; border-bottom: 1px solid var(--ui-border-quiet); }
       .ruler-z { border-right: 1px solid var(--ui-border-quiet); }
-      .ruler-axis { position: absolute; left: 4px; top: 3px; color: var(--color-text-muted); }
+      .ruler-axis { position: absolute; left: 2px; top: 1px; color: var(--color-text-muted); }
       .ruler-tick { position: absolute; white-space: nowrap; }
-      .ruler-x .ruler-tick { top: 2px; height: 22px; transform: translateX(-50%); }
+      .ruler-x .ruler-tick { top: 0; transform: translateX(-50%); }
       .ruler-z .ruler-tick { right: 8px; transform: translateY(-50%); }
-      .ruler-tick::after { content: ""; position: absolute; background: var(--color-text-muted); }
-      .ruler-x .ruler-tick::after { bottom: 0; left: 50%; width: 1px; height: 5px; }
-      .ruler-z .ruler-tick::after { right: -8px; top: 50%; width: 5px; height: 1px; }
-      .ruler-switch { position: relative; }
-      .ruler-switch #showRulers { display: block; position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; margin: 0; cursor: pointer; }
-      .ruler-switch #showRulers:focus-visible + .ds-switch-track { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+      .ruler-mark { position: absolute; background: var(--color-text-muted); }
+      .ruler-x .ruler-mark { bottom: 0; width: 1px; height: 3px; }
+      .ruler-z .ruler-mark { right: 0; height: 1px; width: 3px; }
+      .ruler-x .ruler-mark.is-major { height: 6px; }
+      .ruler-z .ruler-mark.is-major { width: 6px; }
       .inspector-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); }
       #contextInspector #drawingPanel, #contextInspector #pinEditorPanel {
         position: static; width: 100%; max-height: none; padding: 0;
@@ -1544,7 +1500,7 @@
       #workspaceTools, #historyTools { display: flex; gap: 4px; align-items: center; }
       #workspaceTools { flex: 4; }
       #historyTools { flex: 3; }
-      #historyTools { padding-left: var(--space-sm); border-left: 1px solid var(--ui-border-quiet); }
+      #workspaceTools { padding-left: var(--space-sm); border-left: 1px solid var(--ui-border-quiet); }
       #workspaceTools button, #historyTools button { flex: 1; min-width: 36px; width: 36px; height: 36px; }
       #workspaceTools button[aria-pressed="true"] { background: var(--ui-surface-active); }
       #drawingCommands { display: grid; gap: var(--space-sm); flex-basis: 100%; padding-top: var(--space-sm); border-top: 1px solid var(--ui-border-quiet); }
@@ -1563,7 +1519,11 @@
       #drawingPanel[hidden] { display: none; }
       #drawingPanel #drawingEditor { padding-top: 12px; }
       #drawingPanel #drawingPoints .control-inline { display: grid; grid-template-columns: 1fr 1fr; }
+      #drawingPanel #drawingPoints .control-inline.has-long-coordinates { grid-template-columns: minmax(0, 1fr); }
       #drawingPanel #drawingPoints input { min-width: 0; width: 100%; }
+      #drawingPoints input[type="number"] { appearance: textfield; font-variant-numeric: tabular-nums; }
+      #drawingPoints input::-webkit-inner-spin-button, #drawingPoints input::-webkit-outer-spin-button { appearance: none; margin: 0; }
+      @media (max-width: 360px) { #drawingPanel #drawingPoints .control-inline { grid-template-columns: minmax(0, 1fr); } }
       @media (max-width: 760px) {
         #drawingPanel { top: 124px; max-height: min(36dvh, 320px); }
       }
@@ -1803,19 +1763,16 @@
       }
 
       #mapStatusStrip {
-        position: fixed;
-        left: 50%;
-        bottom: var(--space-md);
-        transform: translateX(-50%);
-        z-index: 210;
+        position: static;
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: var(--space-sm);
-        width: min(760px, calc(100vw - var(--space-md) * 2));
+        width: 100%;
+        flex-basis: 100%;
         min-width: 0;
-        max-width: calc(100vw - var(--space-md) * 2);
-        padding: 10px 12px;
+        max-width: 100%;
+        padding: 0;
         pointer-events: none;
       }
 
@@ -1824,7 +1781,7 @@
         align-items: center;
         gap: var(--space-xs);
         min-width: 0;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
       }
 
       .status-strip-group-right {
@@ -1836,22 +1793,22 @@
         align-items: center;
         gap: 6px;
         min-width: 0;
-        padding: 4px 8px;
-        border-radius: 999px;
-        border: 1px solid var(--ui-border-quiet);
-        background: color-mix(in oklab, var(--ui-surface) 86%, transparent);
+        padding: 0;
         font-size: var(--font-sm);
       }
 
-      .status-chip-tool { width: 112px; }
-      .status-chip-history { width: 270px; }
-      .status-chip-zoom { width: 104px; }
-      .status-chip-cursor { width: 184px; }
+      .status-chip-tool { width: 96px; }
+      .status-chip-history { display: none; }
+      .status-chip-zoom { width: 52px; }
+      .status-chip-cursor { width: 128px; }
+      .status-chip-zoom .status-label, .status-chip-cursor .status-label { display: none; }
 
       .status-chip strong {
-        font-size: var(--font-md);
+        font-size: var(--font-sm);
         color: var(--color-text-heading);
         white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       #statusHistoryState {
@@ -1907,6 +1864,7 @@
         min-height: 0;
         height: 100%;
         overflow: auto;
+        padding: var(--focus-clearance);
       }
 
       .map-gallery-card {
@@ -2275,27 +2233,16 @@
         }
 
         #minimapContainer[data-position="top-left"] {
-          top: var(--mobile-minimap-top, calc(var(--mobile-view-top, 0px) + 40px));
-          left: var(--space-sm);
+          top: var(--mobile-minimap-top, calc(var(--mobile-view-top, 0px) + 24px));
+          left: max(var(--space-sm), var(--ruler-content-left, 32px));
           transform: none;
         }
 
         #minimapContainer[data-position="top-right"] {
-          top: var(--mobile-minimap-top, calc(var(--mobile-view-top, 0px) + var(--space-sm)));
+          top: var(--mobile-minimap-top, calc(var(--mobile-view-top, 0px) + 24px));
           right: var(--space-sm);
         }
 
-        #mapScaleChip {
-          top: var(--mobile-scale-top, 8px);
-          left: var(--space-sm);
-          right: auto;
-          min-width: 118px;
-        }
-
-        #mapScaleChip.is-offset-by-minimap {
-          top: var(--mobile-scale-top, 8px);
-          right: auto;
-        }
         #minimapContainer[data-responsive-hidden] { visibility: hidden; pointer-events: none; }
 
         #mapStatusStrip {
@@ -2325,6 +2272,7 @@
         #mapStatusStrip .status-chip-cursor { width: auto; min-width: 0; }
         #mapStatusStrip strong { font-size: var(--font-sm); overflow: hidden; text-overflow: ellipsis; }
         #mapStatusStrip .status-chip-cursor .status-label { display: none; }
+        .control-field.switch-row { grid-template-columns: minmax(0, 1fr) auto; }
 
         .map-action-grid {
           grid-template-columns: 1fr;
@@ -2611,10 +2559,15 @@
                   <button type="button" id="drawingVertexInsert" class="ds-btn ds-icon-btn" aria-label="Insert vertex on adjacent segment" title="Insert vertex on adjacent segment"><span class="io iconoir-plus" aria-hidden="true"></span></button>
                   <button type="button" id="drawingVertexDelete" class="ds-btn ds-icon-btn" aria-label="Delete selected vertex" title="Delete selected vertex"><span class="io iconoir-trash" aria-hidden="true"></span></button>
                 </div>
-                <label class="control-field no-readout" for="drawingName"><span>Name</span><input id="drawingName" class="ds-input" type="text" /></label>
-                <label class="control-field no-readout" for="drawingColor"><span>Color</span><input id="drawingColor" class="ds-input" type="color" value="#55bb99" /></label>
-                <label class="control-field no-readout" for="drawingWidth"><span>Width</span><input id="drawingWidth" class="ds-input" type="number" min="1" max="12" value="2" /></label>
                 <div id="drawingPoints" class="ds-stack" aria-label="Drawing points"></div>
+                <label class="control-field no-readout" for="drawingName"><span>Name</span><input id="drawingName" class="ds-input" type="text" /></label>
+                <details class="drawing-details" id="drawingStyle">
+                  <summary>Style</summary>
+                  <div class="ds-stack">
+                    <label class="control-field no-readout" for="drawingColor"><span>Color</span><input id="drawingColor" class="ds-input" type="color" value="#55bb99" /></label>
+                    <label class="control-field no-readout" for="drawingWidth"><span>Width</span><input id="drawingWidth" class="ds-input" type="number" min="1" max="12" value="2" /></label>
+                  </div>
+                </details>
                 <div class="toolbar-actions">
                   <button type="button" id="drawingDelete" class="ds-btn ds-btn-sm ds-btn-danger">Delete</button>
                   <button type="button" id="drawingApply" class="ds-btn ds-btn-sm">Apply</button>
@@ -2753,21 +2706,21 @@
                 <div class="control-field switch-row">
                   <label for="showAxes">Axis Guides</label>
                   <label class="ds-switch" aria-label="Show axis guides">
-                    <input type="checkbox" id="showAxes" checked />
+                    <input type="checkbox" id="showAxes" aria-label="Show axis guides" checked />
                     <span class="ds-switch-track"></span>
                   </label>
                 </div>
                 <div class="control-field switch-row">
                   <label for="showRulers">Coordinate Rulers</label>
-                  <label class="ds-switch ruler-switch" aria-label="Show coordinate rulers">
-                    <input type="checkbox" id="showRulers" checked />
+                  <label class="ds-switch" aria-label="Show coordinate rulers">
+                    <input type="checkbox" id="showRulers" aria-label="Show coordinate rulers" checked />
                     <span class="ds-switch-track"></span>
                   </label>
                 </div>
                 <div class="control-field switch-row">
                   <label for="showLabelBackground">Label Background</label>
                   <label class="ds-switch" aria-label="Show label background">
-                    <input type="checkbox" id="showLabelBackground" />
+                    <input type="checkbox" id="showLabelBackground" aria-label="Show label background" />
                     <span class="ds-switch-track"></span>
                   </label>
                 </div>
@@ -2785,49 +2738,49 @@
                 <div class="control-field switch-row">
                   <label for="showGrid">Grid</label>
                   <label class="ds-switch" aria-label="Show grid">
-                    <input type="checkbox" id="showGrid" checked />
+                    <input type="checkbox" id="showGrid" aria-label="Show grid" checked />
                     <span class="ds-switch-track"></span>
                   </label>
                 </div>
                 <div class="control-field switch-row">
                   <label for="showMiniGrid">Minimap Grid</label>
                   <label class="ds-switch" aria-label="Show minimap grid">
-                    <input type="checkbox" id="showMiniGrid" checked />
+                    <input type="checkbox" id="showMiniGrid" aria-label="Show minimap grid" checked />
                     <span class="ds-switch-track"></span>
                   </label>
                 </div>
                 <div class="control-field switch-row">
                   <label for="showIcons">Icons</label>
                   <label class="ds-switch" aria-label="Show icons">
-                    <input type="checkbox" id="showIcons" checked />
+                    <input type="checkbox" id="showIcons" aria-label="Show icons" checked />
                     <span class="ds-switch-track"></span>
                   </label>
                 </div>
                 <div class="control-field switch-row">
                   <label for="showText">Text</label>
                   <label class="ds-switch" aria-label="Show text labels">
-                    <input type="checkbox" id="showText" checked />
+                    <input type="checkbox" id="showText" aria-label="Show text labels" checked />
                     <span class="ds-switch-track"></span>
                   </label>
                 </div>
                 <div class="control-field switch-row">
                   <label for="showCoords">Coordinates</label>
                   <label class="ds-switch" aria-label="Show coordinates">
-                    <input type="checkbox" id="showCoords" checked />
+                    <input type="checkbox" id="showCoords" aria-label="Show coordinates" checked />
                     <span class="ds-switch-track"></span>
                   </label>
                 </div>
                 <div class="control-field switch-row">
                   <label for="showDescription">Description</label>
                   <label class="ds-switch" aria-label="Show descriptions">
-                    <input type="checkbox" id="showDescription" checked />
+                    <input type="checkbox" id="showDescription" aria-label="Show descriptions" checked />
                     <span class="ds-switch-track"></span>
                   </label>
                 </div>
                 <div class="control-field switch-row">
                   <label for="showTags">Tags</label>
                   <label class="ds-switch" aria-label="Show tags">
-                    <input type="checkbox" id="showTags" checked />
+                    <input type="checkbox" id="showTags" aria-label="Show tags" checked />
                     <span class="ds-switch-track"></span>
                   </label>
                 </div>
@@ -2844,7 +2797,7 @@
                 <div class="control-field switch-row">
                   <label for="showMinimap">Overlay</label>
                   <label class="ds-switch" aria-label="Show minimap overlay">
-                    <input type="checkbox" id="showMinimap" checked />
+                    <input type="checkbox" id="showMinimap" aria-label="Show minimap overlay" checked />
                     <span class="ds-switch-track"></span>
                   </label>
                 </div>
@@ -3005,16 +2958,12 @@
 
     <div
       id="minimapContainer"
-      class="minimap-wrapper app-panel"
+      class="minimap-wrapper"
       data-position="bottom-right"
       data-detail="standard"
     >
-      <div class="minimap-widget-head">
-        <span class="minimap-widget-title">Minimap</span>
-        <span id="minimapWidgetMode" class="minimap-widget-mode">View</span>
-      </div>
       <canvas id="minimapCanvas" width="134" height="134"></canvas>
-      <div class="minimap-readout" aria-label="Minimap bounds">
+      <div class="minimap-readout" role="region" tabindex="0" aria-label="Minimap bounds">
         <div class="minimap-readout-row" data-minimap-readout="view">
           <span class="label-header">View</span>
           <span class="label-value">X <span id="viewMinX"></span>..<span id="viewMaxX"></span></span>
@@ -3033,10 +2982,6 @@
       </div>
     </div>
 
-    <div id="mapScaleChip" class="app-panel" aria-label="Map scale">
-      <span id="mapScaleRule" class="scale-chip-rule" aria-hidden="true"></span>
-      <span id="mapScaleLabel" class="scale-chip-label">16 blocks</span>
-    </div>
 
     <!-- HUD: Top Toolbar -->
     <div id="hud">
@@ -3274,7 +3219,7 @@
     <!-- Canvas (Main Map) -->
     <canvas id="mapCanvas"></canvas>
     <div id="cursorLabel"></div>
-    <div id="mapStatusStrip" class="app-panel" aria-live="polite">
+    <div id="mapStatusStrip" aria-live="polite">
       <div class="status-strip-group">
         <span class="status-chip status-chip-tool">
           <span class="status-label">Tool</span>
@@ -5076,7 +5021,6 @@
 
           ctx.setLineDash([]);
         }
-        updateScaleChip();
         drawMinimap();
         updateStatusStrip();
       }
@@ -5148,33 +5092,6 @@
         ctx.strokeStyle = color;
         ctx.lineWidth = 1;
         ctx.stroke();
-      }
-
-      function getScaleBarMetrics(currentZoom, targetPixels = 92) {
-        if (!Number.isFinite(currentZoom) || currentZoom <= 0) return null;
-        const rawDistance = targetPixels / currentZoom;
-        const magnitude = 10 ** Math.floor(Math.log10(rawDistance));
-        const normalized = rawDistance / magnitude;
-        const niceStep =
-          normalized >= 7.5 ? 10 : normalized >= 3.5 ? 5 : normalized >= 1.5 ? 2 : 1;
-        const distance = niceStep * magnitude;
-        return { distance, pixelLength: distance * currentZoom };
-      }
-
-      function updateScaleChip() {
-        const scaleChip = document.getElementById("mapScaleChip");
-        const scaleRule = document.getElementById("mapScaleRule");
-        const scaleLabel = document.getElementById("mapScaleLabel");
-        if (!scaleChip || !scaleRule || !scaleLabel) return;
-        const metrics = getScaleBarMetrics(zoom);
-        if (!metrics) {
-          scaleChip.hidden = true;
-          return;
-        }
-
-        scaleChip.hidden = false;
-        scaleRule.style.flexBasis = `${metrics.pixelLength}px`;
-        scaleLabel.textContent = `${Number(metrics.distance.toPrecision(4))} blocks`;
       }
 
       function drawMiniGrid() {
@@ -5391,7 +5308,7 @@
       ) {
         const padding = 8;
         ctxMini.fillStyle = textColor || "#fff";
-        ctxMini.font = "12px sans-serif";
+        ctxMini.font = "9px sans-serif";
         ctxMini.textAlign = "center";
         ctxMini.textBaseline = "middle";
 
@@ -5507,10 +5424,6 @@
         minimap.dataset.position =
           positionSelect?.value || minimap.dataset.position || "bottom-right";
         if (window.innerWidth <= 900) minimap.dataset.position = minimap.dataset.position.replace("bottom", "top");
-        const scaleChip = document.getElementById("mapScaleChip");
-        const overlapsScale =
-          visible && minimap.dataset.position === "top-right";
-        scaleChip?.classList.toggle("is-offset-by-minimap", overlapsScale);
         syncMinimapPositionButtons();
         syncMinimapSizeButtons();
         syncMinimapDetail();
@@ -6151,9 +6064,7 @@
       function resizeMinimapCanvas() {
         const preferredSize = MINIMAP_SIZE_PRESETS[minimapSizePreset] || MINIMAP_SIZE_PRESETS.md;
         const widgetSize = window.innerWidth <= 900 ? Math.min(preferredSize, 160) : preferredSize;
-        const reservedHeight =
-          minimapDetail === "full" ? 88 : minimapDetail === "standard" ? 62 : 42;
-        minimapSize = Math.max(64, widgetSize - reservedHeight);
+        minimapSize = minimapDetail === "minimal" ? widgetSize : Math.max(64, Math.floor(widgetSize * 0.56));
         minimapCanvas.width = minimapSize;
         minimapCanvas.height = minimapSize;
         minimapCanvas.style.width = `${minimapSize}px`;
@@ -6161,13 +6072,9 @@
         const container = document.getElementById("minimapContainer");
         if (container) {
           container.style.width = `${widgetSize}px`;
-          container.style.height = `${widgetSize}px`;
+          container.style.height = `${minimapDetail === "full" ? widgetSize : minimapSize}px`;
           container.dataset.detail = minimapDetail;
         }
-        document.documentElement.style.setProperty(
-          "--minimap-widget-size",
-          `${widgetSize}px`,
-        );
       }
 
       function syncMinimapDetail() {
@@ -6177,15 +6084,6 @@
           : "standard";
         const container = document.getElementById("minimapContainer");
         if (container) container.dataset.detail = minimapDetail;
-        const mode = document.getElementById("minimapWidgetMode");
-        if (mode) {
-          mode.textContent =
-            minimapDetail === "minimal"
-              ? "Map"
-              : minimapDetail === "full"
-                ? "World / Crop / View"
-                : "View";
-        }
       }
 
       function syncMinimapSizeButtons() {
@@ -8172,7 +8070,7 @@
       historyTools.setAttribute("role", "group");
       historyTools.setAttribute("aria-label", "History and view");
       historyTools.append(...hud.children);
-      hud.append(document.getElementById("workspaceTools"), historyTools);
+      hud.append(historyTools, document.getElementById("workspaceTools"));
       hud.setAttribute("role", "toolbar");
       hud.setAttribute("aria-label", "Canvas tools and history");
       drawingPanel.querySelector(".toolbar-actions").id = "drawingToolStrip";
@@ -8186,6 +8084,7 @@
         document.getElementById("drawingProgress"),
       );
       hud.appendChild(drawingCommands);
+      hud.appendChild(document.getElementById("mapStatusStrip"));
       drawingPanel.setAttribute("aria-label", "Drawing tools and properties");
       drawingTools = window.MapitMineDrawing.install({
         workspace: workspaceState,
@@ -8325,12 +8224,12 @@
       mobileLayout = window.MapitMineMobileLayout.install({
         hud, status: document.getElementById("mapStatusStrip"), rail: document.getElementById("appRail"),
         shell: document.getElementById("workspaceShell"), inspector: contextInspector,
-        minimap: document.getElementById("minimapContainer"), scale: document.getElementById("mapScaleChip"),
+        minimap: document.getElementById("minimapContainer"),
       });
       coordinateRulers = window.MapitMineRulers.install({
         camera: () => ({ zoom, offsetX, offsetY }),
         enabled: () => rulerToggle.checked,
-        obstacles: () => ["workspaceShell", "contextInspector", "mobileDock", "hud", "mapStatusStrip", "minimapContainer", "mapScaleChip"].map((id) => document.getElementById(id)),
+        obstacles: () => ["workspaceShell", "contextInspector", "mobileDock", "hud", "mapStatusStrip", "minimapContainer"].map((id) => document.getElementById(id)),
       });
       positionWorkspaceToolbar();
       document.getElementById("objectSearch").addEventListener("input", () => { filteredCollapsedObjectLayers.clear(); renderLayers(); });

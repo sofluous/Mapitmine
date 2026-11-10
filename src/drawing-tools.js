@@ -58,6 +58,10 @@
     let switching = false;
     let vertexId = null;
     let activeVertex = 0;
+    let showAllPoints = false;
+    let pointListToggle = null;
+    let pointListIcon = null;
+    let pointListDrawingId = null;
     let vertexDrag = null;
     let suppressVertexClick = false;
     const toolRoot = api.tools || panel;
@@ -130,6 +134,11 @@
       editor.hidden = !drawing;
       if (!drawing) { editorSnapshot = ""; originalEditorValues = ""; return; }
       const canEdit = editable(drawing);
+      if (pointListDrawingId !== drawing.id) {
+        pointListDrawingId = drawing.id;
+        showAllPoints = false;
+        field("drawingStyle").open = false;
+      }
       refreshVertexControls(drawing, canEdit);
       const snapshot = JSON.stringify([drawing.id, drawing.name, drawing.points, drawing.style, canEdit]);
       if (snapshot === editorSnapshot) return;
@@ -143,7 +152,7 @@
       points.replaceChildren();
       drawing.points.forEach((point, index) => {
         const row = document.createElement("div");
-        row.className = "control-inline";
+        row.className = `control-inline${[point.x, point.z].some((value) => String(value).length > 12) ? " has-long-coordinates" : ""}`;
         row.dataset.vertex = index;
         ["x", "z"].forEach((axis) => {
           const input = document.createElement("input");
@@ -171,14 +180,30 @@
         });
         points.appendChild(row);
       });
+      pointListToggle = document.createElement("button");
+      pointListToggle.type = "button";
+      pointListToggle.className = "ds-btn ds-btn-sm drawing-points-toggle";
+      pointListToggle.setAttribute("aria-controls", "drawingPoints");
+      pointListIcon = document.createElement("span");
+      pointListIcon.setAttribute("aria-hidden", "true");
+      const pointListLabel = document.createElement("span");
+      pointListLabel.textContent = `All vertices (${drawing.points.length})`;
+      pointListToggle.appendChild(pointListIcon);
+      pointListToggle.appendChild(pointListLabel);
+      pointListToggle.addEventListener("click", () => { showAllPoints = !showAllPoints; highlightVertex(); });
+      points.appendChild(pointListToggle);
       editor.querySelectorAll("button, input").forEach((control) => { control.disabled = !canEdit; });
+      pointListToggle.disabled = false;
       refreshVertexControls(drawing, canEdit);
       originalEditorValues = JSON.stringify(readEditor());
       highlightVertex();
     }
 
     function highlightVertex() {
+      pointListToggle?.setAttribute("aria-expanded", String(showAllPoints));
+      if (pointListIcon) pointListIcon.className = "io iconoir-nav-arrow-down";
       field("drawingPoints").querySelectorAll("[data-vertex]").forEach((row) => {
+        row.hidden = !showAllPoints && Number(row.dataset.vertex) !== activeVertex;
         row.classList.toggle("is-active-vertex", !!vertexId && Number(row.dataset.vertex) === activeVertex);
       });
     }
@@ -198,7 +223,7 @@
         selector.appendChild(option);
       });
       selector.value = String(activeVertex);
-      selector.disabled = !enabled || !canEdit;
+      selector.disabled = false;
       field("drawingVertexInsert").disabled = !enabled || !canEdit || drawing.type !== "path";
       field("drawingVertexDelete").disabled = !enabled || !canEdit || drawing.type !== "path" || drawing.points.length <= 2;
       highlightVertex();
@@ -388,8 +413,19 @@
       });
       const width = Number(field("drawingWidth").value);
       const name = field("drawingName").value.trim();
-      if (!name) { api.toast("Enter a drawing name.", "warn"); return false; }
+      if (!name) { field("drawingName").focus?.(); api.toast("Enter a drawing name.", "warn"); return false; }
       if (!validPoints(points, drawing.type) || !Number.isFinite(width) || width < 1 || width > 12) {
+        const invalidPoint = Array.from(field("drawingPoints").querySelectorAll("input"))
+          .find((input) => input.value === "" || !Number.isFinite(Number(input.value)));
+        if (invalidPoint) {
+          activeVertex = Number(invalidPoint.dataset.point);
+          field("drawingVertexSelect").value = String(activeVertex);
+          highlightVertex();
+          invalidPoint.focus?.();
+        } else if (!Number.isFinite(width) || width < 1 || width > 12) {
+          field("drawingStyle").open = true;
+          field("drawingWidth").focus?.();
+        }
         api.toast("Enter valid points and a width between 1 and 12.", "warn");
         return false;
       }

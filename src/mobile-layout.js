@@ -9,7 +9,7 @@
   }
 
   function install(api) {
-    const { hud, status, rail, shell, inspector, minimap, scale } = api;
+    const { hud, status, rail, shell, inspector, minimap } = api;
     const dock = document.createElement("div");
     dock.id = "mobileDock";
     dock.className = "app-panel";
@@ -55,11 +55,7 @@
       if (!inspector.hidden && getComputedStyle(inspector).display !== "none") {
         exposedBottom = Math.min(exposedBottom, inspector.getBoundingClientRect().top);
       }
-      scale.style.setProperty("--mobile-scale-top", `${top + 8}px`);
-      const scaleBox = scale.getBoundingClientRect();
-      const miniBox = minimap.getBoundingClientRect();
-      const sharedColumn = miniBox.left < scaleBox.right && miniBox.right > scaleBox.left;
-      minimap.style.setProperty("--mobile-minimap-top", `${sharedColumn ? scaleBox.bottom + 8 : top + 8}px`);
+      minimap.style.setProperty("--mobile-minimap-top", `${top + 24}px`);
       const widgetBottom = minimap.getBoundingClientRect().bottom;
       // Keep editing surfaces reachable; this never changes the stored visibility preference.
       minimap.toggleAttribute("data-responsive-hidden", widgetBottom + 8 > exposedBottom);

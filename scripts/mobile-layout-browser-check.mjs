@@ -42,10 +42,9 @@ try {
       assert.ok(inspector.y >= 0 && inspector.y + inspector.height <= dock.y + 1);
     }
     if (await page.locator("#minimapContainer").isVisible()) {
-      const mini = await box("minimapContainer"), scale = await box("mapScaleChip");
+      const mini = await box("minimapContainer");
       assert.ok(mini.y + mini.height <= dock.y && mini.y < 60, "Minimap occupies the upper canvas");
-      const overlap = Math.min(mini.x + mini.width, scale.x + scale.width) > Math.max(mini.x, scale.x) && Math.min(mini.y + mini.height, scale.y + scale.height) > Math.max(mini.y, scale.y);
-      assert.equal(overlap, false, `Scale and minimap do not overlap: ${JSON.stringify({ mini, scale })}`);
+      assert.ok(mini.y >= 20, "Minimap yields to the edge ruler");
     }
   };
   for (const theme of ["paper-mint", "steel-night", "amber-terminal"]) {
@@ -77,8 +76,20 @@ try {
     await page.evaluate((value) => { document.getElementById("minimapDetail").value = value; syncMinimapOverlay(); }, detail);
     await settle();
     const outer = await box("minimapContainer"), inner = await box("minimapCanvas");
-    assert.ok(inner.x >= outer.x && inner.y >= outer.y && inner.x + inner.width <= outer.x + outer.width && inner.y + inner.height <= outer.y + outer.height, "Minimap content fits the responsive square");
+    assert.ok(inner.x >= outer.x && inner.y >= outer.y && inner.x + inner.width <= outer.x + outer.width && inner.y + inner.height <= outer.y + outer.height, "Square minimap canvas fits its compact widget");
+    if (detail !== "minimal") {
+      const readout = await box("minimapContainer .minimap-readout");
+      assert.ok(readout.x >= inner.x + inner.width && readout.y >= outer.y && readout.y + readout.height <= outer.y + outer.height + 1, "Technical readout sits beside the map without escaping its bounds");
+    }
   }
+  const savedCamera = await page.evaluate(() => ({ offsetX, offsetY, zoom }));
+  await page.evaluate(() => { offsetX = 1e12; offsetY = -1e12; draw(); });
+  const readout = page.locator(".minimap-readout");
+  await readout.focus();
+  assert.equal(await page.evaluate(() => document.activeElement.className), "minimap-readout", "Long technical readouts remain keyboard reachable");
+  assert.equal(await readout.evaluate((e) => getComputedStyle(e).overflowY), "auto", "Exceptional full-detail values can scroll instead of being cropped");
+  await page.keyboard.press("End");
+  await page.evaluate((saved) => { ({ offsetX, offsetY, zoom } = saved); draw(); }, savedCamera);
   await page.evaluate(() => {
     setWorkspaceCollapsed(true, false);
     const select = document.getElementById("minimapPosition"); select.value = "bottom-left"; syncMinimapOverlay();

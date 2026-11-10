@@ -44,7 +44,10 @@
     function render() {
       frame = null;
       root.hidden = !api.enabled();
-      if (root.hidden) return;
+      if (root.hidden) {
+        document.documentElement.style.setProperty("--ruler-content-left", "0px");
+        return;
+      }
       const camera = api.camera();
       const viewport = window.visualViewport;
       const mobile = window.innerWidth <= 900;
@@ -53,35 +56,35 @@
         return !element.hidden && style.display !== "none" && style.visibility !== "hidden";
       }).map((element) => ({ id: element.id, ...rect(element.getBoundingClientRect()) }));
       const topEdge = viewport?.offsetTop || 0;
-      let left = 8, right = window.innerWidth - 8, top = topEdge + 8;
+      let left = 2, right = window.innerWidth - 2, top = topEdge + 2;
       let bottom = Math.min(window.innerHeight, topEdge + (viewport?.height || window.innerHeight)) - 8;
       for (const box of visible) {
         if (!mobile && box.id === "workspaceShell") left = Math.max(left, box.right + 8);
         if (!mobile && box.id === "contextInspector" && box.left - left > 180) right = Math.min(right, box.left - 8);
         if (mobile && ["mobileDock", "workspaceShell", "contextInspector"].includes(box.id)) bottom = Math.min(bottom, box.top - 8);
-        if (mobile && ["mapScaleChip", "minimapContainer"].includes(box.id)) top = Math.max(top, box.bottom + 8);
       }
-      if (bottom - top < 80) top = topEdge + 8;
+      if (bottom - top < 80) top = topEdge + 2;
       const style = getComputedStyle(horizontal);
       measure.font = `${style.fontSize} ${style.fontFamily}`;
       const minZ = (top - camera.offsetY) / camera.zoom, maxZ = (bottom - camera.offsetY) / camera.zoom;
       const sample = ticks(top, bottom, camera.offsetY, camera.zoom, 44);
-      const gutter = Math.max(56, ...sample.map((tick) => measure.measureText(tick.label).width + 16));
+      const gutter = Math.max(24, ...sample.map((tick) => measure.measureText(tick.label).width + 10));
+      document.documentElement.style.setProperty("--ruler-content-left", `${left + gutter + 4}px`);
       let horizontalLeft = left + gutter;
       for (const box of visible) {
-        if (box.top < top + 24 && box.bottom > top && box.left < horizontalLeft + 16 && box.right > horizontalLeft) horizontalLeft = box.right + 8;
+        if (box.top < top + 18 && box.bottom > top && box.left < horizontalLeft + 16 && box.right > horizontalLeft) horizontalLeft = box.right + 4;
       }
       const bounds = { left, right, top, bottom, gutter, horizontalLeft };
       const signature = JSON.stringify([camera, bounds, visible, style.fontSize, style.fontFamily]);
       if (signature === previous) return;
       previous = signature;
       root.dataset.bounds = JSON.stringify(bounds);
-      horizontal.hidden = right - horizontalLeft < 72 || bottom - top < 24;
+      horizontal.hidden = right - horizontalLeft < 72 || bottom - top < 18;
       vertical.hidden = bottom - top < 80 || right - left < gutter + 24 || !Number.isFinite(minZ + maxZ);
       Object.assign(horizontal.style, { left: `${horizontalLeft}px`, top: `${top}px`, width: `${Math.max(0, right - horizontalLeft)}px` });
-      Object.assign(vertical.style, { left: `${left}px`, top: `${top + 24}px`, width: `${gutter}px`, height: `${Math.max(0, bottom - top - 24)}px` });
+      Object.assign(vertical.style, { left: `${left}px`, top: `${top + 18}px`, width: `${gutter}px`, height: `${Math.max(0, bottom - top - 18)}px` });
       drawAxis(horizontal, "X", horizontalLeft, right, camera.offsetX, camera.zoom, visible, bounds);
-      drawAxis(vertical, "Z", top + 24, bottom, camera.offsetY, camera.zoom, visible, bounds);
+      drawAxis(vertical, "Z", top + 18, bottom, camera.offsetY, camera.zoom, visible, bounds);
     }
     function rect(box) { return { left: box.left, right: box.right, top: box.top, bottom: box.bottom }; }
     function drawAxis(element, axis, start, end, offset, zoom, obstacles, bounds) {
@@ -90,12 +93,23 @@
       if (element.hidden) return;
       const horizontal = axis === "X";
       const endpointLabels = ticks(start, end, offset, zoom, 80);
-      const spacing = horizontal ? Math.max(72, ...endpointLabels.map((tick) => measure.measureText(tick.label).width + 20)) : 44;
-      for (const tick of ticks(start + 28, end - 8, offset, zoom, spacing)) {
+      const spacing = horizontal ? Math.max(60, ...endpointLabels.map((tick) => measure.measureText(tick.label).width + 16)) : 36;
+      const majorTicks = ticks(start + 20, end - 4, offset, zoom, spacing);
+      const step = majorTicks[0]?.step;
+      // Marks are independent of label omission, with five subdivisions per major interval.
+      if (step) for (let index = Math.ceil((start - offset) / zoom / (step / 5)), count = 0; count < 512; index++, count++) {
+        const position = offset + index * (step / 5) * zoom;
+        if (position > end) break;
+        const mark = document.createElement("span");
+        mark.className = `ruler-mark${index % 5 === 0 ? " is-major" : ""}`;
+        mark.style[horizontal ? "left" : "top"] = `${position - start}px`;
+        element.appendChild(mark);
+      }
+      for (const tick of majorTicks) {
         const width = measure.measureText(tick.label).width;
         const labelBox = horizontal
-          ? { left: tick.position - width / 2, right: tick.position + width / 2, top: bounds.top, bottom: bounds.top + 24 }
-          : { left: bounds.left, right: bounds.left + bounds.gutter, top: tick.position - 10, bottom: tick.position + 10 };
+          ? { left: tick.position - width / 2, right: tick.position + width / 2, top: bounds.top, bottom: bounds.top + 18 }
+          : { left: bounds.left, right: bounds.left + bounds.gutter, top: tick.position - 6, bottom: tick.position + 6 };
         if ((horizontal && (labelBox.left < start || labelBox.right > end)) || labelBox.bottom > bounds.bottom || obstacles.some((box) => intersects(labelBox, box))) continue;
         const mark = document.createElement("span");
         mark.className = "ruler-tick";

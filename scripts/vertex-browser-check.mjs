@@ -160,6 +160,7 @@ try {
   assert.equal((await points())[0].z, before[0].z + 10, "Touch uses the larger screen-space target");
   await page.locator('#drawingPoints input[data-point="0"][data-axis="x"]').fill("-12.5");
   await page.locator("#drawingApply").click();
+  await page.locator(".drawing-points-toggle").click();
   await page.locator('#drawingPoints input[data-point="1"][data-axis="z"]').focus();
   assert.equal(await page.locator("#drawingVertexSelect").inputValue(), "1", "Coordinate focus follows the active vertex");
   assert.equal((await points())[0].x, -12.5, "Exact input retains fractions");

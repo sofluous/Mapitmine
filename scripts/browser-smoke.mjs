@@ -86,7 +86,7 @@ try {
     'id="pinFilterBtn"',
     'id="pinResultSummary"',
     'id="mapCanvas"',
-    'id="mapScaleChip"',
+    'id="showRulers"',
     'id="mapStatusStrip"',
     'id="pinEditorPanel"',
     'id="pinEditorX"',

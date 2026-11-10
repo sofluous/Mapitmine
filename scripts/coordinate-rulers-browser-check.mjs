@@ -64,7 +64,7 @@ try {
           }
         }
         const collisions = await page.evaluate(() => {
-          const obstacles = ["workspaceShell", "contextInspector", "mobileDock", "hud", "mapStatusStrip", "minimapContainer", "mapScaleChip"].map((id) => document.getElementById(id)).filter((element) => {
+          const obstacles = ["workspaceShell", "contextInspector", "mobileDock", "hud", "mapStatusStrip", "minimapContainer"].map((id) => document.getElementById(id)).filter((element) => {
             const style = getComputedStyle(element); return !element.hidden && style.display !== "none" && style.visibility !== "hidden";
           }).map((element) => element.getBoundingClientRect());
           return Array.from(document.querySelectorAll(".coordinate-ruler:not([hidden]) .ruler-tick")).filter((tick) => {
@@ -73,6 +73,34 @@ try {
           }).length;
         });
         assert.equal(collisions, 0, "No ruler label overlaps a visible workspace/HUD widget");
+        if (!open) {
+          assert.ok(await page.evaluate(() => !!(document.getElementById("historyTools").compareDocumentPosition(document.getElementById("workspaceTools")) & Node.DOCUMENT_POSITION_FOLLOWING)), "History precedes action tools in DOM/keyboard order");
+          assert.equal(await page.locator("#mapStatusStrip").evaluate((e) => e.parentElement.id), viewport.width <= 900 ? "mobileDock" : "hud", "Telemetry shares existing chrome");
+          const widths = () => page.locator(".status-chip").evaluateAll((elements) => elements.map((e) => e.getBoundingClientRect().width));
+          const beforeWidths = await widths();
+          await page.evaluate(() => { lastCursor = { x: -123456789, z: 987654321 }; updateStatusStrip(); });
+          assert.deepEqual(await widths(), beforeWidths, "Changing coordinate digit counts cannot resize telemetry slots");
+          assert.equal(await page.locator("#minimapContainer").evaluate((e) => e.classList.contains("app-panel")), false, "Minimap has no decorative panel frame");
+          assert.equal(await page.locator("#mapScaleChip").count(), 0, "Distance scale is removed");
+          const xBand = await page.locator(".ruler-x").boundingBox();
+          assert.ok(xBand.height <= 18 && xBand.y <= 3, "Compact ruler stays at the top edge, independent of minimap");
+          if (viewport.width <= 900) {
+            const zBand = await page.locator(".ruler-z").boundingBox();
+            if (zBand) assert.ok(zBand.x <= 3, "Mobile vertical ruler hugs the edge");
+          }
+          const major = page.locator(".ruler-x .ruler-mark.is-major").first();
+          assert.ok(await page.locator(".ruler-x .ruler-mark:not(.is-major)").count() > await page.locator(".ruler-x .ruler-mark.is-major").count());
+          const mark = await major.boundingBox();
+          const png = (await page.screenshot()).toString("base64");
+          const pixels = await page.evaluate(async ({ png, mark }) => {
+            const image = new Image(); image.src = `data:image/png;base64,${png}`; await image.decode();
+            const canvas = document.createElement("canvas"); canvas.width = image.width; canvas.height = image.height;
+            const ctx = canvas.getContext("2d"); ctx.drawImage(image, 0, 0);
+            const x = Math.round(mark.x), y = Math.floor(mark.y + mark.height - 2);
+            return [Array.from(ctx.getImageData(x, y, 1, 1).data), Array.from(ctx.getImageData(x + 2, y, 1, 1).data)];
+          }, { png, mark });
+          assert.notDeepEqual(pixels[0], pixels[1], `Major tick paints distinct pixels: ${theme}/${viewport.width} ${JSON.stringify({mark, style:await major.evaluate((e)=>({bg:getComputedStyle(e).backgroundColor,opacity:getComputedStyle(e).opacity}))})}`);
+        }
         if (!open) await page.screenshot({ path: resolve(output, `2026-11-10-${theme}-${viewport.width}x${viewport.height}.png`) });
       }
     }
