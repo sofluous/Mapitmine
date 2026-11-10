@@ -532,7 +532,7 @@
         font-size: 24px;
       }
 
-      .ds-switch input {
+      .ds-switch:not(.ruler-switch) input {
         display: none !important;
         appearance: none !important;
         width: 0 !important;
@@ -1507,6 +1507,22 @@
         padding: var(--space-md);
       }
       #contextInspector[hidden] { display: none; }
+      #mobileDock { display: none; }
+      #coordinateRulers { pointer-events: none; position: fixed; inset: 0; z-index: 190; }
+      #coordinateRulers[hidden], .coordinate-ruler[hidden] { display: none; }
+      .coordinate-ruler { position: absolute; background: var(--ui-surface); color: var(--color-text); font: var(--font-sm) var(--font-family-mono, monospace); font-variant-numeric: tabular-nums; overflow: hidden; }
+      .ruler-x { height: 24px; border-bottom: 1px solid var(--ui-border-quiet); }
+      .ruler-z { border-right: 1px solid var(--ui-border-quiet); }
+      .ruler-axis { position: absolute; left: 4px; top: 3px; color: var(--color-text-muted); }
+      .ruler-tick { position: absolute; white-space: nowrap; }
+      .ruler-x .ruler-tick { top: 2px; height: 22px; transform: translateX(-50%); }
+      .ruler-z .ruler-tick { right: 8px; transform: translateY(-50%); }
+      .ruler-tick::after { content: ""; position: absolute; background: var(--color-text-muted); }
+      .ruler-x .ruler-tick::after { bottom: 0; left: 50%; width: 1px; height: 5px; }
+      .ruler-z .ruler-tick::after { right: -8px; top: 50%; width: 5px; height: 1px; }
+      .ruler-switch { position: relative; }
+      .ruler-switch #showRulers { display: block; position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; margin: 0; cursor: pointer; }
+      .ruler-switch #showRulers:focus-visible + .ds-switch-track { outline: 2px solid var(--color-primary); outline-offset: 2px; }
       .inspector-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); }
       #contextInspector #drawingPanel, #contextInspector #pinEditorPanel {
         position: static; width: 100%; max-height: none; padding: 0;
@@ -1521,7 +1537,7 @@
       #objectInspectorDetails { color: var(--color-text-muted); overflow-wrap: anywhere; }
       #layerInspectorControls[hidden] { display: none; }
       @media (max-width: 900px) {
-        #contextInspector { top: auto; bottom: 64px; max-height: min(55dvh, 480px); }
+        #contextInspector { top: auto; bottom: calc(var(--mobile-keyboard-inset, 0px) + var(--mobile-dock-height, 120px)); max-height: var(--mobile-sheet-height, 45dvh); }
         body:has(#workspaceShell:not(.is-collapsed)) #contextInspector { display: none; }
       }
       #drawingToolStrip { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
@@ -2144,10 +2160,16 @@
       }
 
       @media (max-width: 900px) {
+        #mobileDock {
+          display: flex; flex-direction: column; position: fixed; z-index: 500;
+          left: 0; right: 0; bottom: var(--mobile-keyboard-inset, 0px);
+          border-radius: 0; border-inline: 0; border-bottom: 0;
+        }
         #hud {
-          top: 56px;
-          left: var(--space-sm);
-          right: var(--space-sm);
+          position: static;
+          top: auto;
+          left: auto;
+          right: auto;
           bottom: auto;
           transform: none;
           justify-content: space-between;
@@ -2156,28 +2178,34 @@
           z-index: 500;
           flex-wrap: wrap;
           width: auto;
+          flex-shrink: 0;
+          max-height: max(44px, min(calc(var(--mobile-view-height, 100dvh) * 0.45), calc(var(--mobile-view-height, 100dvh) - 160px)));
+          overflow-y: auto;
+          border: 0; border-radius: 0; box-shadow: none; background: transparent;
         }
 
-        #workspaceTools { flex: 4; }
-        #historyTools { flex: 3; }
+        #workspaceTools { flex: 4; min-width: 188px; }
+        #historyTools { flex: 3; min-width: 149px; }
         #workspaceTools button, #historyTools button {
-          min-width: 0;
-          width: 36px;
-          min-height: 40px;
-          height: 40px;
+          min-width: 44px;
+          width: 44px;
+          min-height: 44px;
+          height: 44px;
           inline-size: auto;
-          block-size: 40px;
+          block-size: 44px;
         }
+        #drawingCommands button, #drawingCommands select { min-height: 44px; }
         #appRail { border-right: 0; border-top: 1px solid var(--ui-border-quiet); }
 
         #workspaceShell {
           top: auto;
           left: 0;
           right: 0;
-          bottom: 0;
+          bottom: calc(var(--mobile-keyboard-inset, 0px) + var(--mobile-dock-height, 120px));
           grid-template-columns: 1fr;
-          grid-template-rows: auto auto;
+          grid-template-rows: auto;
           gap: 0;
+          border-radius: 0;
         }
 
         #workspaceShell.is-collapsed {
@@ -2190,8 +2218,11 @@
           flex-direction: row;
           align-items: center;
           justify-content: space-between;
-          gap: var(--space-sm);
+          gap: 2px;
           padding: var(--space-sm);
+          padding-inline: 4px;
+          padding-bottom: calc(var(--space-sm) + env(safe-area-inset-bottom));
+          flex-shrink: 0;
           border-radius: 0;
           border-left: 0;
           border-right: 0;
@@ -2206,14 +2237,16 @@
         }
 
         .rail-title {
-          writing-mode: horizontal-tb;
-          transform: none;
-          letter-spacing: 0.16em;
+          display: none;
         }
+
+        #appRail .rail-header, #appRail .rail-secondary { flex: 1; min-width: 44px; }
+        #appRail .rail-primary { flex: 4; display: grid; grid-template-columns: repeat(4, minmax(44px, 1fr)); }
+        #appRail .rail-tabs { gap: 2px; overflow: visible; }
+        #appRail button { width: 100%; min-width: 44px; height: 44px; min-height: 44px; inline-size: 100%; block-size: 44px; }
 
         .rail-tabs {
           flex-direction: row;
-          overflow-x: auto;
         }
 
         .control-field,
@@ -2232,8 +2265,8 @@
         #workspacePanel {
           order: 1;
           width: auto;
-          height: min(42dvh, 420px);
-          max-height: min(42dvh, 420px);
+          height: min(var(--mobile-sheet-height, 42dvh), 420px);
+          max-height: min(var(--mobile-sheet-height, 42dvh), 420px);
           border-radius: 0;
         }
 
@@ -2241,52 +2274,39 @@
           display: none;
         }
 
-        #minimapContainer {
-          width: min(42vw, 220px);
-          height: min(42vw, 220px);
-        }
-
         #minimapContainer[data-position="top-left"] {
-          top: var(--space-sm);
+          top: var(--mobile-minimap-top, calc(var(--mobile-view-top, 0px) + 40px));
           left: var(--space-sm);
           transform: none;
         }
 
         #minimapContainer[data-position="top-right"] {
-          top: calc(var(--space-sm) + 36px);
+          top: var(--mobile-minimap-top, calc(var(--mobile-view-top, 0px) + var(--space-sm)));
           right: var(--space-sm);
         }
 
         #mapScaleChip {
-          top: var(--space-sm);
-          right: var(--space-sm);
+          top: var(--mobile-scale-top, 8px);
+          left: var(--space-sm);
+          right: auto;
           min-width: 118px;
         }
 
         #mapScaleChip.is-offset-by-minimap {
-          top: calc(var(--minimap-widget-size, 200px) + var(--space-md));
-          right: var(--space-sm);
+          top: var(--mobile-scale-top, 8px);
+          right: auto;
         }
-
-        #minimapContainer[data-position="bottom-left"] {
-          left: var(--space-sm);
-          bottom: calc(var(--space-sm) + 64px + env(safe-area-inset-bottom));
-          transform: none;
-        }
-
-        #minimapContainer[data-position="bottom-right"] {
-          right: var(--space-sm);
-          bottom: calc(var(--space-sm) + 64px + env(safe-area-inset-bottom));
-        }
+        #minimapContainer[data-responsive-hidden] { visibility: hidden; pointer-events: none; }
 
         #mapStatusStrip {
-          left: var(--space-sm);
-          right: var(--space-sm);
-          bottom: calc(var(--space-sm) + 64px + env(safe-area-inset-bottom));
+          position: static;
           transform: none;
           min-width: 0;
-          flex-direction: column;
-          align-items: stretch;
+          flex-direction: row;
+          align-items: center;
+          width: 100%; max-width: none; padding: 2px 8px; gap: 4px;
+          border: 0; border-radius: 0; box-shadow: none; background: transparent;
+          flex-shrink: 0; order: 1;
         }
 
         .status-strip-group,
@@ -2297,6 +2317,14 @@
         .status-chip {
           max-width: 100%;
         }
+        #mapStatusStrip .status-chip-history, #mapStatusStrip .status-chip-zoom { display: none; }
+        #mapStatusStrip .status-strip-group { min-width: 0; flex-wrap: nowrap; }
+        #mapStatusStrip .status-strip-group-right { flex: 1; justify-content: flex-end; }
+        #mapStatusStrip .status-chip { padding: 0; border: 0; border-radius: 0; background: none; }
+        #mapStatusStrip .status-chip-tool { width: 112px; }
+        #mapStatusStrip .status-chip-cursor { width: auto; min-width: 0; }
+        #mapStatusStrip strong { font-size: var(--font-sm); overflow: hidden; text-overflow: ellipsis; }
+        #mapStatusStrip .status-chip-cursor .status-label { display: none; }
 
         .map-action-grid {
           grid-template-columns: 1fr;
@@ -2726,6 +2754,13 @@
                   <label for="showAxes">Axis Guides</label>
                   <label class="ds-switch" aria-label="Show axis guides">
                     <input type="checkbox" id="showAxes" checked />
+                    <span class="ds-switch-track"></span>
+                  </label>
+                </div>
+                <div class="control-field switch-row">
+                  <label for="showRulers">Coordinate Rulers</label>
+                  <label class="ds-switch ruler-switch" aria-label="Show coordinate rulers">
+                    <input type="checkbox" id="showRulers" checked />
                     <span class="ds-switch-track"></span>
                   </label>
                 </div>
@@ -3268,6 +3303,8 @@
     <script src="./src/object-outline.js"></script>
     <script src="./src/layer-reorder.js"></script>
     <script src="./src/drawing-tools.js"></script>
+    <script src="./src/mobile-layout.js"></script>
+    <script src="./src/coordinate-rulers.js"></script>
     <script>
       const {
         DEFAULT_LAYER_ID,
@@ -3353,6 +3390,13 @@
       let layers = [createDefaultLayer()];
       let drawings = [];
       let drawingTools = null;
+      let mobileLayout = null;
+      let coordinateRulers = null;
+      const rulerToggle = document.getElementById("showRulers");
+      try { rulerToggle.checked = localStorage.getItem("mapitmine.showRulers") !== "0"; } catch (_) {}
+      rulerToggle.addEventListener("input", () => {
+        try { localStorage.setItem("mapitmine.showRulers", rulerToggle.checked ? "1" : "0"); } catch (_) {}
+      });
       const workspaceState = window.MapitMineWorkspace.create();
       const collapsedObjectLayers = new Set();
       const filteredCollapsedObjectLayers = new Set();
@@ -4809,6 +4853,7 @@
       }
 
       function draw() {
+        coordinateRulers?.refresh();
         const view = getViewSettings();
         const {
           axisColor,
@@ -5400,6 +5445,7 @@
           "gridColor",
           "gridSpacing",
           "showAxes",
+          "showRulers",
           "showLabelBackground",
           "showGrid",
           "showMiniGrid",
@@ -5459,6 +5505,7 @@
         minimap.classList.toggle("is-hidden", !visible);
         minimap.dataset.position =
           positionSelect?.value || minimap.dataset.position || "bottom-right";
+        if (window.innerWidth <= 900) minimap.dataset.position = minimap.dataset.position.replace("bottom", "top");
         const scaleChip = document.getElementById("mapScaleChip");
         const overlapsScale =
           visible && minimap.dataset.position === "top-right";
@@ -5469,6 +5516,7 @@
         resizeMinimapCanvas();
 
         if (visible) drawMinimap();
+        mobileLayout?.refresh();
       }
 
       function setWorkspaceCollapsed(collapsed, persist = true) {
@@ -6100,8 +6148,8 @@
       }
 
       function resizeMinimapCanvas() {
-        const widgetSize =
-          MINIMAP_SIZE_PRESETS[minimapSizePreset] || MINIMAP_SIZE_PRESETS.md;
+        const preferredSize = MINIMAP_SIZE_PRESETS[minimapSizePreset] || MINIMAP_SIZE_PRESETS.md;
+        const widgetSize = window.innerWidth <= 900 ? Math.min(preferredSize, 160) : preferredSize;
         const reservedHeight =
           minimapDetail === "full" ? 88 : minimapDetail === "standard" ? 62 : 42;
         minimapSize = Math.max(64, widgetSize - reservedHeight);
@@ -7000,6 +7048,7 @@
             !!document.getElementById("showDescription")?.checked,
           showTags: !!document.getElementById("showTags")?.checked,
           showAxes: !!document.getElementById("showAxes")?.checked,
+          showRulers: !!document.getElementById("showRulers")?.checked,
           showLabelBackground: !!document.getElementById("showLabelBackground")
             ?.checked,
           showMiniGrid: !!document.getElementById("showMiniGrid")?.checked,
@@ -7038,6 +7087,7 @@
         if ("showDescription" in s) check("showDescription", s.showDescription);
         if ("showTags" in s) check("showTags", s.showTags);
         if ("showAxes" in s) check("showAxes", s.showAxes);
+        if ("showRulers" in s) check("showRulers", s.showRulers);
         if ("showLabelBackground" in s)
           check("showLabelBackground", s.showLabelBackground);
         if ("showMiniGrid" in s) check("showMiniGrid", s.showMiniGrid);
@@ -8000,6 +8050,7 @@
         "gridColor",
         "gridSpacing",
         "showAxes",
+        "showRulers",
         "showLabelBackground",
         "minimapPosition",
         "minimapSizePreset",
@@ -8172,6 +8223,7 @@
         },
         pinHit: (event) => getHoveredPinIndex(event) !== null,
         color: () => getRenderColors().pinTextColor,
+        markerBackground: () => getRenderColors().labelBgColor,
         redraw: draw,
         history: pushHistoryState,
         save: () => { markDirty(); saveCurrentMap(); renderLayers(); },
@@ -8201,6 +8253,7 @@
       }
       function syncWorkspaceToolControls() {
         const tool = workspaceState.get().tool;
+        if (window.innerWidth <= 900 && ["pin", "line", "path"].includes(tool)) setWorkspaceCollapsed(true, false);
         drawingPanel.dataset.tool = tool;
         hud.dataset.tool = tool;
         drawingPanel.hidden = workspaceState.get().selection?.kind !== "drawing";
@@ -8267,7 +8320,7 @@
         commit: reorderLayer,
       });
       function positionWorkspaceToolbar() {
-        if (window.innerWidth <= 900) return;
+        if (window.innerWidth <= 900) { mobileLayout?.refresh(); return; }
         const width = hud.getBoundingClientRect().width;
         const shell = document.getElementById("workspaceShell").getBoundingClientRect();
         const inspector = contextInspector.getBoundingClientRect();
@@ -8283,6 +8336,16 @@
       const toolbarLayoutObserver = new ResizeObserver(positionWorkspaceToolbar);
       [hud, contextInspector, document.getElementById("workspaceShell")].forEach((element) => toolbarLayoutObserver.observe(element));
       window.addEventListener("resize", positionWorkspaceToolbar);
+      mobileLayout = window.MapitMineMobileLayout.install({
+        hud, status: document.getElementById("mapStatusStrip"), rail: document.getElementById("appRail"),
+        shell: document.getElementById("workspaceShell"), inspector: contextInspector,
+        minimap: document.getElementById("minimapContainer"), scale: document.getElementById("mapScaleChip"),
+      });
+      coordinateRulers = window.MapitMineRulers.install({
+        camera: () => ({ zoom, offsetX, offsetY }),
+        enabled: () => rulerToggle.checked,
+        obstacles: () => ["workspaceShell", "contextInspector", "mobileDock", "hud", "mapStatusStrip", "minimapContainer", "mapScaleChip"].map((id) => document.getElementById(id)),
+      });
       positionWorkspaceToolbar();
       document.getElementById("objectSearch").addEventListener("input", () => { filteredCollapsedObjectLayers.clear(); renderLayers(); });
       document.getElementById("objectFilter").addEventListener("change", () => { filteredCollapsedObjectLayers.clear(); renderLayers(); });

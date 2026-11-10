@@ -11,7 +11,7 @@ const browser = await chromium.launch({ headless: true, executablePath: process.
 const output = fileURLToPath(new URL("../_docs/data/vertices/", import.meta.url));
 await mkdir(output, { recursive: true });
 try {
-  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, hasTouch: true });
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.addInitScript(() => {
@@ -43,6 +43,59 @@ try {
     await page.locator("#drawingVertices").click();
     await page.waitForFunction(() => workspaceState.get().tool === "vertices");
   };
+  const solidMarker = (x, y, size) => page.evaluate(({ x, y, size }) => {
+    const probe = document.createElement("canvas"); probe.width = 1; probe.height = 1;
+    const color = probe.getContext("2d");
+    color.fillStyle = getRenderColors().pinTextColor; color.fillRect(0, 0, 1, 1);
+    const expected = color.getImageData(0, 0, 1, 1).data;
+    const actual = document.getElementById("mapCanvas").getContext("2d").getImageData(x - size / 2, y - size / 2, size, size).data;
+    return Array.from(actual).every((value, index) => value === expected[index % 4]);
+  }, { x, y, size });
+  for (const theme of ["paper-mint", "steel-night", "amber-terminal"]) {
+    await page.evaluate((value) => MapItTheme.setTheme(value), theme);
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      const x = width === 1440 ? 600 : 100;
+      for (const scale of [0.25, 1, 5]) {
+        await page.evaluate(({ x, scale }) => {
+          setWorkspaceCollapsed(true, false); workspaceState.select(null);
+          offsetX = x - 400 * scale; offsetY = 300 - 400 * scale; zoom = scale; draw();
+        }, { x, scale });
+        const before = await page.evaluate(() => ({ raw: localStorage.getItem(mapKey(currentMapName)), history: undoStack.length, count: drawings.length }));
+        await page.evaluate(() => drawingTools.start("path"));
+        const place = (a, b) => width === 390 ? page.touchscreen.tap(a, b) : page.mouse.click(a, b);
+        await place(x, 300);
+        await page.mouse.move(x + 80, 360);
+        assert.equal(await solidMarker(x, 300, 12), true, `First point visible: ${theme}/${width}/${scale}`);
+        assert.equal(await solidMarker(x + 80, 360, 8), false, "Live preview is not an accepted-point marker");
+        await place(x + 40, 340);
+        assert.equal(await solidMarker(x, 300, 8), true);
+        assert.equal(await solidMarker(x, 300, 12), false, "Previous point is smaller than the terminal point");
+        assert.equal(await solidMarker(x + 40, 340, 12), true);
+        await place(x + 80, 300);
+        await page.mouse.move(x + 100, 380);
+        assert.equal(await solidMarker(x + 40, 340, 8), true);
+        assert.equal(await solidMarker(x + 80, 300, 12), true);
+        assert.deepEqual(await page.evaluate(() => ({ raw: localStorage.getItem(mapKey(currentMapName)), history: undoStack.length, count: drawings.length })), before, "Draft markers must not persist geometry or record history");
+        if (scale === 1) await page.screenshot({ path: resolve(output, `2026-11-10-draft-${theme}-${width}.png`) });
+        await page.locator("#drawingCancel").click();
+        assert.equal(await solidMarker(x + 80, 300, 12), false, "Cancel removes temporary handles");
+        assert.equal(await page.evaluate(() => drawingTools.active()), false);
+      }
+    }
+  }
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  await page.evaluate(() => { MapItTheme.setTheme("paper-mint"); offsetX = 600; offsetY = 300; zoom = 1; draw(); });
+  await page.evaluate(() => drawingTools.start("line"));
+  await page.mouse.click(650, 400);
+  assert.equal(await solidMarker(650, 400, 12), true, "A line's first endpoint is visible too");
+  await page.mouse.click(750, 400);
+  assert.equal(await page.evaluate(() => drawingTools.active()), false);
+  assert.equal(await page.evaluate(() => drawings.at(-1).points.length), 2, "Finishing stores only accepted endpoints");
+  await page.locator("#undoBtn").click();
+  assert.equal(await page.evaluate(() => drawings.length), 2, "Line remains a single undoable action");
   await enter();
   const original = await points();
   const originalCamera = await camera();
@@ -182,5 +235,5 @@ try {
   await page.reload({ waitUntil: "domcontentloaded" });
   assert.deepEqual(await points(), saved, "Committed vertices survive reload");
   assert.deepEqual(errors, []);
-  console.log("Vertex browser checks passed: preview/commit, undo/redo, cancellation, numeric edits, insert/delete, guards, zoom, pan, locks, persistence and three-theme responsive controls.");
+  console.log("Vertex browser checks passed: draft point pixels across themes/zoom/mouse/touch, preview/commit, undo/redo, cancellation, numeric edits, insert/delete, guards, pan, locks, persistence and responsive controls.");
 } finally { await browser.close(); }

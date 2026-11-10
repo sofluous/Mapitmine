@@ -600,6 +600,18 @@
           if (!index) ctx.moveTo(x, y); else ctx.lineTo(x, y);
         });
         ctx.stroke();
+        if (temporary) {
+          // Only accepted points get handles; the trailing pointer preview stays unmarked.
+          drawing.points.forEach((point, index) => {
+            const size = index === drawing.points.length - 1 ? 12 : 8;
+            const x = offsetX + point.x * zoom - size / 2;
+            const y = offsetY + point.z * zoom - size / 2;
+            ctx.fillStyle = api.markerBackground?.() || api.color();
+            ctx.fillRect(x - 2, y - 2, size + 4, size + 4);
+            ctx.fillStyle = api.color();
+            ctx.fillRect(x, y, size, size);
+          });
+        }
         if (drawing.id === selectedDrawingId()) {
           points.forEach((point, index) => {
             const size = vertexId === drawing.id ? index === activeVertex ? 12 : 8 : 6;

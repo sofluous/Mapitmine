@@ -132,6 +132,7 @@ try {
     assert.equal(await page.evaluate(() => MapItTheme.getTheme()), theme);
     for (const viewport of [{ width: 1440, height: 900 }, { width: 901, height: 900 }, { width: 390, height: 844 }, { width: 320, height: 740 }]) {
       await page.setViewportSize(viewport);
+      await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
       const box = await page.locator("#workspaceTools").boundingBox();
       assert.ok(box && box.x >= 0 && box.x + box.width <= viewport.width && box.y >= 0);
       assert.equal(await page.locator("#hud #workspaceTools").count(), 1);
@@ -144,7 +145,8 @@ try {
       }
       const rail = await page.locator("#appRail").boundingBox();
       const panel = await page.locator("#workspacePanel").boundingBox();
-      assert.ok(viewport.width > 900 ? Math.abs(rail.x + rail.width - panel.x) <= 1 : Math.abs(panel.y + panel.height - rail.y) <= 1, "Rail and panel share an edge");
+      const dock = viewport.width <= 900 ? await page.locator("#mobileDock").boundingBox() : null;
+      assert.ok(viewport.width > 900 ? Math.abs(rail.x + rail.width - panel.x) <= 1 : Math.abs(panel.y + panel.height - dock.y) <= 1, "Desktop rail and mobile dock connect to the panel");
       for (const name of ["select", "pin", "path", "pan"]) {
         const mask = await tool(name).locator("span").evaluate((element) => getComputedStyle(element, "::before").maskImage);
         assert.notEqual(mask, "none", `${name} icon must render`);
@@ -161,14 +163,14 @@ try {
   assert.ok(commandsBounds.y >= toolbarBounds.y && commandsBounds.y + commandsBounds.height <= toolbarBounds.y + toolbarBounds.height);
   await page.locator("#drawingCancel").click();
   await tool("pin").click();
-  await page.locator("#mapCanvas").click({ position: { x: 80, y: 300 } });
+  await page.locator("#mapCanvas").click({ position: { x: 80, y: 200 } });
   await tool("pan").click();
   await choice("discard").click();
   await page.waitForFunction(() => workspaceState.get().tool === "pan");
   await tool("select").click();
   await page.evaluate(async () => { await selectWorkspaceObject({ kind: "drawing", id: drawings[0].id }); });
   await page.locator("#drawingName").fill("Guarded drawing");
-  await page.locator("#mapCanvas").click({ position: { x: 80, y: 300 } });
+  await page.locator("#mapCanvas").click({ position: { x: 80, y: 200 } });
   await choice("keep").click();
   assert.equal((await state()).selection.kind, "drawing", "Canvas navigation respects pending properties");
   await tool("pan").click();

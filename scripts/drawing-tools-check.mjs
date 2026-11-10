@@ -71,7 +71,7 @@ const controller = install({
   hasMap: () => true, canSelect: () => true,
   camera: () => ({ zoom: 1, offsetX: 0, offsetY: 0 }),
   world: (x, z) => ({ x, z }),
-  color: () => "#ffffff", redraw() {}, closePinEditor() {}, openLayers() {},
+  color: () => "#ffffff", markerBackground: () => "#000000", redraw() {}, closePinEditor() {}, openLayers() {},
   history: (label) => history.push(label), save: () => saves++, toast() {}, confirm: async () => allowDiscard,
   prepareTool: async () => prepareAllowed,
   consumeClick: () => { const consumed = consumeClick; consumeClick = false; return consumed; },
@@ -145,9 +145,10 @@ draftChoice = "discard";
 assert.equal(await controller.resolveEdits(), true);
 assert.equal(field("drawingName").value, "Pending rename");
 let strokes = 0;
+const markerRects = [];
 const ctx = {
   save() {}, restore() {}, setLineDash() {}, beginPath() {},
-  moveTo() {}, lineTo() {}, fillRect() {}, stroke() { strokes++; },
+  moveTo() {}, lineTo() {}, fillRect(...rect) { if (this.fillStyle === "#ffffff") markerRects.push(rect); }, stroke() { strokes++; },
 };
 controller.render(ctx);
 assert.equal(strokes, 1);
@@ -171,6 +172,13 @@ await controller.start("path");
 assert.equal(controller.hasPendingChanges(), false, "An armed tool without placed points is not an unload risk");
 await click(40, 40);
 assert.equal(controller.hasPendingChanges(), true);
+markerRects.length = 0;
+controller.render(ctx);
+assert.deepEqual(markerRects, [[34, 34, 12, 12]], "First placed point is visible without a segment");
+await canvas.emit("mousemove", { clientX: 80, clientY: 80 });
+markerRects.length = 0;
+controller.render(ctx);
+assert.deepEqual(markerRects, [[34, 34, 12, 12]], "Hover preview must not look like a placed point");
 draftChoice = "keep";
 assert.equal(await controller.leave(), false);
 assert.equal(canFinishDraft, false, "A one-point draft cannot finish");
@@ -178,6 +186,9 @@ assert.equal(controller.active(), true);
 draftChoice = "finish";
 assert.equal(await controller.leave(), false, "Invalid geometry cannot be committed even if Finish is requested");
 await click(50, 50);
+markerRects.length = 0;
+controller.render(ctx);
+assert.deepEqual(markerRects, [[36, 36, 8, 8], [44, 44, 12, 12]], "Every accepted point is marked and the terminal point is larger");
 draftChoice = "finish";
 const beforeFinish = drawings.length;
 assert.equal(await controller.leave(), true);
