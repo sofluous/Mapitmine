@@ -18,7 +18,7 @@
         publish();
       },
       setTool(next) {
-        if (!["select", "pin", "line", "path", "pan"].includes(next)) throw new TypeError("Unknown canvas tool.");
+        if (!["select", "pin", "line", "path", "pan", "vertices"].includes(next)) throw new TypeError("Unknown canvas tool.");
         if (next === tool) return;
         tool = next;
         publish();

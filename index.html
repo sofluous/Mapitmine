@@ -720,6 +720,9 @@
         max-height: 240px;
         overflow-y: auto;
       }
+      .vertex-tools { display: flex; align-items: center; gap: var(--space-xs); flex-wrap: wrap; }
+      .vertex-tools .ds-select { flex: 1; min-width: 100px; }
+      #drawingPoints .is-active-vertex { background: var(--item-card-active-bg); box-shadow: inset 3px 0 0 var(--item-card-selected-color); }
 
       .layer-row {
         display: grid;
@@ -1535,6 +1538,7 @@
       #drawingCommands button { min-width: 0; padding-inline: 4px; }
       #drawingProgress:empty { display: none; }
       #hud[data-tool="select"] #drawingCommands,
+      #hud[data-tool="vertices"] #drawingCommands,
       #hud[data-tool="pan"] #drawingCommands,
       #hud[data-tool="pin"] #drawingCommands { display: none; }
       #draftResolutionDialog .ds-toolbar { flex-wrap: wrap; justify-content: flex-end; }
@@ -2573,6 +2577,12 @@
               <label class="control-field no-readout" for="drawingSelection" hidden><span>Drawing</span><select id="drawingSelection" class="ds-select"><option value="">None</option></select></label>
               <div id="drawingEditor" class="ds-stack" hidden>
                 <div id="drawingEditorTitle" class="control-section-title">Drawing</div>
+                <div class="vertex-tools" role="group" aria-label="Vertex editing">
+                  <button type="button" id="drawingVertices" class="ds-btn ds-icon-btn" aria-label="Edit vertices" title="Edit vertices" aria-pressed="false"><span class="io iconoir-edit-pencil" aria-hidden="true"></span></button>
+                  <select id="drawingVertexSelect" class="ds-select" aria-label="Active vertex"></select>
+                  <button type="button" id="drawingVertexInsert" class="ds-btn ds-icon-btn" aria-label="Insert vertex on adjacent segment" title="Insert vertex on adjacent segment"><span class="io iconoir-plus" aria-hidden="true"></span></button>
+                  <button type="button" id="drawingVertexDelete" class="ds-btn ds-icon-btn" aria-label="Delete selected vertex" title="Delete selected vertex"><span class="io iconoir-trash" aria-hidden="true"></span></button>
+                </div>
                 <label class="control-field no-readout" for="drawingName"><span>Name</span><input id="drawingName" class="ds-input" type="text" /></label>
                 <label class="control-field no-readout" for="drawingColor"><span>Color</span><input id="drawingColor" class="ds-input" type="color" value="#55bb99" /></label>
                 <label class="control-field no-readout" for="drawingWidth"><span>Width</span><input id="drawingWidth" class="ds-input" type="number" min="1" max="12" value="2" /></label>
@@ -5887,6 +5897,7 @@
       function getActiveToolLabel() {
         if (drawingTools?.active()) return "Draw";
         if (isPanning || workspaceState.get().tool === "pan") return "Pan";
+        if (workspaceState.get().tool === "vertices") return "Edit Vertices";
         if (isPlacingPin) return "Place Pin";
         if (crosshairMode) return "Crosshair";
         if (currentEditIndex !== null) return "Edit Pin";
@@ -8149,6 +8160,10 @@
         hasMap: () => !!currentMapName,
         camera: () => ({ zoom, offsetX, offsetY }),
         world: getWorldCoordsFromClient,
+        worldExact: (clientX, clientY) => {
+          const rect = canvas.getBoundingClientRect();
+          return { x: (clientX - rect.left - offsetX) / zoom, z: (clientY - rect.top - offsetY) / zoom };
+        },
         canSelect: () => !isPlacingPin && currentEditIndex === null && workspaceState.get().tool !== "pan",
         consumeClick: consumeCanvasDragClick,
         selectCanvasPin: (event) => {
@@ -8179,7 +8194,7 @@
         inspector.hidden = !key;
         document.getElementById("contextInspectorTitle").textContent = editing
           ? currentEditIndex === null ? "New pin" : "Editing pin"
-          : selection?.kind === "drawing" ? "Drawing" : selection?.kind === "layer" ? "Layer" : "Pin";
+          : selection?.kind === "drawing" ? workspaceState.get().tool === "vertices" ? "Edit vertices" : "Drawing" : selection?.kind === "layer" ? "Layer" : "Pin";
         document.getElementById("objectInspector").hidden = editing || !selection || selection.kind === "drawing";
         drawingPanel.hidden = editing || selection?.kind !== "drawing";
         if (key && changed && window.innerWidth <= 900) setWorkspaceCollapsed(true, false);

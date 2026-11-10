@@ -11,6 +11,7 @@ class Element {
     this.style = {};
     this.children = [];
     this.listeners = new Map();
+    this.classList = { toggle() {} };
   }
   addEventListener(name, handler) {
     const handlers = this.listeners.get(name) || [];
@@ -27,7 +28,7 @@ class Element {
   closest() { return null; }
   querySelectorAll(selector) {
     return this.children.flatMap((child) => [
-      ...((selector === "input" && child.tag === "input") ? [child] : []),
+      ...(((selector === "input" && child.tag === "input") || (selector === "[data-vertex]" && child.dataset.vertex !== undefined)) ? [child] : []),
       ...child.querySelectorAll(selector),
     ]);
   }
@@ -189,4 +190,44 @@ assert.equal(await controller.leave(), true);
 assert.equal(drawings.length, beforeFinish + 1, "Discard does not save the draft");
 assert.equal(controller.active(), false);
 assert.equal(controller.hasPendingChanges(), false);
+controller.reset();
+workspace.select({ kind: "drawing", id: drawings[0].id });
+controller.refresh();
+await controller.editVertices();
+assert.equal(workspace.get().tool, "vertices");
+const original = JSON.stringify(drawings[0].points);
+const point = drawings[0].points[0];
+const beginDrag = () => canvas.emit("pointerdown", { button: 0, pointerId: 1, clientX: point.x, clientY: point.z });
+let count = history.length;
+await beginDrag();
+await window.emit("pointermove", { pointerId: 1, clientX: -20, clientY: 30 });
+assert.equal(JSON.stringify(drawings[0].points), original, "Preview must not mutate committed geometry");
+assert.equal(controller.hasPendingChanges(), true);
+await window.emit("pointercancel", { pointerId: 1 });
+assert.equal(JSON.stringify(drawings[0].points), original);
+assert.equal(history.length, count);
+await beginDrag();
+await window.emit("pointermove", { pointerId: 1, clientX: -20, clientY: 30 });
+await window.emit("pointerup", { pointerId: 1 });
+assert.equal(history.length, count + 1, "A move creates one history entry");
+assert.equal(history.at(-1), "Move Vertex");
+assert.equal(drawings[0].points[0].x, -20);
+assert.equal(controller.hasPendingChanges(), false);
+count = history.length;
+await field("drawingVertexInsert").emit("click");
+assert.equal(history.length, count + 1);
+assert.equal(drawings[0].points.length, 4);
+await field("drawingVertexDelete").emit("click");
+assert.equal(drawings[0].points.length, 3);
+await field("drawingVertexDelete").emit("click");
+assert.equal(drawings[0].points.length, 2);
+await field("drawingVertexDelete").emit("click");
+assert.equal(drawings[0].points.length, 2, "A path cannot lose its minimum two vertices");
+layers[0].locked = true;
+count = history.length;
+await field("drawingVertexInsert").emit("click");
+assert.equal(history.length, count, "Locked geometry cannot change");
+layers[0].locked = false;
+assert.equal(window.MapitMineDrawing.nearestSegment([{ x: 0, z: 0 }, { x: 10, z: 0 }], { x: 4, z: 1 }, 2).point.x, 4);
+assert.equal(window.MapitMineDrawing.nearestSegment([{ x: 0, z: 0 }, { x: 0, z: 0 }], { x: 0, z: 0 }, 2), null);
 console.log("Drawing controller and geometry checks passed.");
