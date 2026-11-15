@@ -12,6 +12,20 @@ try {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, hasTouch: true });
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
+  await page.addInitScript(() => {
+    window.touchAcceptance = { pointers: [], captureLosses: 0 };
+    window.addEventListener("pointerdown", (event) => {
+      if (event.pointerType === "touch" && event.target.id === "mapCanvas") touchAcceptance.pointers.push(event.pointerId);
+    }, true);
+    for (const type of ["pointerup", "pointercancel"]) window.addEventListener(type, (event) => {
+      touchAcceptance.pointers = touchAcceptance.pointers.filter((id) => id !== event.pointerId);
+    }, true);
+    window.addEventListener("lostpointercapture", (event) => {
+      if (event.target.id !== "mapCanvas") return;
+      touchAcceptance.captureLosses++;
+      if (touchAcceptance.pointers.includes(event.pointerId)) touchAcceptance.lossCamera = { zoom, offsetX, offsetY };
+    }, true);
+  });
   await page.addInitScript(() => localStorage.setItem("map:Touch", JSON.stringify({ version: 3,
     layers: [{ id: "default", label: "Pins", visible: true, locked: false }],
     pins: [{ uid: "pin", label: "Pin", x: 0, z: 0, layerId: "default" }],
@@ -28,6 +42,7 @@ try {
     drawings: JSON.stringify(drawings), pending: drawingTools.hasPendingChanges(), dragging: document.body.classList.contains("is-map-dragging") }));
   const setup = () => page.evaluate(() => { setWorkspaceCollapsed(true, false); offsetX = 100; offsetY = 250; zoom = 1; draw(); });
   const pinch = async () => {
+    assert.ok(await page.evaluate(() => [[100, 250], [200, 250]].every(([x, y]) => document.elementFromPoint(x, y)?.id === "mapCanvas")), "Pinch starts on exposed canvas, not an editing panel");
     await touch("touchStart", [[1, 100, 250]]);
     await touch("touchStart", [[1, 100, 250], [2, 200, 250]]);
     await touch("touchMove", [[1, 70, 260], [2, 230, 260]]);
@@ -101,6 +116,59 @@ try {
   const mouseBefore = await read();
   await page.mouse.move(280, 350); await page.mouse.down(); await page.mouse.move(300, 370); await page.mouse.up();
   assert.ok(Math.abs((await read()).offsetX - mouseBefore.offsetX - 20) < 0.01);
+
+  // Release actual browser capture rather than merely dispatching a synthetic loss event.
+  const acceptance = [];
+  for (const fingers of [1, 2]) {
+    await setup();
+    await page.evaluate(() => { selectedPinIndex = 0; updatePinListHighlight(); draw(); });
+    if (fingers === 2) await pinch();
+    else {
+      await touch("touchStart", [[1, 100, 250]]);
+      await touch("touchMove", [[1, 70, 260]]);
+    }
+    const beforeLoss = await read();
+    const losses = await page.evaluate(() => touchAcceptance.captureLosses);
+    await page.evaluate(() => {
+      const canvas = document.getElementById("mapCanvas");
+      const id = touchAcceptance.pointers.find((value) => canvas.hasPointerCapture(value));
+      if (id === undefined) throw new Error("Expected a live captured canvas pointer");
+      canvas.releasePointerCapture(id);
+    });
+    await touch("touchMove", fingers === 2 ? [[1, 60, 270], [2, 240, 270]] : [[1, 60, 270]]);
+    assert.ok(await page.evaluate((count) => touchAcceptance.captureLosses > count, losses), "Browser emitted capture loss");
+    const afterLoss = await read();
+    // Another finger's move can arrive before the released pointer's loss event.
+    const lossCamera = await page.evaluate(() => touchAcceptance.lossCamera);
+    for (const key of ["zoom", "offsetX", "offsetY"]) assert.equal(afterLoss[key], lossCamera[key], `Capture loss freezes ${key} at delivery`);
+    for (const key of ["selection", "history", "raw", "drawings"]) assert.deepEqual(afterLoss[key], beforeLoss[key], `Capture loss preserves ${key}`);
+    await touch("touchMove", fingers === 2 ? [[1, 50, 280], [2, 250, 280]] : [[1, 50, 280]]);
+    const continued = await read();
+    for (const key of ["zoom", "offsetX", "offsetY"]) assert.equal(continued[key], afterLoss[key], "Cancelled gesture cannot resume on later moves");
+    assert.equal(afterLoss.dragging, false);
+    await release();
+    assert.equal(await page.evaluate(() => touchNavigation.active()), false);
+    await setup(); await pinch(); assert.ok((await read()).zoom > 1, "Next gesture works after capture loss"); await release();
+    acceptance.push({ case: `${fingers}-finger capture loss`, passed: true });
+  }
+
+  await setup();
+  const coincidentBefore = await read();
+  await touch("touchStart", [[1, 100, 250]]);
+  await touch("touchStart", [[1, 100, 250], [2, 100, 250]]);
+  await touch("touchMove", [[1, 90, 250], [2, 110, 250]]);
+  const separated = await read();
+  await touch("touchMove", [[1, 70, 250], [2, 130, 250]]);
+  const widened = await read();
+  assert.ok([widened.zoom, widened.offsetX, widened.offsetY].every(Number.isFinite));
+  assert.ok(widened.zoom > separated.zoom && widened.zoom <= 5, "Coincident fingers recover to bounded zoom once separated");
+  await release();
+  const coincidentAfter = await read();
+  for (const key of ["selection", "history", "raw", "drawings"]) assert.deepEqual(coincidentAfter[key], coincidentBefore[key], `Coincident gesture preserves ${key}`);
+  assert.equal(await page.evaluate(() => touchNavigation.active()), false);
+  assert.equal(coincidentAfter.dragging, false);
+  acceptance.push({ case: "coincident fingers", passed: true });
+  await writeFile(resolve(output, "gesture-acceptance.json"), JSON.stringify(acceptance, null, 2));
 
   // A second finger rolls back a live vertex preview rather than committing it.
   await setup();
