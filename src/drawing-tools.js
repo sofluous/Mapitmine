@@ -102,15 +102,25 @@
         layerSelect.appendChild(option);
       });
       const writable = api.layers().filter((layer) => layer.visible && !layer.locked);
-      layerSelect.value = writable.some((layer) => layer.id === previous) ? previous : writable[0]?.id || "";
+      layerSelect.value = draft ? draft.layerId : writable.some((layer) => layer.id === previous) ? previous : writable[0]?.id || "";
+      const hasDraftContent = !!draft && (draft.points.length > 0 || draft.redoPoints.length > 0);
       toolRoot.querySelectorAll("[data-draw-tool]").forEach((button) => {
         button.disabled = !api.hasMap() || !writable.length;
+        button.hidden = hasDraftContent;
         button.setAttribute("aria-pressed", String(draft?.type === button.dataset.drawTool));
       });
       field("drawingFinish").disabled = !draft || !validPoints(draft.points, draft.type);
       field("drawingCancel").disabled = !draft;
-      layerSelect.disabled = !!draft;
-      field("drawingProgress").textContent = draft ? `${draft.type === "line" ? "Line" : "Path"}: ${draft.points.length} points` : "";
+      layerSelect.disabled = hasDraftContent;
+      const layerLabel = layerSelect.closest?.("label");
+      if (layerLabel) layerLabel.hidden = hasDraftContent;
+      const commands = field("drawingFinish").closest?.("#drawingCommands");
+      if (commands) commands.dataset.phase = hasDraftContent ? "placing" : "setup";
+      const progress = field("drawingProgress");
+      progress.textContent = draft ? `${draft.type === "line" ? "Line" : "Path"}: ${draft.points.length} points` : "";
+      progress.title = draft ? `Layer: ${api.layers().find((layer) => layer.id === draft.layerId)?.label || draft.layerId}` : "";
+      progress.setAttribute("aria-label", draft ? `${progress.textContent}. ${progress.title}` : "");
+      api.historyChanged?.();
       const selection = field("drawingSelection");
       selection.replaceChildren();
       const none = document.createElement("option");
@@ -357,6 +367,7 @@
 
     async function start(type) {
       if (switching || !["line", "path"].includes(type) || !api.hasMap()) return;
+      if (draft?.type === type) return;
       switching = true;
       try {
         if (!await leave()) return;
@@ -366,9 +377,10 @@
         api.closePinEditor();
         api.workspace?.select(null);
         selectDrawing(null);
-        draft = { type, layerId, points: [] };
+        draft = { type, layerId, points: [], redoPoints: [] };
         canvas.style.cursor = "crosshair";
         api.workspace?.setTool(draft.type);
+        api.onToolStarted?.();
         refresh();
         api.redraw();
       } finally { switching = false; }
@@ -382,6 +394,7 @@
         api.redraw();
         return true;
       }
+      if (!draft.points.length && !draft.redoPoints.length) { cancel(); return true; }
       const choice = api.resolveDraft
         ? await api.resolveDraft({ title: "Unfinished drawing", canFinish: editable(draft) && validPoints(draft.points, draft.type) })
         : await api.confirm({ title: "Discard drawing draft?", message: "Discard the unfinished drawing and switch tools?", confirmText: "Discard" }) ? "discard" : "keep";
@@ -394,11 +407,37 @@
       return true;
     }
 
+    function draftHistoryState() {
+      const available = !!draft && editable(draft) && !switching;
+      return { active: !!draft, canUndo: available && draft.points.length > 0,
+        canRedo: available && draft.redoPoints.length > 0 };
+    }
+
+    function traverseDraftHistory(redo) {
+      if (!draft || switching || !editable(draft)) return false;
+      const source = redo ? draft.redoPoints : draft.points;
+      const destination = redo ? draft.points : draft.redoPoints;
+      if (!source.length) return false;
+      destination.push(source.pop());
+      preview = null;
+      refresh();
+      api.redraw();
+      return true;
+    }
+
     toolRoot.querySelectorAll("[data-draw-tool]").forEach((button) => {
       button.addEventListener("click", () => start(button.dataset.drawTool));
     });
     field("drawingFinish").addEventListener("click", finish);
     field("drawingCancel").addEventListener("click", cancel);
+    field("drawingLayer").addEventListener("change", () => {
+      if (!draft) return;
+      if (!draft.points.length && !draft.redoPoints.length && editable({ layerId: field("drawingLayer").value })) {
+        draft.layerId = field("drawingLayer").value;
+      }
+      refresh();
+      api.redraw();
+    });
     field("drawingSelection").addEventListener("change", () => {
       selectDrawing(field("drawingSelection").value || null);
       refresh();
@@ -553,7 +592,10 @@
         if (!editable(draft)) { cancel(); return; }
         const point = api.world(event.clientX, event.clientY);
         const last = draft.points.at(-1);
-        if (!last || point.x !== last.x || point.z !== last.z) draft.points.push(point);
+        if (!last || point.x !== last.x || point.z !== last.z) {
+          draft.points.push(point);
+          draft.redoPoints = [];
+        }
         if (draft.type === "line" && draft.points.length === 2) finish();
         else { refresh(); api.redraw(); }
         return;
@@ -606,7 +648,7 @@
         event.stopImmediatePropagation();
         if (draft) reset();
         else resolveEdits().then((resolved) => { if (resolved) reset(); });
-      } else if (event.key === "Enter" && draft) {
+      } else if (event.key === "Enter" && draft && !event.target.closest?.("button, summary, a, [role='button']")) {
         event.preventDefault();
         finish();
       }
@@ -617,6 +659,7 @@
         draft = null;
         preview = null;
         canvas.style.cursor = "";
+        api.historyChanged?.();
       }
       const { zoom, offsetX, offsetY } = api.camera();
       const paint = (drawing, temporary = false) => {
@@ -663,6 +706,7 @@
 
     refresh();
     return { render, refresh, reset, start, leave, resolveEdits, hasPendingEdits, editVertices,
+      draftHistoryState, undoDraftPoint: () => traverseDraftHistory(false), redoDraftPoint: () => traverseDraftHistory(true),
       cancelPointerGesture: rollbackVertexGesture,
       hasPendingChanges: () => !!draft?.points.length || !!vertexDrag || hasPendingEdits(), active: () => !!draft };
   }

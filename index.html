@@ -1507,6 +1507,9 @@
       #drawingCommands label { display: flex; align-items: center; gap: var(--space-sm); }
       #drawingCommands select { flex: 1; min-width: 0; }
       #drawingCommands #drawingToolStrip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      #drawingCommands [hidden] { display: none; }
+      #drawingCommands[data-phase="placing"] #drawingToolStrip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      #drawingCommands[data-phase="placing"] #drawingFinish { justify-self: end; }
       #drawingCommands button { min-width: 0; padding-inline: 4px; }
       #drawingProgress:empty { display: none; }
       #hud[data-tool="select"] #drawingCommands,
@@ -2223,10 +2226,13 @@
         #workspacePanel {
           order: 1;
           width: auto;
-          height: min(var(--mobile-sheet-height, 42dvh), 420px);
+          height: auto;
           max-height: min(var(--mobile-sheet-height, 42dvh), 420px);
           border-radius: 0;
         }
+        #workspacePanel .workspace-section { height: auto; flex: 1 1 auto; }
+        #workspacePanel .workspace-section-head, #workspacePanel .workspace-tab-header { flex-shrink: 0; }
+        #pinListPanel .workspace-section-body, #workspacePanel .map-gallery { height: auto; }
 
         #workspaceShell.is-collapsed #workspacePanel {
           display: none;
@@ -2547,7 +2553,7 @@
                 <button type="button" class="ds-btn ds-btn-sm" data-draw-tool="line" aria-pressed="false" title="Place two endpoints"><span class="io iconoir-edit-pencil" aria-hidden="true"></span>Line</button>
                 <button type="button" class="ds-btn ds-btn-sm" data-draw-tool="path" aria-pressed="false" title="Place path points, then Finish"><span class="io iconoir-edit-pencil" aria-hidden="true"></span>Path</button>
                 <button type="button" id="drawingCancel" class="ds-btn ds-btn-sm" disabled>Cancel</button>
-                <button type="button" id="drawingFinish" class="ds-btn ds-btn-sm" disabled>Finish</button>
+                <button type="button" id="drawingFinish" class="ds-btn ds-btn-sm ds-btn-primary" disabled>Finish</button>
               </div>
               <output id="drawingProgress" class="control-readout" aria-live="polite"></output>
               <label class="control-field no-readout" for="drawingSelection" hidden><span>Drawing</span><select id="drawingSelection" class="ds-select"><option value="">None</option></select></label>
@@ -2570,7 +2576,7 @@
                 </details>
                 <div class="toolbar-actions">
                   <button type="button" id="drawingDelete" class="ds-btn ds-btn-sm ds-btn-danger">Delete</button>
-                  <button type="button" id="drawingApply" class="ds-btn ds-btn-sm">Apply</button>
+                  <button type="button" id="drawingApply" class="ds-btn ds-btn-sm ds-btn-primary">Apply</button>
                 </div>
               </div>
             </section>
@@ -3627,6 +3633,7 @@
           closePinEditor();
           isPlacingPin = tool === "pin";
           workspaceState.setTool(tool);
+          if (tool === "pin" && window.innerWidth <= 900) setWorkspaceCollapsed(true, false);
           canvas.style.cursor = tool === "pan" ? "grab" : tool === "pin" ? "crosshair" : "";
           document.body.style.cursor = "";
           updateStatusStrip();
@@ -5903,8 +5910,17 @@
       }
 
       function refreshHistoryButtons() {
-        if (undoBtn) undoBtn.disabled = undoStack.length === 0;
-        if (redoBtn) redoBtn.disabled = redoStack.length === 0;
+        const draftHistory = drawingTools?.draftHistoryState();
+        if (undoBtn) {
+          undoBtn.disabled = draftHistory?.active ? !draftHistory.canUndo : undoStack.length === 0;
+          undoBtn.title = draftHistory?.active ? "Undo point" : "Undo";
+          undoBtn.setAttribute("aria-label", undoBtn.title);
+        }
+        if (redoBtn) {
+          redoBtn.disabled = draftHistory?.active ? !draftHistory.canRedo : redoStack.length === 0;
+          redoBtn.title = draftHistory?.active ? "Redo point" : "Redo";
+          redoBtn.setAttribute("aria-label", redoBtn.title);
+        }
         updateStatusStrip();
       }
 
@@ -5998,6 +6014,7 @@
       }
 
       async function undoPinsChange() {
+        if (drawingTools?.draftHistoryState().active) { drawingTools.undoDraftPoint(); return; }
         if (undoStack.length === 0) return;
         if (!await resolvePendingWorkspaceChanges() || undoStack.length === 0) return;
         const entry = undoStack.pop();
@@ -6013,6 +6030,7 @@
       }
 
       async function redoPinsChange() {
+        if (drawingTools?.draftHistoryState().active) { drawingTools.redoDraftPoint(); return; }
         if (redoStack.length === 0) return;
         if (!await resolvePendingWorkspaceChanges() || redoStack.length === 0) return;
         const entry = redoStack.pop();
@@ -7823,7 +7841,8 @@
 
       window.addEventListener("keydown", (event) => {
         const modifier = event.ctrlKey || event.metaKey;
-        if (!modifier) return;
+        if (!modifier || event.defaultPrevented || event.isComposing || event.altKey) return;
+        if (event.target.isContentEditable || event.target.closest?.("input, textarea, select, dialog")) return;
         if (event.key.toLowerCase() === "z" && !event.shiftKey) {
           event.preventDefault();
           undoPinsChange();
@@ -8111,6 +8130,8 @@
         markerBackground: () => getRenderColors().labelBgColor,
         redraw: draw,
         history: pushHistoryState,
+        historyChanged: refreshHistoryButtons,
+        onToolStarted: () => { if (window.innerWidth <= 900) setWorkspaceCollapsed(true, false); },
         save: () => { markDirty(); saveCurrentMap(); renderLayers(); },
         toast: showToast,
         confirm: showConfirmDialog,
@@ -8138,7 +8159,6 @@
       }
       function syncWorkspaceToolControls() {
         const tool = workspaceState.get().tool;
-        if (window.innerWidth <= 900 && ["pin", "line", "path"].includes(tool)) setWorkspaceCollapsed(true, false);
         drawingPanel.dataset.tool = tool;
         hud.dataset.tool = tool;
         drawingPanel.hidden = workspaceState.get().selection?.kind !== "drawing";

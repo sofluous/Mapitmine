@@ -61,7 +61,37 @@ try {
       await page.screenshot({ path: resolve(output, `2026-11-10-${theme}-${viewport.width}x${viewport.height}.png`) });
       await page.evaluate(() => setWorkspaceTab("maps", { persist: false }));
       await check(viewport.height);
+      await page.evaluate(() => setWorkspaceTab("settings", { persist: false, openPanel: true }));
+      const settingsHeight = (await box("workspacePanel")).height;
+      await page.evaluate(() => setWorkspaceTab("map-view", { persist: false, openPanel: true }));
+      const longPanel = await box("workspacePanel");
+      const maximum = await page.evaluate(() => parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--mobile-sheet-height")));
+      assert.ok(longPanel.height <= maximum + 1, "Long tabs obey the shared sheet ceiling");
+      if (viewport.height >= 740) {
+        assert.ok(settingsHeight + 20 < longPanel.height, "Short Settings content does not reserve a long tab's height");
+        assert.ok(longPanel.y >= viewport.height * 0.35 - 2, "Normal-height sheets preserve map space above the dock and panel");
+      }
+      if (viewport.width === 390 && viewport.height === 844) {
+        await page.screenshot({ path: resolve(output, `2026-11-14-${theme}-long.png`) });
+        await page.evaluate(() => setWorkspaceTab("settings", { persist: false, openPanel: true }));
+        await page.screenshot({ path: resolve(output, `2026-11-14-${theme}-short.png`) });
+      }
     }
+    await page.setViewportSize({ width: 390, height: 844 }); await settle();
+    await page.evaluate(() => { workspaceState.select(null); setWorkspaceTab("layers", { persist: false, openPanel: true }); });
+    await page.locator('[data-canvas-tool="path"]').click();
+    assert.equal(await page.locator("#workspaceShell").evaluate((e) => e.classList.contains("is-collapsed")), true, "Actual tool entry closes the mobile sheet once");
+    await page.evaluate(() => setWorkspaceTab("layers", { persist: false, openPanel: true }));
+    const historyBeforeSearch = await page.evaluate(() => undoStack.length);
+    await page.locator("#objectSearch").focus();
+    await page.keyboard.type("route");
+    await page.evaluate(() => { renderLayers(); syncWorkspaceToolControls(); });
+    assert.equal(await page.locator("#objectSearch").isVisible(), true, "Search refresh cannot collapse an explicitly opened drawing workspace");
+    assert.equal(await page.locator("#objectSearch").inputValue(), "route");
+    assert.equal(await page.evaluate(() => workspaceState.get().tool), "path");
+    assert.equal(await page.evaluate(() => undoStack.length), historyBeforeSearch);
+    await page.locator("#objectSearch").fill("");
+    await page.locator("#drawingCancel").click();
   }
   await page.setViewportSize({ width: 390, height: 844 }); await settle();
   for (const tab of ["maps", "pins", "layers", "map-view", "settings"]) {
@@ -105,14 +135,35 @@ try {
     mobileLayout.refresh();
   });
   await settle();
+  await page.locator("#pinEditorLabel").focus();
+  const beforeKeyboardTransitions = await page.evaluate(() => ({ raw: localStorage.getItem(mapKey(currentMapName)), history: undoStack.length, zoom, offsetX, offsetY }));
+  for (const viewport of [{ height: 620, offsetTop: 0 }, { height: 400, offsetTop: 20 }, { height: 500, offsetTop: 0 }, { height: 844, offsetTop: 0 }, { height: 400, offsetTop: 0 }]) {
+    await page.evaluate((value) => { Object.defineProperty(window, "visualViewport", { configurable: true, value }); mobileLayout.refresh(); }, viewport);
+    await settle();
+    const field = await box("pinEditorLabel"), overlay = await box("contextInspector"), controls = await box("mobileDock");
+    assert.ok(field.y >= Math.max(viewport.offsetTop, overlay.y) - 1 && field.y + field.height <= controls.y + 1, "Focused input remains visible through keyboard resize/scroll transitions");
+    assert.equal(await page.locator("#pinEditorLabel").inputValue(), "Keyboard viewport draft");
+    await settle();
+    assert.deepEqual(await box("mobileDock"), controls, "Settled viewport does not keep shifting the dock");
+    assert.deepEqual(await box("contextInspector"), overlay, "Settled viewport does not keep shifting the sheet");
+    assert.deepEqual(await page.evaluate(() => ({ raw: localStorage.getItem(mapKey(currentMapName)), history: undoStack.length, zoom, offsetX, offsetY })), beforeKeyboardTransitions);
+  }
   const dock = await box("mobileDock");
   assert.ok(dock.y >= 0 && dock.y + dock.height <= 401, "Dock follows an overlay keyboard's visual viewport");
   assert.equal(await page.locator("#pinEditorLabel").inputValue(), "Keyboard viewport draft");
   await page.locator("#pinEditorSaveBtn").scrollIntoViewIfNeeded();
   const save = await box("pinEditorSaveBtn");
   assert.ok(save.y >= 0 && save.y + save.height <= dock.y + 1, "Editing actions remain scroll-reachable above the dock");
-  await page.evaluate(() => closePinEditor());
   await page.evaluate(() => Object.defineProperty(window, "visualViewport", { configurable: true, value: window.originalViewport }));
+  await page.locator("#pinEditorLabel").focus();
+  for (const viewport of [{ width: 390, height: 500 }, { width: 844, height: 390 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport); await settle();
+    const field = await box("pinEditorLabel"), dock = await box("mobileDock");
+    assert.ok(field.y >= 0 && field.y + field.height <= dock.y + 1, "Focused editing survives layout-viewport resize and rotation");
+    assert.equal(await page.locator("#pinEditorLabel").inputValue(), "Keyboard viewport draft");
+    assert.deepEqual(await page.evaluate(() => ({ raw: localStorage.getItem(mapKey(currentMapName)), history: undoStack.length, zoom, offsetX, offsetY })), beforeKeyboardTransitions);
+  }
+  await page.evaluate(() => closePinEditor());
   await page.setViewportSize({ width: 1440, height: 900 }); await settle();
   assert.equal(await page.locator("#mobileDock").isVisible(), false);
   assert.equal(await page.locator("#workspaceShell > #appRail").count(), 1);
