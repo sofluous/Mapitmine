@@ -107,8 +107,8 @@
 
       .pin-line-secondary {
         grid-area: bottom;
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto minmax(max-content, 52%);
+        display: flex;
+        flex-wrap: wrap;
         align-items: center;
         gap: 8px;
         min-width: 0;
@@ -143,6 +143,9 @@
       }
 
       .pin-coords {
+        flex: 0 0 auto;
+        margin-left: auto;
+        justify-content: end;
         justify-self: end;
         display: grid;
         grid-template-columns: repeat(3, max-content);
@@ -151,6 +154,9 @@
         font-variant-numeric: tabular-nums;
         text-align: right;
       }
+
+      .pin-line-secondary > .pin-label { flex: 1 1 8ch; min-width: 8ch; }
+      .pin-line-secondary > .pin-tag { flex: 0 0 auto; max-width: 100%; }
 
       .pin-coord {
         display: grid;

@@ -24,14 +24,30 @@ try {
     await settle();
   };
   const xInput = (index) => page.locator(`#drawingPoints input[data-point="${index}"][data-axis="x"]`);
+  const chooseVertex = async (index) => {
+    if (await page.locator(".drawing-points-toggle").getAttribute("aria-expanded") !== "true") await page.locator(".drawing-points-toggle").click();
+    await page.locator(`#drawingPoints [data-vertex="${index}"]`).focus();
+    await page.locator(".drawing-points-toggle").click();
+  };
   for (const theme of ["paper-mint", "steel-night", "amber-terminal"]) {
     await page.evaluate((value) => MapItTheme.setTheme(value), theme);
     for (const width of [320, 390, 901, 1440]) {
       await page.setViewportSize({ width, height: 900 }); await select();
       assert.equal(await page.locator("#drawingPoints input:visible").count(), 2, "Only active coordinates are shown by default");
       assert.equal(await page.locator("#drawingStyle").getAttribute("open"), null);
+      assert.equal(await page.locator("#drawingVertexSelect").count(), 0, "Vertex coordinates are the only selection control");
+      await page.locator('#drawingPoints [data-vertex="0"]').focus();
+      await page.keyboard.press("ArrowDown");
+      assert.equal(await page.locator('#drawingPoints [data-vertex="1"]').getAttribute("aria-current"), "true");
+      assert.equal(await xInput(1).isVisible(), true, "Compact keyboard navigation reveals the active row");
+      await page.keyboard.press("End");
+      assert.equal(await page.locator('#drawingPoints [data-vertex="99"]').getAttribute("aria-current"), "true");
+      await page.keyboard.press("Home");
       const count = await page.evaluate(() => undoStack.length);
-      await page.locator("#drawingVertexSelect").selectOption("24");
+      await chooseVertex(24);
+      await page.locator("#drawingVertices").click();
+      assert.equal(await page.locator('#drawingPoints [data-vertex="24"]').getAttribute("aria-current"), "true", "Entering canvas vertex editing preserves list selection");
+      await page.locator("#drawingVertices").click();
       assert.equal(await xInput(24).inputValue(), "-123456765.125");
       assert.equal(await page.evaluate(() => drawingTools.hasPendingEdits()), false);
       assert.equal(await page.evaluate(() => undoStack.length), count);
@@ -45,7 +61,7 @@ try {
       assert.equal(await page.locator("#drawingPoints input:visible").count(), 200);
       await page.keyboard.press("Enter");
       assert.equal(await page.locator("#drawingPoints input:visible").count(), 2);
-      await page.locator("#drawingVertexSelect").selectOption("0");
+      await chooseVertex(0);
       await page.screenshot({ path: resolve(output, `${theme}-${width}.png`) });
       if (![390, 1440].includes(width)) continue;
       await page.evaluate(() => { workspaceState.select(null); setWorkspaceTab("map-view", { persist: false, openPanel: true }); });
@@ -82,7 +98,7 @@ try {
   await page.setViewportSize({ width: 390, height: 900 }); await select();
   const original = await xInput(0).inputValue();
   await xInput(0).fill("");
-  await page.locator("#drawingVertexSelect").selectOption("1");
+  await chooseVertex(1);
   assert.equal(await page.evaluate(() => shouldWarnBeforeUnload()), true, "Hidden invalid edits still protect navigation");
   const before = await page.evaluate(() => ({ points: JSON.stringify(drawings[0].points), history: undoStack.length }));
   await page.locator("#drawingApply").click();
@@ -117,7 +133,7 @@ try {
   await settle();
   await page.evaluate(() => { layers[0].locked = true; drawingTools.refresh(); });
   assert.equal(await xInput(0).isDisabled(), true);
-  await page.locator("#drawingVertexSelect").selectOption("99");
+  await chooseVertex(99);
   assert.equal(await xInput(99).isVisible(), true, "Locked geometry stays inspectable without editing");
   assert.equal(await xInput(99).isDisabled(), true);
   assert.deepEqual(errors, []);

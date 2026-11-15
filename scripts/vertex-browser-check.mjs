@@ -142,7 +142,9 @@ try {
   await canvas.dispatchEvent("pointercancel", { pointerId: 44 });
   assert.deepEqual(await points(), before);
   assert.equal(await page.evaluate(() => shouldWarnBeforeUnload()), false);
-  await page.locator("#drawingVertexSelect").selectOption("1");
+  await page.locator(".drawing-points-toggle").click();
+  await page.locator('#drawingPoints [data-vertex="1"]').focus();
+  await page.locator(".drawing-points-toggle").click();
   await page.locator("#drawingVertexInsert").focus(); await page.keyboard.press("Enter");
   assert.equal((await points()).length, 4);
   await page.locator("#drawingVertexDelete").focus(); await page.keyboard.press("Enter");
@@ -162,7 +164,7 @@ try {
   await page.locator("#drawingApply").click();
   await page.locator(".drawing-points-toggle").click();
   await page.locator('#drawingPoints input[data-point="1"][data-axis="z"]').focus();
-  assert.equal(await page.locator("#drawingVertexSelect").inputValue(), "1", "Coordinate focus follows the active vertex");
+  assert.equal(await page.locator('#drawingPoints [data-vertex="1"]').getAttribute("aria-current"), "true", "Coordinate focus follows the active vertex");
   assert.equal((await points())[0].x, -12.5, "Exact input retains fractions");
   await page.locator('#drawingPoints input[data-point="0"][data-axis="x"]').fill("");
   await page.locator("#drawingVertexInsert").click();

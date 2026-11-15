@@ -100,7 +100,7 @@
         if (blockClick || pointers.size) stop(event);
       }, { capture: true, passive: false });
     }
-    return { active: () => pointers.size > 0 };
+    return { active: () => pointers.size > 0, cancelGesture: cancel };
   }
 
   global.MapitMineTouchNavigation = Object.freeze({ pinchCamera, install });

@@ -42,18 +42,35 @@ try {
     await start();
     assert.equal(await page.locator("#drawingLayer").isEnabled(), true);
     await page.locator("#drawingLayer").selectOption("routes");
-    const setupHeight = (await page.locator("#hud").boundingBox()).height;
+    const setupHeight = (await page.locator("#drawingCommands").boundingBox()).height;
+    const setupTools = await page.locator("#historyTools").boundingBox();
     const before = await snapshot();
     assert.equal(await page.locator("#undoBtn").isDisabled(), true);
     await point(0); await point(1); await point(2); await progress(3);
-    assert.equal(await page.locator('[data-draw-tool]:visible').count(), 0, "Shape setup yields to placement actions");
+    assert.equal(await page.locator("#drawingShape").isVisible(), false, "Shape selector yields to placement actions");
     assert.equal(await page.locator('label[for="drawingLayer"]').isVisible(), false);
-    assert.ok((await page.locator("#hud").boundingBox()).height < setupHeight - 20, "Placement commands consume less vertical space than setup");
+    assert.ok((await page.locator("#drawingCommands").boundingBox()).height < setupHeight - 20, "Placement commands consume less vertical space than setup");
+    if (width === 390) {
+      const placementTools = await page.locator("#historyTools").boundingBox();
+      assert.ok(Math.abs(placementTools.y - setupTools.y) <= 1, "Primary tools stay anchored between setup and placement");
+    }
     assert.equal(await page.locator("#drawingFinish").evaluate((e) => e.classList.contains("ds-btn-primary")), true);
     const repeatPrompts = await page.evaluate(() => draftPromptCount);
     await page.locator('[data-canvas-tool="path"]').click(); await progress(3); await noDialog();
     assert.equal(await page.evaluate(() => draftPromptCount), repeatPrompts, "Reselecting Draw is idempotent");
     assert.equal(await page.locator("#undoBtn").getAttribute("aria-label"), "Undo point");
+    if (width === 1440) {
+      await page.mouse.move(x, 350);
+      assert.equal(await page.locator("#mapCanvas").evaluate((element) => element.style.cursor), "grab");
+      await page.mouse.down();
+      await page.mouse.move(x + 12, 360, { steps: 3 });
+      await page.mouse.up();
+      await progress(3);
+      await page.keyboard.press("Control+z"); await progress(3);
+      await page.keyboard.press("Control+Shift+z"); await progress(3);
+      await page.keyboard.press("Control+z"); await progress(3);
+      assert.deepEqual(await snapshot(), before, "Mouse draft moves leave document data/history untouched");
+    }
     await page.locator("#undoBtn").focus(); await page.keyboard.press("Enter"); await progress(2);
     await page.locator("#redoBtn").focus(); await page.keyboard.press("Space"); await progress(3);
     await page.locator("#undoBtn").click(); await progress(2); await noDialog();

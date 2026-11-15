@@ -21,7 +21,8 @@
     dock.id = "mobileDock";
     dock.className = "app-panel";
     document.body.appendChild(dock);
-    const homes = [hud, status, rail].map((element) => {
+    const commands = hud.querySelector("#drawingCommands");
+    const homes = [hud, status, rail, commands].filter(Boolean).map((element) => {
       const marker = document.createComment("mobile layout home");
       element.before(marker);
       return { element, marker };
@@ -39,7 +40,10 @@
       const next = window.innerWidth <= 900;
       if (next !== mobile) {
         mobile = next;
-        if (mobile) dock.append(hud, status, rail);
+        if (mobile) {
+          if (commands) dock.appendChild(commands);
+          dock.append(hud, status, rail);
+        }
         else homes.forEach(({ element, marker }) => marker.after(element));
       }
       if (!mobile) {

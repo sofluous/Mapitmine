@@ -40,11 +40,7 @@ panel.querySelector = (selector) => {
   if (!fields.has(selector)) fields.set(selector, new Element());
   return fields.get(selector);
 };
-const line = new Element("button");
-line.dataset.drawTool = "line";
-const path = new Element("button");
-path.dataset.drawTool = "path";
-panel.querySelectorAll = (selector) => selector === "[data-draw-tool]" ? [line, path] : [];
+panel.querySelectorAll = () => [];
 const canvas = new Element("canvas");
 const window = new Element();
 const context = { window, document: { createElement: (tag) => new Element(tag) }, crypto: { randomUUID } };
@@ -66,8 +62,10 @@ let canFinishDraft = false;
 let prepareAllowed = true;
 let consumeClick = false;
 const workspace = window.MapitMineWorkspace.create();
+let draftMenuItems = [];
 const controller = install({
   workspace,
+  showMenu: (items) => { draftMenuItems = items; },
   canvas, panel,
   drawings: () => drawings, layers: () => layers,
   hasMap: () => true, canSelect: () => true,
@@ -83,7 +81,7 @@ const controller = install({
 let allowDiscard = true;
 const field = (id) => panel.querySelector(`#${id}`);
 const click = (x, z) => canvas.emit("click", { clientX: x, clientY: z });
-await line.emit("click");
+await controller.start("line");
 await click(0, 0);
 await click(10, 0);
 assert.equal(drawings.length, 1);
@@ -100,25 +98,27 @@ field("drawingWidth").value = "4";
 await field("drawingApply").emit("click");
 assert.equal(drawings[0].style.width, 4);
 assert.equal(history.at(-1), "Edit Drawing");
-await path.emit("click");
+await controller.start("path");
 await click(1, 1);
 await click(2, 3);
 await click(4, 5);
 await field("drawingFinish").emit("click");
 assert.equal(drawings.length, 2);
 assert.equal(drawings[1].points.length, 3);
-await path.emit("click");
+await controller.start("path");
 await click(8, 8);
 allowDiscard = false;
 draftChoice = "keep";
-await line.emit("click");
+field("drawingShape").value = "line";
+await field("drawingShape").emit("change");
+assert.equal(field("drawingShape").value, "path", "Declined shape change restores the selector");
 assert.equal(workspace.get().tool, "path", "Declining discard keeps the original drawing tool");
 assert.equal(controller.active(), true, "Declining discard preserves the draft");
 allowDiscard = true;
 draftChoice = "discard";
 await field("drawingCancel").emit("click");
 assert.equal(drawings.length, 2);
-await line.emit("click");
+await controller.start("line");
 await click(20, 20);
 layers[0].locked = true;
 await click(30, 30);
@@ -150,7 +150,7 @@ assert.equal(field("drawingName").value, "Pending rename");
 let strokes = 0;
 const markerRects = [];
 const ctx = {
-  save() {}, restore() {}, setLineDash() {}, beginPath() {},
+  save() {}, restore() {}, setLineDash() {}, beginPath() {}, strokeRect() {},
   moveTo() {}, lineTo() {}, fillRect(...rect) { if (this.fillStyle === "#ffffff") markerRects.push(rect); }, stroke() { strokes++; },
 };
 controller.render(ctx);
@@ -242,8 +242,7 @@ await field("drawingVertexDelete").emit("click");
 assert.equal(drawings[0].points.length, 2, "A path cannot lose its minimum two vertices");
 const coordinateRows = () => field("drawingPoints").children.filter((row) => row.dataset.vertex !== undefined);
 assert.equal(coordinateRows().filter((row) => !row.hidden).length, 1, "Compact view presents one active coordinate pair");
-field("drawingVertexSelect").value = "1";
-await field("drawingVertexSelect").emit("change");
+await coordinateRows()[1].emit("focus");
 assert.equal(coordinateRows()[1].hidden, false);
 assert.equal(controller.hasPendingEdits(), false, "Vertex navigation is not a document edit");
 const compactToggle = field("drawingPoints").children.find((row) => row.tag === "button");
@@ -341,4 +340,39 @@ assert.equal(await controller.leave(), false, "Recoverable redo points still req
 assert.equal(draftResolutions, resolutionsBefore + 1);
 await field("drawingCancel").emit("click");
 assert.equal(draftResolutions, resolutionsBefore + 1, "Explicit Cancel is not confirmed again");
-console.log("Drawing controller, draft point history and geometry checks passed.");
+await controller.start("path"); await click(100, 100); await click(200, 200);
+const moveDraftVertex = async (x, z) => {
+  await canvas.emit("pointerdown", { button: 0, pointerType: "mouse", pointerId: 77, clientX: 100, clientY: 100 });
+  await window.emit("pointermove", { pointerId: 77, clientX: x, clientY: z });
+  await window.emit("pointerup", { pointerId: 77, clientX: x, clientY: z });
+};
+const historyBeforeMove = history.length, savesBeforeMove = saves;
+await moveDraftVertex(120, 130);
+assert.equal(field("drawingProgress").textContent, "Path: 2 points");
+assert.equal(history.length, historyBeforeMove);
+assert.equal(saves, savesBeforeMove, "Draft moves do not save");
+controller.undoDraftPoint();
+assert.equal(field("drawingProgress").textContent, "Path: 2 points");
+controller.undoDraftPoint();
+assert.equal(field("drawingProgress").textContent, "Path: 1 points");
+controller.redoDraftPoint(); controller.redoDraftPoint(); controller.undoDraftPoint();
+await moveDraftVertex(100, 100);
+assert.equal(controller.draftHistoryState().canRedo, true, "No-op drag preserves redo");
+await moveDraftVertex(125, 140);
+assert.equal(controller.draftHistoryState().canRedo, false, "New move clears the old redo branch");
+await canvas.emit("pointerdown", { button: 0, pointerType: "mouse", pointerId: 78, clientX: 125, clientY: 140 });
+await window.emit("pointermove", { pointerId: 78, clientX: 150, clientY: 160 });
+assert.equal(controller.undoDraftPoint(), false, "In-flight gesture owns history");
+await window.emit("blur");
+await field("drawingFinish").emit("click");
+assert.deepEqual(JSON.parse(JSON.stringify(drawings.at(-1).points)), [{ x: 125, z: 140 }, { x: 200, z: 200 }]);
+assert.equal(history.length, historyBeforeMove + 1);
+await controller.start("path"); await click(5, 5);
+await canvas.emit("contextmenu", { clientX: 5, clientY: 5 });
+assert.equal(controller.active(), true, "Draft contextmenu cannot silently discard work");
+const staleCancel = draftMenuItems.find((item) => item.label === "Cancel drawing").action;
+controller.reset(); await controller.start("path"); await click(10, 10);
+staleCancel();
+assert.equal(controller.active(), true, "Old menu cannot cancel a different draft session");
+controller.reset();
+console.log("Drawing controller, draft point/move history and geometry checks passed.");

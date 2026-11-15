@@ -156,11 +156,11 @@ try {
   }
   await page.setViewportSize({ width: 390, height: 844 });
   await tool("path").click();
-  assert.equal(await page.locator("#hud #drawingToolStrip").count(), 1, "Drawing commands share the history toolbar");
+  assert.equal(await page.locator("#mobileDock > #drawingCommands #drawingToolStrip").count(), 1, "Mobile drawing commands have one group above the primary toolbar");
   await page.screenshot({ path: resolve(output, "2026-10-29-workspace-tools-draw-mobile.png") });
   const toolbarBounds = await page.locator("#hud").boundingBox();
   const commandsBounds = await page.locator("#drawingToolStrip").boundingBox();
-  assert.ok(commandsBounds.y >= toolbarBounds.y && commandsBounds.y + commandsBounds.height <= toolbarBounds.y + toolbarBounds.height);
+  assert.ok(commandsBounds.y + commandsBounds.height <= toolbarBounds.y, "Mobile commands leave the primary tool row anchored below");
   await page.locator("#drawingCancel").click();
   await tool("pin").click();
   await page.locator("#mapCanvas").click({ position: { x: 80, y: 200 } });
@@ -197,12 +197,50 @@ try {
     await page.evaluate((value) => MapItTheme.setTheme(value), theme);
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: 900 });
+      const collapse = page.locator("#railCollapseBtn");
+      const selectedTabs = page.locator('[data-workspace-tab][aria-pressed="true"]');
+      await page.locator('[data-workspace-tab="settings"]').click();
+      assert.equal(await selectedTabs.count(), 1, "Only the visible workspace tab is selected");
+      assert.equal(await collapse.getAttribute("aria-expanded"), "true");
+      assert.equal(await collapse.getAttribute("aria-pressed"), null, "Disclosure is not a pressed toggle");
+      await collapse.focus();
+      await page.keyboard.press("Enter");
+      assert.equal(await selectedTabs.count(), 0, "Closed panel has no selected tab");
+      assert.equal(await page.locator("[data-workspace-tab].is-active").count(), 0);
+      assert.equal(await collapse.getAttribute("aria-expanded"), "false");
+      assert.equal(await collapse.evaluate((element) => element === document.activeElement), true);
+      assert.equal(await page.evaluate(() => getActiveWorkspaceTab()), "settings", "Collapse remembers the tab");
+      await page.keyboard.press("Space");
+      assert.equal(await selectedTabs.getAttribute("data-workspace-tab"), "settings", "Reopen restores remembered tab");
+      await page.locator('[data-workspace-tab="settings"]').click();
+      assert.equal(await selectedTabs.count(), 0, "Clicking the open tab collapses it");
+      await page.locator('[data-workspace-tab="maps"]').click();
+      assert.equal(await selectedTabs.getAttribute("data-workspace-tab"), "maps", "A different tab opens directly");
+      await page.evaluate(() => {
+        workspaceState.select(null); setWorkspaceCollapsed(true, false);
+        workspaceState.setTool("select");
+        const points = drawings[0].points;
+        const midpoint = { x: (points[0].x + points[1].x) / 2, z: (points[0].z + points[1].z) / 2 };
+        zoom = 1; offsetX = innerWidth / 2 - midpoint.x; offsetY = 300 - midpoint.z; draw();
+      });
+      await page.locator("#mapCanvas").click({ position: { x: width / 2, y: 300 } });
+      assert.equal((await state()).selection?.kind, "drawing");
+      assert.equal(await page.locator("#contextInspector").isVisible(), false, "Canvas selection does not open a closed inspector");
+      assert.equal(await collapse.getAttribute("aria-expanded"), "false", "Canvas selection does not open workspace navigation");
+      await page.evaluate(() => { drawingTools.refresh(); renderObjectInspector(); });
+      assert.equal(await page.locator("#contextInspector").isVisible(), false, "Ordinary refresh preserves selection-only state");
+      await page.locator("#mapCanvas").dblclick({ position: { x: width / 2, y: 300 } });
+      assert.equal(await page.locator("#contextInspector").isVisible(), true, "Explicit double-click opens drawing properties");
       for (const kind of ["pin", "drawing", "layer"]) {
         await page.evaluate(async (kind) => {
           await selectWorkspaceObject({ kind, id: kind === "pin" ? "pin-qa" : kind === "drawing" ? drawings[0].id : "default" });
         }, kind);
         const inspector = page.locator("#contextInspector");
         assert.equal(await inspector.isVisible(), true);
+        if (width === 390) {
+          assert.equal(await selectedTabs.count(), 0, "Mobile inspector handoff clears workspace tab selection");
+          assert.equal(await collapse.getAttribute("aria-expanded"), "false");
+        }
         if (kind === "pin") await page.locator("#objectInspectorEdit").click();
         const bounds = await inspector.boundingBox();
         assert.ok(bounds.x >= 0 && bounds.x + bounds.width <= width && bounds.y >= 0 && bounds.y + bounds.height <= 900);
@@ -220,6 +258,61 @@ try {
   await page.evaluate(() => { layers[0].locked = true; renderLayers(); });
   assert.equal(await tool("pin").isDisabled(), true);
   assert.equal(await tool("path").isDisabled(), true);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.evaluate(() => {
+    workspaceState.select(null); workspaceState.setTool("select"); setWorkspaceCollapsed(true, false);
+    layers[0].visible = true; layers[0].locked = false;
+    pins = [{ uid: "hover-a", label: "Hover A", x: 0, z: 0, layerId: layers[0].id },
+      { uid: "hover-b", label: "Hover B", x: 80, z: 0, layerId: layers[0].id }];
+    zoom = 1; offsetX = 500; offsetY = 300; crosshairMode = true;
+    hoveredPinIndex = null; lastCursor = { x: 123, z: 456 };
+    window.pinLabelTrace = [];
+    const fillText = ctx.fillText;
+    window.restorePinTrace = () => { ctx.fillText = fillText; };
+    ctx.fillText = function (text, ...args) {
+      if (text === "Hover B") pinLabelTrace.push(this.globalAlpha);
+      return fillText.call(this, text, ...args);
+    };
+    renderLayers(); draw();
+  });
+  const hoverDocument = await page.evaluate(() => ({ history: undoStack.length, raw: localStorage.getItem(mapKey(currentMapName)) }));
+  await page.mouse.move(500, 300);
+  assert.equal(await page.evaluate(() => hoveredPinIndex), 0);
+  assert.deepEqual(await page.evaluate(() => lastCursor), { x: 123, z: 456 }, "Pin hover does not drive coordinate telemetry");
+  assert.equal(await page.locator("#cursorLabel").isVisible(), false, "Pin hover suppresses the cursor label");
+  assert.equal(await page.evaluate(() => pinLabelTrace.at(-1)), 0.25, "Other mapped labels fade during hover");
+  assert.equal(await page.evaluate(() => ctx.globalAlpha), 1, "Pin rendering restores canvas state");
+  await page.mouse.move(700, 450);
+  assert.equal(await page.evaluate(() => pinLabelTrace.at(-1)), 1, "Leaving the pin restores other labels");
+  assert.deepEqual(await page.evaluate(() => ({ history: undoStack.length, raw: localStorage.getItem(mapKey(currentMapName)) })), hoverDocument);
+  await page.evaluate(() => { renderPinList(); setWorkspaceTab("pins"); });
+  await page.locator('.pin-card[data-index="0"]').focus();
+  assert.equal(await page.evaluate(() => pinLabelTrace.at(-1)), 0.25, "Keyboard card focus provides equivalent map emphasis");
+  await page.locator('[data-canvas-tool="select"]').focus();
+  assert.equal(await page.evaluate(() => pinLabelTrace.at(-1)), 1, "Leaving keyboard focus restores map labels");
+  await page.evaluate(() => restorePinTrace());
+  await page.locator('[data-workspace-tab="layers"]').click();
+  const layerRow = page.locator(".layer-row").first();
+  const visibility = layerRow.locator('[data-outline-action="visibility"]');
+  const lock = layerRow.locator('[data-outline-action="lock"]');
+  await page.mouse.move(1000, 500);
+  await page.locator('[data-canvas-tool="select"]').focus();
+  assert.equal(await layerRow.locator(".layer-count").textContent(), "(2)", "Layer pin count is inline");
+  assert.equal(await lock.evaluate((element) => getComputedStyle(element).opacity), "0", "Inactive lock is quiet at rest");
+  await lock.focus();
+  assert.equal(await lock.evaluate((element) => getComputedStyle(element).opacity), "1", "Keyboard focus reveals row utilities");
+  await layerRow.hover();
+  assert.equal(await visibility.evaluate((element) => getComputedStyle(element).opacity), "1");
+  await lock.click();
+  await page.mouse.move(1000, 500); await page.locator('[data-canvas-tool="select"]').focus();
+  assert.equal(await lock.getAttribute("aria-pressed"), "true");
+  assert.equal(await lock.getAttribute("title"), "Unlock layer");
+  assert.equal(await lock.evaluate((element) => getComputedStyle(element).opacity), "1", "Locked indicator remains visible");
+  await layerRow.hover(); await visibility.click();
+  await page.mouse.move(1000, 500); await page.locator('[data-canvas-tool="select"]').focus();
+  assert.equal(await visibility.getAttribute("aria-pressed"), "false");
+  assert.equal(await visibility.getAttribute("title"), "Show layer");
+  assert.equal(await visibility.evaluate((element) => getComputedStyle(element).opacity), "1", "Hidden indicator remains visible");
   assert.deepEqual(errors, []);
   console.log("Workspace browser checks passed: shared inspectors/mobile sheets, drawing edit guards, layer controls, draft resolution, pan/centering, merged toolbar, connected shell and three-theme responsive screenshots.");
 } finally {

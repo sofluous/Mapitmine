@@ -5,7 +5,7 @@ const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
 
 assert.ok(!/mapScaleChip|scale-chip|getScaleBarMetrics|updateScaleChip/.test(html), "Obsolete distance scale and consumers are removed");
 assert.ok(html.includes('hud.append(historyTools, document.getElementById("workspaceTools"))'));
-assert.ok(html.includes('hud.appendChild(document.getElementById("mapStatusStrip"))'));
+assert.ok(html.includes('document.body.appendChild(document.getElementById("mapStatusStrip"))'));
 
 const required = [
   'id="minimapDetail"',

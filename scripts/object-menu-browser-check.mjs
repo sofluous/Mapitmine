@@ -1,0 +1,101 @@
+import assert from "node:assert/strict";
+import { mkdir } from "node:fs/promises";
+import { resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+if (!process.env.PLAYWRIGHT_MODULE || !process.env.CHROMIUM_EXECUTABLE) throw new Error("Set PLAYWRIGHT_MODULE and CHROMIUM_EXECUTABLE.");
+const { chromium } = await import(pathToFileURL(resolve(process.env.PLAYWRIGHT_MODULE)).href);
+const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROMIUM_EXECUTABLE });
+const output = fileURLToPath(new URL("../_docs/data/object-menus/", import.meta.url)); await mkdir(output, { recursive: true });
+try {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, hasTouch: true });
+  const errors = []; page.on("pageerror", (error) => errors.push(error.message));
+  await page.addInitScript(() => {
+    for (const name of ["Menu A", "Menu B"]) localStorage.setItem(`map:${name}`, JSON.stringify({ version: 3,
+      layers: [{ id: "default", label: "Pins", visible: true, locked: false }],
+      pins: [{ uid: "farm", label: "Farm", x: 0, z: 0, layerId: "default" }],
+      drawings: [{ id: "trail", name: "Trail", type: "path", layerId: "default", points: [{ x: 0, z: 100 }, { x: 100, z: 100 }], style: { color: "#55bb99", width: 2 } }],
+    }));
+  });
+  await page.goto(new URL("../index.html", import.meta.url).href, { waitUntil: "domcontentloaded" });
+  const menu = page.locator("#contextMenu"), inspector = page.locator("#contextInspector");
+  const setup = () => page.evaluate(() => { layers[0].locked = false; workspaceState.select(null); workspaceState.setTool("select"); setWorkspaceCollapsed(true, false); zoom = 1; offsetX = 100; offsetY = 200; drawingTools.refresh(); syncWorkspaceToolControls(); draw(); });
+  const camera = () => page.evaluate(() => ({ zoom, offsetX, offsetY }));
+  await setup(); const before = await camera();
+  await page.touchscreen.tap(100, 200);
+  assert.equal(await inspector.isVisible(), false, "Single mapped-pin tap selects without opening its inspector");
+  assert.equal(await menu.isVisible(), false);
+  assert.equal(await page.evaluate(() => workspaceState.get().selection.id), "farm");
+  assert.deepEqual(await camera(), before);
+  await page.keyboard.press("Shift+F10"); await menu.waitFor({ state: "visible" });
+  assert.equal(await menu.getAttribute("aria-label"), "Farm");
+  await page.keyboard.press("Escape");
+  assert.equal(await page.evaluate(() => workspaceState.get().selection.id), "farm", "Closing menu preserves selection");
+  await page.mouse.dblclick(100, 200);
+  assert.equal(await page.locator("#contextInspectorTitle").textContent(), "Farm");
+  await page.locator("#pinEditorCancelBtn").click();
+  await page.evaluate(() => { setWorkspaceTab("pins"); renderPinList(); });
+  await page.locator('.pin-card[data-index="0"] .pin-label').click();
+  assert.equal(await inspector.evaluate((element) => element.hidden), true, "Pin-list selection does not open properties");
+  await page.locator('.pin-card[data-index="0"] .pin-label').dblclick();
+  assert.equal(await page.locator("#contextInspectorTitle").textContent(), "Farm");
+  await page.locator("#pinEditorCancelBtn").click();
+  for (const theme of ["paper-mint", "steel-night", "amber-terminal"]) {
+    await page.evaluate((value) => MapItTheme.setTheme(value), theme); await setup();
+    await page.mouse.click(180, 300, { button: "right" }); await menu.waitFor({ state: "visible" });
+    assert.equal(await menu.getAttribute("aria-label"), "Trail");
+    assert.ok((await page.getByRole("menuitem", { name: "Properties", exact: true }).boundingBox()).height >= 44, "Touch menu targets remain reachable");
+    assert.equal(await inspector.isVisible(), false, "Menu selection does not implicitly inspect");
+    assert.equal(await page.locator("#contextMenuItems").evaluate((element) => getComputedStyle(element).listStyleType), "none");
+    await page.screenshot({ path: resolve(output, `${theme}-drawing-menu.png`) });
+    await page.getByRole("menuitem", { name: "Properties", exact: true }).click();
+    await inspector.waitFor({ state: "visible" });
+    assert.equal(await page.locator("#contextInspectorTitle").textContent(), "Trail");
+    await page.locator("#drawingName").fill("Pending trail");
+    await page.mouse.click(100, 200, { button: "right" });
+    await page.locator('[data-draft-choice="keep"]').click();
+    assert.equal(await menu.isVisible(), false);
+    assert.equal(await page.locator("#drawingName").inputValue(), "Pending trail");
+    await page.locator("#drawingApply").click();
+    await page.evaluate(() => { drawings[0].name = "Trail"; drawingTools.refresh(); });
+    await setup();
+  }
+  await page.evaluate(() => { layers[0].locked = true; });
+  await page.mouse.click(180, 300, { button: "right" }); await menu.waitFor({ state: "visible" });
+  assert.equal(await page.getByRole("menuitem", { name: "Edit vertices", exact: true }).getAttribute("aria-disabled"), "true");
+  await page.keyboard.press("Escape"); await setup();
+  await page.locator('[data-canvas-tool="path"]').click(); await page.touchscreen.tap(100, 400);
+  await page.mouse.click(180, 400, { button: "right" }); await menu.waitFor({ state: "visible" });
+  assert.equal(await page.locator("#drawingProgress").textContent(), "Path: 1 points", "Draft contextmenu does not discard");
+  await page.keyboard.press("Escape");
+  assert.equal(await page.evaluate(() => drawingTools.active()), true);
+  await page.locator("#drawingCancel").click(); await setup();
+  const session = await page.context().newCDPSession(page);
+  const touch = (type, points) => session.send("Input.dispatchTouchEvent", { type, touchPoints: points.map(([id, x, y]) => ({ id, x, y })) });
+  await touch("touchStart", [[1, 180, 300]]); await menu.waitFor({ state: "visible" });
+  await touch("touchEnd", []);
+  assert.equal(await menu.getAttribute("aria-label"), "Trail");
+  assert.deepEqual(await camera(), before, "Hold does not pan or recenter");
+  await page.keyboard.press("Escape"); await setup();
+  await touch("touchStart", [[1, 180, 300]]); await touch("touchMove", [[1, 200, 300]]);
+  await page.waitForTimeout(650); assert.equal(await menu.isVisible(), false, "Movement cancels hold"); await touch("touchEnd", []); await setup();
+  await touch("touchStart", [[1, 180, 300]]); await touch("touchStart", [[1, 180, 300], [2, 260, 300]]);
+  await page.waitForTimeout(650); assert.equal(await menu.isVisible(), false, "Pinch takeover cancels hold"); await touch("touchEnd", []); await setup();
+  await page.locator('[data-canvas-tool="path"]').click();
+  await touch("touchStart", [[1, 180, 400]]); await page.waitForTimeout(650);
+  assert.equal(await menu.isVisible(), false, "Hold cannot steal a draft placement gesture");
+  await touch("touchEnd", []); assert.equal(await page.locator("#drawingProgress").textContent(), "Path: 1 points");
+  await page.locator("#drawingCancel").click();
+  await setup();
+  await page.mouse.click(180, 300, { button: "right" }); await menu.waitFor({ state: "visible" });
+  const staleDrawingAction = await page.getByRole("menuitem", { name: "Edit vertices", exact: true }).elementHandle();
+  const stalePinAction = await page.evaluateHandle(() => getPinActionItems(0).find((item) => item.label === "Edit Pin").action);
+  await page.evaluate(() => loadMap("Menu B"));
+  const otherMap = await page.evaluate(() => ({ history: undoStack.length, geometry: JSON.stringify(drawings), pins: JSON.stringify(pins) }));
+  await staleDrawingAction.dispatchEvent("click");
+  await stalePinAction.evaluate((action) => action());
+  assert.equal(await page.locator("#pinEditorPanel").isVisible(), false);
+  assert.notEqual(await page.evaluate(() => workspaceState.get().tool), "vertices");
+  assert.deepEqual(await page.evaluate(() => ({ history: undoStack.length, geometry: JSON.stringify(drawings), pins: JSON.stringify(pins) })), otherMap, "Old menu actions cannot target another map with the same IDs");
+  assert.deepEqual(errors, []);
+  console.log("Object menu browser checks passed: explicit pin/drawing menus, names, guards, draft safety and real touch hold/move/pinch.");
+} finally { await browser.close(); }

@@ -33,18 +33,50 @@ try {
     await page.mouse.down();
     await page.mouse.move(target.x + 70, target.y + 3, { steps: 6 });
     assert.equal(await page.evaluate(() => document.body.classList.contains("is-layer-reordering")), true);
+    assert.equal(await page.evaluate(() => activateLayerRow("default")), false, "Active reorder cannot also activate a row");
     await page.mouse.up();
   }
   const snapshot = () => page.evaluate(() => ({
     raw: localStorage.getItem("map:A"), document: getCurrentMapDocument(),
     selected: workspaceState.get().selection, tool: workspaceState.get().tool,
     undo: undoStack.length, redo: redoStack.length,
+    expanded: layers.map((layer) => [layer.id, !getCollapsedOutlineLayers().has(layer.id)]),
   }));
+  await page.evaluate(() => setWorkspaceTab("layers"));
+  assert.equal(await page.locator("#layersPanelSection > .workspace-tab-header").count(), 0, "Redundant Objects header is removed");
+  assert.equal(await page.locator(".object-filter-row > #createLayerBtn").count(), 1, "New layer shares the search/filter action row");
+  const disclosureDocument = await page.evaluate(() => ({ raw: localStorage.getItem("map:A"), history: undoStack.length }));
+  await layer("default").locator(".layer-name").click();
+  assert.equal(await layer("default").getAttribute("aria-expanded"), "false", "Row click collapses once");
+  assert.equal(await page.evaluate(() => workspaceState.get().selection.id), "default");
+  assert.notEqual(await layer("default").locator(":scope > .layer-row").evaluate((element) => getComputedStyle(element).boxShadow), "none", "Selected layer has a visible rail independently of focus");
+  assert.equal(await page.locator("#contextInspector").isVisible(), false, "Disclosure selection does not open properties");
+  await layer("default").focus(); await page.keyboard.press("Enter");
+  assert.equal(await layer("default").getAttribute("aria-expanded"), "true", "Enter selects and toggles a layer");
+  await page.keyboard.press("Space");
+  assert.equal(await layer("default").getAttribute("aria-expanded"), "false");
+  await page.keyboard.press("ArrowRight");
+  assert.equal(await layer("default").getAttribute("aria-expanded"), "true", "Arrow navigation remains conventional");
+  await page.locator("#objectSearch").focus(); await page.mouse.move(1000, 400);
+  assert.equal(await layer("default").locator('[data-outline-action="lock"]').evaluate((element) => getComputedStyle(element).opacity), "1", "Selected row reveals inactive utilities away from hover/focus");
+  assert.deepEqual(await page.evaluate(() => ({ raw: localStorage.getItem("map:A"), history: undoStack.length })), disclosureDocument);
+  await layer("default").locator('[data-outline-action="more"]').click();
+  assert.equal(await layer("default").getAttribute("aria-expanded"), "true", "Utility click cannot toggle disclosure");
+  await page.getByRole("menuitem", { name: "Properties", exact: true }).click();
+  assert.equal(await page.locator("#contextInspector").isVisible(), true, "Properties is an explicit inspection path");
+  await layer("default").locator(".layer-name").click();
+  assert.equal(await page.locator("#contextInspector").isVisible(), false, "Organization remains on the layer panel");
+  await layer("default").locator(".layer-name").click();
+  const countBeforeCreate = await page.evaluate(() => layers.length);
+  await page.locator("#createLayerBtn").click();
+  await page.locator("#textPromptCancel").click();
+  assert.equal(await page.evaluate(() => layers.length), countBeforeCreate, "Relocated create action remains reachable and cancellable");
   await page.evaluate(() => editPin(0));
   await page.locator("#pinEditorLabel").fill("Pending pin");
-  for (const action of ["lock", "visibility", "reorder", "rename", "create", "delete"]) {
+  for (const action of ["lock", "visibility", "reorder", "rename", "create", "delete", "select"]) {
     const before = await snapshot();
     const mutation = page.evaluate((action) => {
+      if (action === "select") return activateLayerRow("default");
       if (action === "lock") return toggleLayerLock("work");
       if (action === "visibility") return toggleLayerVisibility("work");
       if (action === "reorder") return moveLayer("work", -1);
@@ -117,7 +149,7 @@ try {
   await layer("work").locator(".layer-copy").dispatchEvent("pointerdown", { pointerType: "touch", button: 0, pointerId: 22 });
   await page.locator("#layerList").dispatchEvent("pointermove", { pointerType: "touch", pointerId: 22, clientX: 100, clientY: 200 });
   assert.equal(await page.evaluate(() => document.body.classList.contains("is-layer-reordering")), false, "Touch retains native scrolling and menu ordering");
-  assert.deepEqual(await layer("default").locator(".layer-row-actions > button").evaluateAll((buttons) => buttons.map((button) => button.dataset.outlineAction)), ["more", "lock", "visibility", "expand"]);
+  assert.deepEqual(await layer("default").locator(":scope > .layer-row [data-outline-action]").evaluateAll((buttons) => buttons.map((button) => button.dataset.outlineAction)), ["expand", "more", "lock", "visibility"]);
   await layer("default").locator('[data-outline-action="more"]').click();
   const up = page.locator('#contextMenu [role="menuitem"]').filter({ hasText: "Move Up" });
   assert.equal(await up.getAttribute("aria-disabled"), "true");
@@ -155,10 +187,14 @@ try {
 
   mutation = page.evaluate(() => renameLayer("work"));
   await page.locator("#textPromptInput").fill("Stale rename");
+  const staleLayerMenu = await page.evaluateHandle(() => getLayerActionItems("work"));
   await page.evaluate(() => loadMap("B"));
   await page.locator("#textPromptOk").click();
   assert.equal(await mutation, false, "An old layer prompt cannot mutate a newly opened map");
   assert.equal(await page.evaluate(() => getLayer("work").label), "Work");
+  const beforeStaleMenu = await snapshot();
+  await staleLayerMenu.evaluate(async (items) => { for (const item of items) await item.action(); });
+  assert.deepEqual(await snapshot(), beforeStaleMenu, "Stale layer menu cannot affect another map with matching layer IDs");
   const results = await page.evaluate(() => Promise.all([toggleLayerLock("work"), toggleLayerVisibility("work")]));
   assert.deepEqual(results, [true, false], "Overlapping mutations cannot bypass the shared guard");
   assert.equal(await page.evaluate(() => getLayer("work").visible), true);

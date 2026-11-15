@@ -75,7 +75,8 @@ try {
         assert.equal(collisions, 0, "No ruler label overlaps a visible workspace/HUD widget");
         if (!open) {
           assert.ok(await page.evaluate(() => !!(document.getElementById("historyTools").compareDocumentPosition(document.getElementById("workspaceTools")) & Node.DOCUMENT_POSITION_FOLLOWING)), "History precedes action tools in DOM/keyboard order");
-          assert.equal(await page.locator("#mapStatusStrip").evaluate((e) => e.parentElement.id), viewport.width <= 900 ? "mobileDock" : "hud", "Telemetry shares existing chrome");
+          assert.equal(await page.locator("#mapStatusStrip").evaluate((e) => e.parentElement.id), viewport.width <= 900 ? "mobileDock" : "", "Desktop telemetry is detached from controls");
+          assert.equal(await page.locator("#mapStatusStrip").isVisible(), viewport.width > 900);
           const widths = () => page.locator(".status-chip").evaluateAll((elements) => elements.map((e) => e.getBoundingClientRect().width));
           const beforeWidths = await widths();
           await page.evaluate(() => { lastCursor = { x: -123456789, z: 987654321 }; updateStatusStrip(); });
@@ -148,6 +149,25 @@ try {
   assert.equal(await page.locator("#showRulers").isChecked(), true, "Visibility toggle works from the keyboard");
   assert.equal(await page.locator("#coordinateRulers").isVisible(), true);
   assert.equal(await page.locator("#coordinateRulers").evaluate((element) => getComputedStyle(element).pointerEvents), "none");
+  assert.equal(await page.locator(".ruler-x").evaluate((element) => getComputedStyle(element).backgroundColor), "rgba(0, 0, 0, 0)");
+  await page.evaluate(() => { setWorkspaceCollapsed(true, false); zoom = 1; offsetX = 300; offsetY = 300; draw(); });
+  for (const position of ["top-left", "top-right", "bottom-left", "bottom-right"]) for (const detail of ["minimal", "standard", "full"]) {
+    await page.evaluate(({ position, detail }) => {
+      document.getElementById("minimapPosition").value = position;
+      document.getElementById("minimapDetail").value = detail;
+      syncMinimapOverlay();
+    }, { position, detail });
+    await settle();
+    const widget = await page.locator("#minimapContainer").boundingBox();
+    const mini = await page.locator("#minimapCanvas").boundingBox();
+    const right = position.endsWith("right"), bottom = position.startsWith("bottom");
+    assert.ok(Math.abs((right ? mini.x + mini.width - widget.x - widget.width : mini.x - widget.x)) <= 1, "Minimap square anchors to horizontal corner");
+    assert.ok(Math.abs((bottom ? mini.y + mini.height - widget.y - widget.height : mini.y - widget.y)) <= 1, "Minimap square anchors to vertical corner");
+    if (detail !== "minimal") {
+      const readout = await page.locator(".minimap-readout").boundingBox();
+      assert.ok(right ? readout.x + readout.width <= mini.x : readout.x >= mini.x + mini.width, "Bounds readout faces inward");
+    }
+  }
   assert.deepEqual(errors, []);
   console.log("Ruler browser checks passed: default visibility, pan/zoom, bounds, three themes, responsive panels, independent grid toggle, persistence and unchanged map/history.");
 } finally { await browser.close(); }

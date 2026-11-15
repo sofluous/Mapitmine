@@ -613,51 +613,51 @@
         min-width: 0;
       }
 
-      .pin-toolbar-row--meta {
-        justify-content: space-between;
-        flex-wrap: wrap;
-      }
-
       .pin-search-wrap {
         display: grid;
-        grid-template-columns: auto minmax(0, 1fr) auto;
+        grid-template-columns: 20px minmax(0, 1fr) 44px;
         align-items: center;
         gap: var(--space-xs);
-        flex: 1 1 220px;
+        flex: 1 1 0;
         min-width: 0;
         padding-inline: var(--space-sm);
         border-radius: var(--ds-radius-2);
-        background: color-mix(in oklab, var(--ui-surface) 85%, transparent);
+        background: var(--ds-input-bg, var(--ui-surface));
+        border: 1px solid var(--ds-input-border, var(--ui-border));
       }
+      .pin-search-wrap:focus-within { outline: 2px solid var(--ds-focus, var(--color-primary)); outline-offset: 2px; }
 
       .pin-search-wrap .ds-input {
         border: 0;
         background: transparent;
+        box-shadow: none;
+        padding-inline: 0;
+        width: 100%; min-width: 0; height: 44px;
       }
+      .pin-search-wrap input::-webkit-search-cancel-button { -webkit-appearance: none; }
 
       .pin-search-wrap .ds-input:focus {
         outline: none;
         box-shadow: none;
       }
 
-      .pin-search-clear {
-        display: none;
-        inline-size: 26px;
-        block-size: 26px;
-        min-width: 26px;
-        min-height: 26px;
+      .pin-search-wrap #pinSearchClearBtn {
+        display: inline-flex;
+        visibility: hidden; pointer-events: none;
+        inline-size: 44px;
+        block-size: 44px;
+        min-width: 44px;
+        min-height: 44px;
         padding: 0;
       }
 
-      .pin-search-wrap.has-value .pin-search-clear {
-        display: inline-flex;
-      }
-
-      .pin-toolbar-row--meta .badge {
-        min-width: 0;
+      .pin-search-wrap.has-value #pinSearchClearBtn {
+        visibility: visible; pointer-events: auto;
       }
 
       #pinResultSummary {
+        flex: none; font-size: var(--font-sm); font-variant-numeric: tabular-nums;
+        white-space: nowrap; min-width: 5ch; text-align: right;
         color: color-mix(in oklab, var(--color-text-heading) 92%, transparent);
       }
 
@@ -707,10 +707,10 @@
         overflow-y: auto;
       }
 
-      .object-children { display: grid; gap: 3px; padding: 4px 8px 8px 22px; }
+      .object-children { display: grid; gap: 3px; padding: 4px 8px 8px 32px; }
       .object-layer { min-width: 0; outline: none; }
       .object-layer:focus-visible > .layer-row { outline: 2px solid var(--color-primary); outline-offset: -2px; }
-      .object-layer.is-selected > .layer-row { background: var(--item-card-active-bg); box-shadow: inset 3px 0 0 var(--item-card-selected-color); }
+      .object-layer.is-selected > .layer-row { background: var(--item-card-active-bg, var(--ui-surface-active)); box-shadow: inset 3px 0 0 var(--item-card-selected-color, var(--color-primary)); }
       .object-entry {
         display: flex; align-items: center; gap: 8px; min-width: 0;
         min-height: 34px; padding: 5px 8px; text-align: left;
@@ -718,7 +718,8 @@
       }
       .object-entry .object-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .object-entry .object-state { font-size: var(--font-sm); color: color-mix(in oklab, var(--color-text) 60%, transparent); }
-      .object-filter-row { display: grid; grid-template-columns: minmax(0, 1fr) 110px; gap: var(--space-xs); }
+      .object-filter-row { display: grid; grid-template-columns: minmax(0, 1fr) 88px 44px; gap: var(--space-xs); align-items: center; }
+      #createLayerBtn { min-width: 44px; min-height: 44px; }
       #layersPanelSection .workspace-section-body > * { flex-shrink: 0; }
       #layersPanelSection .layer-list { overflow: visible; }
 
@@ -739,12 +740,14 @@
       .drawing-details[open] > summary { margin-bottom: var(--space-xs); }
       #drawingEditor > .toolbar-actions { justify-content: space-between; }
       .vertex-tools { display: flex; align-items: center; gap: var(--space-xs); flex-wrap: wrap; }
-      .vertex-tools .ds-select { flex: 1; min-width: 100px; }
       #drawingPoints .is-active-vertex { background: var(--item-card-active-bg); box-shadow: inset 3px 0 0 var(--item-card-selected-color); }
+      #drawingPoints [data-vertex]:focus-visible { outline: 2px solid var(--ds-focus, var(--color-primary)); outline-offset: -2px; }
 
       .layer-row {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
+        cursor: pointer;
+        user-select: none;
+        grid-template-columns: auto minmax(0, 1fr) auto;
         align-items: center;
         gap: var(--space-xs);
         min-height: 44px;
@@ -760,9 +763,23 @@
       }
       #layerList .layer-action:hover { background: var(--ui-surface-hover); border-color: var(--ui-border-quiet); }
       #layerList .layer-action:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
+      @media (hover: hover) and (pointer: fine) {
+        #layerList .layer-action[data-quiet="true"] { opacity: 0; pointer-events: none; }
+        #layerList .layer-row:hover .layer-action[data-quiet="true"],
+        #layerList .layer-row:focus-within .layer-action[data-quiet="true"],
+        #layerList .object-layer.is-selected > .layer-row .layer-action[data-quiet="true"],
+        #layerList .object-layer:focus-visible > .layer-row .layer-action[data-quiet="true"] { opacity: 1; pointer-events: auto; }
+      }
       .layer-disclosure.is-collapsed { transform: rotate(-90deg); }
+      @media (hover: none), (pointer: coarse) {
+        #layerList .layer-action { width: 44px; height: 44px; min-width: 44px; min-height: 44px; }
+        .object-children { padding-left: 44px; }
+        .layer-row { padding-inline: var(--space-xs); }
+      }
       .layer-row[data-drop-edge="before"] { box-shadow: inset 0 2px var(--color-primary); }
       .layer-row[data-drop-edge="after"] { box-shadow: inset 0 -2px var(--color-primary); }
+      .object-layer.is-selected > .layer-row[data-drop-edge="before"] { box-shadow: inset 3px 0 0 var(--color-primary), inset 0 2px var(--color-primary); }
+      .object-layer.is-selected > .layer-row[data-drop-edge="after"] { box-shadow: inset 3px 0 0 var(--color-primary), inset 0 -2px var(--color-primary); }
       body.is-layer-reordering { cursor: grabbing; user-select: none; }
       #contextMenu [aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
 
@@ -770,8 +787,9 @@
       .layer-row.is-hidden-layer .layer-count { opacity: 0.52; }
 
       .layer-copy {
-        display: grid;
-        gap: 2px;
+        display: flex;
+        align-items: baseline;
+        gap: var(--space-xs);
         min-width: 0;
       }
 
@@ -785,6 +803,7 @@
       }
 
       .layer-count {
+        flex-shrink: 0;
         color: color-mix(in oklab, var(--color-text) 62%, transparent);
         font-size: var(--font-sm);
       }
@@ -809,10 +828,17 @@
         flex: 1 1 auto;
         min-height: 0;
         height: auto;
-        padding: var(--space-xs);
-        border-radius: var(--ds-card-radius);
-        background: color-mix(in oklab, var(--ds-bg-raised) 78%, transparent);
+        padding: var(--focus-clearance);
+        gap: 0;
+        border-radius: 0;
+        background: transparent;
       }
+      #pinList .pin-card { margin: 0; border-radius: 0; box-shadow: none; border-block-end: 0; }
+      #pinList .pin-card:last-child { border-block-end: 1px solid var(--ui-border-quiet); }
+      #pinList .pin-card:focus-visible { outline-offset: -2px; }
+      #pinList .pin-card.is-selected { box-shadow: inset 3px 0 0 var(--item-card-selected-color); }
+      #pinFilterBtn { display: inline-flex; gap: var(--space-xs); width: auto; min-width: 54px; min-height: 44px; padding-inline: var(--space-xs); }
+      #pinFilterSummary { min-width: 2ch; font-size: var(--font-sm); font-variant-numeric: tabular-nums; }
 
       .pin-card {
         padding: var(--space-sm) var(--space-md);
@@ -865,16 +891,12 @@
       }
 
       .pin-line-secondary {
+        grid-area: bottom;
         display: flex;
+        flex-wrap: wrap;
         align-items: center;
         gap: 8px;
         min-width: 0;
-      }
-
-      .pin-line-secondary {
-        grid-area: bottom;
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto minmax(max-content, 52%);
         color: color-mix(in oklab, var(--color-text) 78%, transparent);
         font-size: var(--font-sm);
       }
@@ -904,6 +926,9 @@
       }
 
       .pin-coords {
+        flex: 0 0 auto;
+        margin-left: auto;
+        justify-content: end;
         justify-self: end;
         display: grid;
         grid-template-columns: repeat(3, max-content);
@@ -912,6 +937,10 @@
         font-variant-numeric: tabular-nums;
         text-align: right;
       }
+
+      /* Wrap exact coordinates before the name loses its identifying text. */
+      .pin-line-secondary > .pin-label { flex: 1 1 8ch; min-width: 8ch; }
+      .pin-line-secondary > .pin-tag { flex: 0 0 auto; max-width: 100%; }
 
       .pin-coord {
         display: grid;
@@ -1233,6 +1262,10 @@
       input[type="range"]::-webkit-slider-thumb:hover {
         transform: scale(1.05);
       }
+      #mapViewPanelSection input[type="range"] { min-width: 0; height: 44px; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+      #mapViewPanelSection input[type="range"]:focus-visible { outline: 2px solid var(--ds-focus, var(--color-primary)); outline-offset: 2px; }
+      #mapViewPanelSection input[type="range"]::-webkit-slider-runnable-track { height: 6px; background: var(--ui-surface); border: 1px solid var(--ui-border-quiet); border-radius: var(--ds-radius-2); }
+      #mapViewPanelSection input[type="range"]::-webkit-slider-thumb { margin-top: -5px; }
 
       /* Range slider (Firefox) */
       input[type="range"]::-moz-range-track,
@@ -1268,7 +1301,7 @@
         width: 200px;
         height: 200px;
         display: grid;
-        grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+        grid-template-columns: auto minmax(0, 1fr);
         align-items: center;
         gap: var(--space-xs);
         padding: 0;
@@ -1279,8 +1312,7 @@
 
       #minimapContainer[data-position="top-left"] {
         top: calc(var(--space-md) + 18px);
-        left: 50%;
-        transform: translateX(-50%);
+        left: max(var(--space-md), var(--ruler-content-left, 32px));
       }
 
       #minimapContainer[data-position="top-right"] {
@@ -1290,8 +1322,7 @@
 
       #minimapContainer[data-position="bottom-left"] {
         bottom: var(--space-md);
-        left: 50%;
-        transform: translateX(-50%);
+        left: max(var(--space-md), var(--ruler-content-left, 32px));
       }
 
       #minimapContainer[data-position="bottom-right"] {
@@ -1301,11 +1332,16 @@
 
       #minimapCanvas {
         display: block;
-        place-self: center;
+        place-self: start;
         border: 1px solid var(--ui-border-quiet);
         background: var(--color-bg);
       }
 
+      #minimapContainer[data-position$="right"] { grid-template-columns: minmax(0, 1fr) auto; }
+      #minimapContainer[data-position$="right"] #minimapCanvas { grid-column: 2; grid-row: 1; }
+      #minimapContainer[data-position$="right"] .minimap-readout { grid-column: 1; grid-row: 1; }
+      #minimapContainer[data-detail="minimal"] #minimapCanvas { grid-column: 1; }
+      #minimapContainer[data-position^="bottom"] #minimapCanvas { align-self: end; }
       .minimap-readout {
         display: grid;
         gap: 2px;
@@ -1396,6 +1432,9 @@
         margin: 0;
         padding: 0;
       }
+      @media (hover: none), (pointer: coarse) {
+        .context-menu li[role="menuitem"] { min-height: 44px; box-sizing: border-box; }
+      }
 
       .context-menu li {
         display: flex;
@@ -1467,7 +1506,7 @@
       #mobileDock { display: none; }
       #coordinateRulers { pointer-events: none; position: fixed; inset: 0; z-index: 190; }
       #coordinateRulers[hidden], .coordinate-ruler[hidden] { display: none; }
-      .coordinate-ruler { position: absolute; background: var(--ui-surface); color: var(--color-text); font: 10px var(--font-family-mono, monospace); line-height: 12px; font-variant-numeric: tabular-nums; overflow: hidden; }
+      .coordinate-ruler { position: absolute; background: transparent; color: var(--color-text); text-shadow: 0 1px var(--color-panel), 1px 0 var(--color-panel), 0 -1px var(--color-panel), -1px 0 var(--color-panel); font: 10px var(--font-family-mono, monospace); line-height: 12px; font-variant-numeric: tabular-nums; overflow: hidden; }
       .ruler-x { height: 18px; border-bottom: 1px solid var(--ui-border-quiet); }
       .ruler-z { border-right: 1px solid var(--ui-border-quiet); }
       .ruler-axis { position: absolute; left: 2px; top: 1px; color: var(--color-text-muted); }
@@ -1480,6 +1519,8 @@
       .ruler-x .ruler-mark.is-major { height: 6px; }
       .ruler-z .ruler-mark.is-major { width: 6px; }
       .inspector-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); }
+      #contextInspectorTitle { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      #contextInspector #objectInspectorName { display: none; }
       #contextInspector #drawingPanel, #contextInspector #pinEditorPanel {
         position: static; width: 100%; max-height: none; padding: 0;
         background: transparent; border: 0; box-shadow: none; overflow: visible;
@@ -1505,17 +1546,19 @@
       #workspaceTools button[aria-pressed="true"] { background: var(--ui-surface-active); }
       #drawingCommands { display: grid; gap: var(--space-sm); flex-basis: 100%; padding-top: var(--space-sm); border-top: 1px solid var(--ui-border-quiet); }
       #drawingCommands label { display: flex; align-items: center; gap: var(--space-sm); }
+      #drawingSetup { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-sm); }
       #drawingCommands select { flex: 1; min-width: 0; }
-      #drawingCommands #drawingToolStrip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      #drawingCommands #drawingToolStrip { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      #drawingFinish { justify-self: end; }
       #drawingCommands [hidden] { display: none; }
       #drawingCommands[data-phase="placing"] #drawingToolStrip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       #drawingCommands[data-phase="placing"] #drawingFinish { justify-self: end; }
       #drawingCommands button { min-width: 0; padding-inline: 4px; }
       #drawingProgress:empty { display: none; }
-      #hud[data-tool="select"] #drawingCommands,
-      #hud[data-tool="vertices"] #drawingCommands,
-      #hud[data-tool="pan"] #drawingCommands,
-      #hud[data-tool="pin"] #drawingCommands { display: none; }
+      body:has(#hud[data-tool="select"]) #drawingCommands,
+      body:has(#hud[data-tool="vertices"]) #drawingCommands,
+      body:has(#hud[data-tool="pan"]) #drawingCommands,
+      body:has(#hud[data-tool="pin"]) #drawingCommands { display: none; }
       #draftResolutionDialog .ds-toolbar { flex-wrap: wrap; justify-content: flex-end; }
       #draftResolutionDialog .ds-modal-panel { max-width: calc(100vw - 32px); }
       #drawingPanel > .control-section-title { display: none; }
@@ -1766,12 +1809,13 @@
       }
 
       #mapStatusStrip {
-        position: static;
+        position: fixed;
+        left: 50%; bottom: var(--space-sm); transform: translateX(-50%); z-index: 180;
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: var(--space-sm);
-        width: 100%;
+        width: min(420px, calc(100vw - 24px));
         flex-basis: 100%;
         min-width: 0;
         max-width: 100%;
@@ -2125,6 +2169,27 @@
           display: flex; flex-direction: column; position: fixed; z-index: 500;
           left: 0; right: 0; bottom: var(--mobile-keyboard-inset, 0px);
           border-radius: 0; border-inline: 0; border-bottom: 0;
+          border-top: 0; background: transparent; box-shadow: none;
+          pointer-events: none;
+        }
+        #mobileDock #appRail { pointer-events: auto; background: var(--color-panel); }
+        #mobileDock #drawingCommands {
+          flex: none;
+          padding: var(--space-sm);
+          border: 0;
+          max-height: calc(var(--mobile-view-height, 100dvh) * 0.35);
+          overflow-y: auto;
+        }
+        #mobileDock #drawingCommands button,
+        #mobileDock #drawingCommands label { pointer-events: auto; }
+        #mobileDock #drawingCommands label,
+        #mobileDock #drawingProgress,
+        #mobileDock .status-strip-group { background: var(--color-panel); }
+        #mobileDock #drawingProgress { justify-self: end; padding-inline: var(--space-xs); }
+        #mobileDock #historyTools, #mobileDock #workspaceTools {
+          background: var(--color-panel);
+          border-radius: var(--panel-radius);
+          pointer-events: auto;
         }
         #hud {
           position: static;
@@ -2252,6 +2317,7 @@
         #minimapContainer[data-responsive-hidden] { visibility: hidden; pointer-events: none; }
 
         #mapStatusStrip {
+          display: none;
           position: static;
           transform: none;
           min-width: 0;
@@ -2279,6 +2345,8 @@
         #mapStatusStrip strong { font-size: var(--font-sm); overflow: hidden; text-overflow: ellipsis; }
         #mapStatusStrip .status-chip-cursor .status-label { display: none; }
         .control-field.switch-row { grid-template-columns: minmax(0, 1fr) auto; }
+        #mapViewPanelSection .control-field:has(#zoom) { grid-template-columns: 56px minmax(0, 1fr) auto; }
+        #mapViewPanelSection .control-field:has(#textScale) { grid-template-columns: 56px minmax(0, 1fr) auto; }
 
         .map-action-grid {
           grid-template-columns: 1fr;
@@ -2302,11 +2370,6 @@
           align-items: stretch;
         }
 
-        #pinFilterSummary,
-        #pinResultSummary {
-          flex: 1 1 auto;
-          min-width: 0;
-        }
 
         .pin-filter-popover {
           left: 0;
@@ -2314,6 +2377,12 @@
           width: auto;
         }
       }
+      #mapViewPanelSection .view-range { grid-template-columns: 56px minmax(0, 1fr); }
+      .view-surface-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-sm); }
+      #mapViewPanelSection .view-surface-grid > .control-field { grid-template-columns: minmax(0, 1fr); gap: var(--space-xs); align-content: start; }
+      .view-surface-grid input { min-width: 0; width: 100%; }
+      .view-surface-grid input[type="color"] { min-height: 36px; }
+      #gridSpacing[aria-invalid="true"] { outline: 2px solid var(--ds-danger, var(--color-primary)); outline-offset: -2px; }
     </style>
   </head>
 
@@ -2326,6 +2395,8 @@
             class="ds-btn ds-btn-icon ds-icon-action"
             type="button"
             aria-label="Collapse workspace panel"
+            aria-controls="workspacePanel"
+            aria-expanded="true"
             title="Collapse workspace panel"
           >
             <span class="io iconoir-sidebar-collapse" aria-hidden="true"></span>
@@ -2440,13 +2511,14 @@
             <div class="pin-filter-shell">
               <div class="pin-toolbar">
                 <div class="pin-toolbar-row">
-                  <label class="pin-search-wrap" for="pinSearchInput">
+                  <div class="pin-search-wrap">
                     <span class="io iconoir-search" aria-hidden="true"></span>
                     <input
                       id="pinSearchInput"
                       class="ds-input"
                       type="search"
                       placeholder="Search pins"
+                      aria-label="Search pins"
                     />
                     <button
                       id="pinSearchClearBtn"
@@ -2457,29 +2529,27 @@
                     >
                       <span class="io iconoir-xmark" aria-hidden="true"></span>
                     </button>
-                  </label>
+                  </div>
                   <button
                     id="pinFilterBtn"
                     class="ds-btn ds-btn-icon ds-icon-action"
                     type="button"
                     aria-label="Filter pins"
                     aria-expanded="false"
+                    aria-controls="pinFilterPopover"
+                    aria-haspopup="dialog"
                   >
                     <span class="io iconoir-filter" aria-hidden="true"></span>
+                    <span id="pinFilterSummary" aria-hidden="true">0</span>
                   </button>
-                </div>
-                <div class="pin-toolbar-row pin-toolbar-row--meta">
-                  <span id="pinFilterSummary" class="badge ds-chip"
-                    >All types</span
-                  >
-                  <span id="pinResultSummary" class="badge ds-chip"
-                    >0/0 shown</span
-                  >
+                  <output id="pinResultSummary" aria-live="polite" aria-label="0 of 0 pins shown">0/0</output>
                 </div>
               </div>
               <div
                 id="pinFilterPopover"
                 class="app-panel pin-filter-popover is-hidden"
+                role="dialog"
+                aria-label="Pin type filters"
               >
                 <div class="pin-filter-popover-head">
                   <div class="control-section-title">
@@ -2508,24 +2578,11 @@
           class="workspace-section"
           data-workspace-panel="layers"
         >
-          <div class="workspace-tab-header">
-            <div class="workspace-tab-title-row">
-              <div class="workspace-section-title">
-                <span class="io iconoir-multiple-pages" aria-hidden="true"></span>
-                Objects
-              </div>
-              <div class="workspace-tab-actions">
-                <button id="createLayerBtn" class="ds-btn ds-btn-sm" type="button">
-                  <span class="io iconoir-plus" aria-hidden="true"></span>
-                  New
-                </button>
-              </div>
-            </div>
-          </div>
           <div class="workspace-section-body">
             <div class="object-filter-row">
               <input id="objectSearch" class="ds-input" type="search" placeholder="Find objects" aria-label="Find objects" />
               <select id="objectFilter" class="ds-select" aria-label="Object type filter"><option value="all">All</option><option value="pin">Pins</option><option value="drawing">Drawings</option></select>
+              <button id="createLayerBtn" class="ds-btn ds-btn-icon ds-icon-action" type="button" aria-label="New layer" title="New layer"><span class="io iconoir-plus" aria-hidden="true"></span></button>
             </div>
             <div id="layerList" class="layer-list" role="tree" aria-label="Map objects"></div>
             <section id="objectInspector" class="control-section ds-stack" hidden>
@@ -2550,18 +2607,15 @@
                 <span>Layer</span><select id="drawingLayer" class="ds-select"></select>
               </label>
               <div class="toolbar-actions" role="group" aria-label="Drawing tools">
-                <button type="button" class="ds-btn ds-btn-sm" data-draw-tool="line" aria-pressed="false" title="Place two endpoints"><span class="io iconoir-edit-pencil" aria-hidden="true"></span>Line</button>
-                <button type="button" class="ds-btn ds-btn-sm" data-draw-tool="path" aria-pressed="false" title="Place path points, then Finish"><span class="io iconoir-edit-pencil" aria-hidden="true"></span>Path</button>
                 <button type="button" id="drawingCancel" class="ds-btn ds-btn-sm" disabled>Cancel</button>
                 <button type="button" id="drawingFinish" class="ds-btn ds-btn-sm ds-btn-primary" disabled>Finish</button>
               </div>
               <output id="drawingProgress" class="control-readout" aria-live="polite"></output>
               <label class="control-field no-readout" for="drawingSelection" hidden><span>Drawing</span><select id="drawingSelection" class="ds-select"><option value="">None</option></select></label>
               <div id="drawingEditor" class="ds-stack" hidden>
-                <div id="drawingEditorTitle" class="control-section-title">Drawing</div>
+                <div id="drawingEditorTitle" class="control-section-title" hidden>Drawing</div>
                 <div class="vertex-tools" role="group" aria-label="Vertex editing">
                   <button type="button" id="drawingVertices" class="ds-btn ds-icon-btn" aria-label="Edit vertices" title="Edit vertices" aria-pressed="false"><span class="io iconoir-edit-pencil" aria-hidden="true"></span></button>
-                  <select id="drawingVertexSelect" class="ds-select" aria-label="Active vertex"></select>
                   <button type="button" id="drawingVertexInsert" class="ds-btn ds-icon-btn" aria-label="Insert vertex on adjacent segment" title="Insert vertex on adjacent segment"><span class="io iconoir-plus" aria-hidden="true"></span></button>
                   <button type="button" id="drawingVertexDelete" class="ds-btn ds-icon-btn" aria-label="Delete selected vertex" title="Delete selected vertex"><span class="io iconoir-trash" aria-hidden="true"></span></button>
                 </div>
@@ -2615,7 +2669,6 @@
                 <div class="control-field">
                   <label for="zoom">Zoom</label>
                   <input
-                    class="ds-input"
                     type="range"
                     id="zoom"
                     min="0.25"
@@ -2628,7 +2681,6 @@
                 <div class="control-field has-end-button">
                   <label for="textScale">Scale Text</label>
                   <input
-                    class="ds-input"
                     type="range"
                     id="textScale"
                     min="0.5"
@@ -2648,40 +2700,45 @@
                     <span class="io iconoir-text" aria-hidden="true"></span>
                   </button>
                 </div>
-                <div class="control-field inline-row">
+                <div class="control-field inline-row view-range">
                   <label for="minX">X Range</label>
                   <div class="control-inline">
                     <input
                       class="ds-input"
                       type="number"
                       id="minX"
+                      aria-label="Minimum X"
                       placeholder="Min"
                     />
                     <input
                       class="ds-input"
                       type="number"
                       id="maxX"
+                      aria-label="Maximum X"
                       placeholder="Max"
                     />
                   </div>
                 </div>
-                <div class="control-field inline-row">
+                <div class="control-field inline-row view-range">
                   <label for="minZ">Z Range</label>
                   <div class="control-inline">
                     <input
                       class="ds-input"
                       type="number"
                       id="minZ"
+                      aria-label="Minimum Z"
                       placeholder="Min"
                     />
                     <input
                       class="ds-input"
                       type="number"
                       id="maxZ"
+                      aria-label="Maximum Z"
                       placeholder="Max"
                     />
                   </div>
                 </div>
+                <div class="view-surface-grid">
                 <div class="control-field inline-row">
                   <label for="bgColor">Surface</label>
                   <div class="control-inline">
@@ -2689,12 +2746,16 @@
                       class="ds-input"
                       type="color"
                       id="bgColor"
+                      aria-label="Surface color"
+                      title="Surface color"
                       value="#0a0f0a"
                     />
                     <input
                       class="ds-input"
                       type="color"
                       id="gridColor"
+                      aria-label="Grid color"
+                      title="Grid color"
                       value="#19241C"
                     />
                   </div>
@@ -2706,8 +2767,11 @@
                     type="number"
                     id="gridSpacing"
                     value="100"
-                    step="10"
+                    min="0"
+                    step="any"
+                    title="Spacing must be greater than zero"
                   />
+                </div>
                 </div>
                 <div class="control-field switch-row">
                   <label for="showAxes">Axis Guides</label>
@@ -3257,6 +3321,8 @@
     <script src="./src/touch-navigation.js"></script>
     <script src="./src/mobile-layout.js"></script>
     <script src="./src/coordinate-rulers.js"></script>
+    <script src="./src/view-settings.js"></script>
+    <script src="./src/object-menu-gesture.js"></script>
     <script>
       const {
         DEFAULT_LAYER_ID,
@@ -3358,6 +3424,10 @@
       let isPlacingPin = false;
       let tempPin = null;
       let hoveredPinIndex = null;
+      let focusedPinUid = null;
+      let emphasizedPin = null;
+      let objectMenuGesture = null;
+      let canvasOnlySelection = "";
       let selectedPinIndex = null;
       let editorDragState = null;
       let pinCanvasDragState = null;
@@ -4076,7 +4146,13 @@
 
       function getLayerActionItems(layerId) {
         const index = layers.findIndex((layer) => layer.id === layerId);
+        if (index < 0) return [];
+        const layer = layers[index], map = currentMapName;
         const items = [
+          { label: "Properties", iconClass: "iconoir-control-slider", action: async () => {
+            if (currentMapName !== map || getLayer(layerId) !== layer || !await resolvePendingWorkspaceChanges()) return;
+            if (currentMapName === map && getLayer(layerId) === layer) return selectWorkspaceObject({ kind: "layer", id: layerId });
+          } },
           {
             label: "Rename",
             iconClass: "iconoir-edit-pencil",
@@ -4092,7 +4168,10 @@
             action: () => deleteLayer(layerId),
           });
         }
-        return items;
+        return items.map((item) => ({ ...item, action: () => {
+          if (currentMapName !== map || getLayer(layerId) !== layer) return false;
+          return item.action?.();
+        } }));
       }
 
       function reorderLayer(source, target, edge, mapName = currentMapName) {
@@ -4108,6 +4187,24 @@
         const search = document.getElementById("objectSearch")?.value.trim() || "";
         const filter = document.getElementById("objectFilter")?.value || "all";
         return search || filter !== "all" ? filteredCollapsedObjectLayers : collapsedObjectLayers;
+      }
+
+      let activatingLayerRow = false;
+      async function activateLayerRow(layerId) {
+        if (activatingLayerRow || document.body.classList.contains("is-layer-reordering")) return false;
+        const layer = layers.find((layer) => layer.id === layerId), map = currentMapName;
+        if (!layer) return false;
+        activatingLayerRow = true;
+        try {
+          if (!await resolvePendingWorkspaceChanges()) return false;
+          if (currentMapName !== map || !layers.includes(layer)) return false;
+          canvasOnlySelection = `layer:${layerId}`;
+          workspaceState.select({ kind: "layer", id: layerId });
+          const collapsed = getCollapsedOutlineLayers();
+          if (collapsed.has(layerId)) collapsed.delete(layerId); else collapsed.add(layerId);
+          renderLayers();
+          return true;
+        } finally { activatingLayerRow = false; }
       }
 
       function renderLayers() {
@@ -4152,8 +4249,9 @@
           visibility.type = "button";
           visibility.dataset.outlineAction = "visibility";
           visibility.title = layer.visible ? "Hide layer" : "Show layer";
-          visibility.setAttribute("aria-label", visibility.title);
+          visibility.setAttribute("aria-label", "Layer visibility");
           visibility.setAttribute("aria-pressed", String(layer.visible));
+          visibility.dataset.quiet = String(layer.visible);
           visibility.innerHTML = `<span class="io ${layer.visible ? "iconoir-eye" : "iconoir-eye-closed"}" aria-hidden="true"></span>`;
           visibility.addEventListener("click", () => toggleLayerVisibility(layer.id));
 
@@ -4162,20 +4260,15 @@
           lock.type = "button";
           lock.dataset.outlineAction = "lock";
           lock.title = layer.locked ? "Unlock layer" : "Lock layer";
-          lock.setAttribute("aria-label", lock.title);
+          lock.setAttribute("aria-label", "Layer lock");
           lock.setAttribute("aria-pressed", String(layer.locked));
+          lock.dataset.quiet = String(!layer.locked);
           lock.innerHTML = `<span class="io ${layer.locked ? "iconoir-lock" : "iconoir-lock-slash"}" aria-hidden="true"></span>`;
           lock.addEventListener("click", () => toggleLayerLock(layer.id));
 
           const copy = document.createElement("div");
           copy.className = "layer-copy";
-          const name = document.createElement("button");
-          name.type = "button";
-          name.tabIndex = -1;
-          name.addEventListener("click", () => {
-            branch.focus();
-            selectWorkspaceObject({ kind: "layer", id: layer.id });
-          });
+          const name = document.createElement("span");
           name.className = "layer-name";
           name.textContent = layer.label;
           const count = document.createElement("span");
@@ -4184,7 +4277,8 @@
           const drawingCount = drawings.filter(
             (drawing) => drawing.layerId === layer.id,
           ).length;
-          count.textContent = `${pinCount} pin${pinCount === 1 ? "" : "s"}${drawingCount ? `, ${drawingCount} drawing${drawingCount === 1 ? "" : "s"}` : ""}`;
+          count.textContent = `(${pinCount})`;
+          count.title = `${pinCount} pins, ${drawingCount} drawings`;
           copy.append(name, count);
 
           const actions = document.createElement("div");
@@ -4213,13 +4307,18 @@
           expand.setAttribute("aria-expanded", String(!collapsed.has(layer.id)));
           branch.setAttribute("aria-expanded", String(!collapsed.has(layer.id)));
           expand.innerHTML = `<span class="io iconoir-nav-arrow-down layer-disclosure${collapsed.has(layer.id) ? " is-collapsed" : ""}" aria-hidden="true"></span>`;
-          expand.addEventListener("click", () => {
+          expand.addEventListener("click", (event) => {
+            event.stopPropagation();
             if (collapsed.has(layer.id)) collapsed.delete(layer.id);
             else collapsed.add(layer.id);
             renderLayers();
           });
-          actions.appendChild(expand);
-          row.append(copy, actions);
+          row.addEventListener("click", (event) => {
+            if (event.target.closest("button")) return;
+            branch.focus({ preventScroll: true });
+            activateLayerRow(layer.id);
+          });
+          row.append(expand, copy, actions);
           branch.appendChild(row);
           container.appendChild(branch);
           const children = document.createElement("div");
@@ -4297,13 +4396,14 @@
         document.getElementById("inspectorLayerLocked").checked = !!object.locked;
       }
 
-      async function selectWorkspaceObject(reference) {
+      async function selectWorkspaceObject(reference, { inspect = true } = {}) {
         const selected = workspaceState.get().selection;
-        if (reference && reference.kind === selected?.kind && reference.id === selected?.id) return true;
-        if (!await resolvePendingWorkspaceChanges()) return false;
-        workspaceState.select(reference);
+        const same = reference && reference.kind === selected?.kind && reference.id === selected?.id;
+        if (!same && !await resolvePendingWorkspaceChanges()) return false;
+        canvasOnlySelection = !inspect && contextInspector.hidden && reference ? `${reference.kind}:${reference.id}` : "";
+        if (!same) workspaceState.select(reference);
         renderObjectInspector();
-        if (reference && window.innerWidth <= 900) {
+        if (inspect && reference && window.innerWidth <= 900) {
           setWorkspaceCollapsed(true, false);
           document.getElementById("inspectorClose")?.focus({ preventScroll: true });
         }
@@ -4783,11 +4883,22 @@
         return renderColorCache;
       }
 
+      let lastValidGridSpacing = 100;
+      function readGridSpacing({ restore = false } = {}) {
+        const field = document.getElementById("gridSpacing");
+        const valid = window.MapitMineViewSettings.validSpacing(field.value);
+        lastValidGridSpacing = window.MapitMineViewSettings.spacing(field.value, lastValidGridSpacing);
+        if (restore) field.value = String(lastValidGridSpacing);
+        field.setCustomValidity(valid || restore ? "" : "Enter a spacing greater than zero.");
+        field.setAttribute("aria-invalid", String(!valid && !restore));
+        return lastValidGridSpacing;
+      }
+
       function getViewSettings() {
         return {
           bgColor: document.getElementById("bgColor").value,
           gridColor: document.getElementById("gridColor").value,
-          gridSpacing: parseInt(document.getElementById("gridSpacing").value),
+          gridSpacing: readGridSpacing(),
           showAxes: document.getElementById("showAxes").checked,
           useTextScale: document.getElementById("useTextScale").checked,
           showLabelBackground: document.getElementById("showLabelBackground")
@@ -4808,6 +4919,8 @@
       function draw() {
         coordinateRulers?.refresh();
         const view = getViewSettings();
+        emphasizedPin = pins[hoveredPinIndex] || (focusedPinUid ? pins.find((pin) => pin.uid === focusedPinUid) : null);
+        if (emphasizedPin && !isPinVisible(emphasizedPin)) emphasizedPin = null;
         const {
           axisColor,
           crosshairColor,
@@ -4827,26 +4940,12 @@
         const visibleMaxX = Math.ceil((width - offsetX) / zoom);
         const visibleMinZ = Math.floor(-offsetY / zoom);
         const visibleMaxZ = Math.ceil((height - offsetY) / zoom);
-        const startX =
-          Math.floor(visibleMinX / view.gridSpacing) * view.gridSpacing;
-        const endX =
-          Math.ceil(visibleMaxX / view.gridSpacing) * view.gridSpacing;
-        const startZ =
-          Math.floor(visibleMinZ / view.gridSpacing) * view.gridSpacing;
-        const endZ =
-          Math.ceil(visibleMaxZ / view.gridSpacing) * view.gridSpacing;
-
-        const maxLines = 1000;
-
-        if ((endX - startX) / view.gridSpacing > maxLines) return; // skip draw
-        if (zoom < 0.1) return; // skip grid when zoomed out too far
-
-        if (view.showGrid && view.gridSpacing > 0) {
+        if (view.showGrid && zoom >= 0.1) {
           ctx.save();
           ctx.strokeStyle = view.gridColor;
           ctx.lineWidth = 1;
 
-          for (let x = startX; x <= endX; x += view.gridSpacing) {
+          for (const x of window.MapitMineViewSettings.gridLines(visibleMinX, visibleMaxX, view.gridSpacing)) {
             const sx = offsetX + x * zoom;
             ctx.beginPath();
             ctx.moveTo(sx, 0);
@@ -4854,7 +4953,7 @@
             ctx.stroke();
           }
 
-          for (let z = startZ; z <= endZ; z += view.gridSpacing) {
+          for (const z of window.MapitMineViewSettings.gridLines(visibleMinZ, visibleMaxZ, view.gridSpacing)) {
             const sz = offsetY + z * zoom;
             ctx.beginPath();
             ctx.moveTo(0, sz);
@@ -4905,7 +5004,9 @@
           );
         }
 
-        for (const p of pins) {
+        const labelPins = hoveredPinIndex === null ? pins : pins.filter((_, index) => index !== hoveredPinIndex);
+        if (hoveredPinIndex !== null && pins[hoveredPinIndex]) labelPins.push(pins[hoveredPinIndex]);
+        for (const p of labelPins) {
           if (!isPinVisible(p)) continue;
           if (
             p.x < view.minX ||
@@ -4916,6 +5017,8 @@
             continue;
           const sx = offsetX + p.x * zoom;
           const sy = offsetY + p.z * zoom;
+          ctx.save();
+          ctx.globalAlpha = pinEmphasisAlpha(p);
 
           const fontSize = view.useTextScale
             ? 12 * textScale
@@ -4972,9 +5075,9 @@
               const bgY = sy - fontSize - padding;
 
               ctx.fillStyle = labelBgColor;
-              ctx.globalAlpha = 0.82;
+              ctx.globalAlpha = pinEmphasisAlpha(p) * 0.82;
               ctx.fillRect(bgX, bgY, bgWidth, bgHeight);
-              ctx.globalAlpha = 1;
+              ctx.globalAlpha = pinEmphasisAlpha(p);
             }
 
             ctx.fillStyle = pinTextColor;
@@ -4985,7 +5088,7 @@
               coordParts.forEach(([axis, value], coordIndex) => {
                 if (coordIndex > 0) firstLineX += ctx.measureText("  ").width;
                 ctx.save();
-                ctx.globalAlpha = 0.48;
+                ctx.globalAlpha *= 0.48;
                 ctx.fillText(axis, firstLineX, sy);
                 firstLineX += ctx.measureText(`${axis} `).width;
                 ctx.restore();
@@ -4996,7 +5099,7 @@
             let nextLine = 1;
             if (view.showTags && p.id) {
               ctx.save();
-              ctx.globalAlpha = 0.72;
+              ctx.globalAlpha *= 0.72;
               ctx.fillText(`[${p.id}]`, sx + labelOffsetX, sy + fontSize * 1.2);
               ctx.restore();
               nextLine++;
@@ -5008,10 +5111,11 @@
                 sy + fontSize * 1.2 * nextLine,
               );
           }
+          ctx.restore();
         }
         drawPinEditorTether(tempColor);
 
-        if (crosshairMode) {
+        if (crosshairMode && hoveredPinIndex === null) {
           ctx.strokeStyle = crosshairColor;
           ctx.lineWidth = 1.25;
           ctx.setLineDash([4, 4]);
@@ -5032,6 +5136,10 @@
         updateStatusStrip();
       }
 
+      function pinEmphasisAlpha(pin) {
+        return emphasizedPin && emphasizedPin !== pin ? 0.25 : 1;
+      }
+
       function drawPin(
         ctx,
         pin,
@@ -5042,6 +5150,8 @@
       ) {
         const screenX = offsetX + pin.x * zoom;
         const screenY = offsetY + pin.z * zoom;
+        ctx.save();
+        ctx.globalAlpha = pinEmphasisAlpha(pin);
 
         ctx.beginPath();
         ctx.arc(screenX, screenY, 6, 0, Math.PI * 2);
@@ -5060,6 +5170,7 @@
         }
 
         ctx.stroke();
+        ctx.restore();
       }
 
       function getPinEditorTargetPin() {
@@ -5457,7 +5568,6 @@
 
       function setWorkspaceTab(tabId, options = {}) {
         const { openPanel = true, persist = true } = options;
-        const tabs = document.querySelectorAll("[data-workspace-tab]");
         const panels = document.querySelectorAll("[data-workspace-panel]");
         let resolved = tabId || "maps";
 
@@ -5468,12 +5578,6 @@
         ) {
           resolved = "maps";
         }
-
-        tabs.forEach((btn) => {
-          const active = btn.dataset.workspaceTab === resolved;
-          btn.setAttribute("aria-pressed", String(active));
-          btn.classList.toggle("is-active", active);
-        });
 
         panels.forEach((panel) => {
           panel.classList.toggle(
@@ -5573,9 +5677,14 @@
 
         if (crosshairBtn)
           crosshairBtn.setAttribute("aria-pressed", String(!!crosshairMode));
-        if (collapseBtn && shell)
-          collapseBtn.setAttribute("aria-pressed", String(!collapsed));
+        const activeTab = getActiveWorkspaceTab();
+        document.querySelectorAll("[data-workspace-tab]").forEach((button) => {
+          const selected = !collapsed && button.dataset.workspaceTab === activeTab;
+          button.setAttribute("aria-pressed", String(selected));
+          button.classList.toggle("is-active", selected);
+        });
         if (collapseBtn) {
+          collapseBtn.setAttribute("aria-expanded", String(!collapsed));
           const label = collapsed
             ? "Expand workspace panel"
             : "Collapse workspace panel";
@@ -5670,26 +5779,30 @@
       function getPinActionItems(index) {
         const pin = pins[index];
         if (!pin) return [];
+        const map = currentMapName;
+        const current = () => currentMapName === map && pins.includes(pin) ? pins.indexOf(pin) : -1;
         return [
           {
             label: "Copy Coordinates",
             iconClass: "iconoir-copy",
-            action: () => copyPinCoords(pin),
+            action: () => { if (current() >= 0) copyPinCoords(pin); },
           },
           {
             label: "Center on Pin",
             iconClass: "iconoir-map-pin",
-            action: () => centerOnPin(pin),
+            action: () => { if (current() >= 0) centerOnPin(pin); },
           },
           {
             label: "Edit Pin",
             iconClass: "iconoir-edit-pencil",
-            action: () => editPin(index),
+            disabled: isPinLocked(pin),
+            action: () => { const index = current(); if (index >= 0) return editPin(index); },
           },
           {
             label: "Delete Pin",
             iconClass: "iconoir-trash",
-            action: () => deletePin(index),
+            disabled: isPinLocked(pin),
+            action: () => { const index = current(); if (index >= 0) return deletePin(index); },
           },
         ];
       }
@@ -5735,14 +5848,13 @@
       }
 
       function syncPinSearchUI() {
-        const hasSearch = !!getPinSearchValue();
+        const hasSearch = !!pinSearchInput?.value;
         pinSearchInput?.parentElement?.classList.toggle("has-value", hasSearch);
       }
 
       function clearPinSearchAndFilters() {
         if (pinSearchInput) pinSearchInput.value = "";
         pinTypeFilterSelection = null;
-        syncPinTypeFilterOptions();
         renderPinList();
       }
 
@@ -5756,7 +5868,6 @@
 
       function clearPinFilters() {
         pinTypeFilterSelection = null;
-        syncPinTypeFilterOptions();
         renderPinList();
       }
 
@@ -5781,6 +5892,7 @@
 
       function syncPinTypeFilterOptions() {
         if (!pinTypeChecklist) return;
+        const focusedType = pinTypeChecklist.contains(document.activeElement) ? document.activeElement.dataset.pinFilterType : null;
         const typeEntries = getFilterablePinTypes();
         const availableIds = new Set(typeEntries.map(([id]) => id));
         if (pinTypeFilterSelection) {
@@ -5795,6 +5907,7 @@
           row.className = "pin-filter-option";
           const input = document.createElement("input");
           input.type = "checkbox";
+          input.dataset.pinFilterType = id;
           input.checked = pinTypeFilterSelection
             ? pinTypeFilterSelection.has(id)
             : true;
@@ -5807,7 +5920,6 @@
 
             pinTypeFilterSelection =
               next.size === availableIds.size ? null : next;
-            syncPinTypeFilterOptions();
             renderPinList();
           });
 
@@ -5818,29 +5930,16 @@
           pinTypeChecklist.appendChild(row);
         });
 
-        if (pinFilterSummary) {
-          if (!pinTypeFilterSelection) {
-            pinFilterSummary.textContent = "All types";
-          } else {
-            const labels = typeEntries
-              .filter(([id]) => pinTypeFilterSelection.has(id))
-              .map(([, label]) => label);
-            pinFilterSummary.textContent =
-              labels.length === 0
-                ? "No types"
-                : labels.length <= 2
-                ? labels.join(", ")
-                : `${labels.length} types`;
-          }
-          pinFilterSummary.title = pinFilterSummary.textContent;
-        }
+        const excluded = pinTypeFilterSelection ? availableIds.size - pinTypeFilterSelection.size : 0;
+        const labels = typeEntries.filter(([id]) => !pinTypeFilterSelection || pinTypeFilterSelection.has(id)).map(([, label]) => label);
+        if (pinFilterSummary) pinFilterSummary.textContent = String(excluded);
         if (pinFilterBtn) {
           const active = !!pinTypeFilterSelection;
           pinFilterBtn.setAttribute("aria-pressed", active ? "true" : "false");
-          pinFilterBtn.title = active
-            ? "Pin type filters active"
-            : "Filter pins";
+          pinFilterBtn.setAttribute("aria-label", active ? `Filter pins (${excluded} types excluded)` : "Filter pins (all types)");
+          pinFilterBtn.title = active ? `${excluded} types excluded. Showing: ${labels.join(", ") || "no types"}` : "Filter pins: all types";
         }
+        if (focusedType !== null) Array.from(pinTypeChecklist.querySelectorAll("input")).find((input) => input.dataset.pinFilterType === focusedType)?.focus({ preventScroll: true });
       }
 
       function syncMapMetaUI() {
@@ -6114,6 +6213,7 @@
       }
 
       function renderPinList() {
+        focusedPinUid = null;
         const container = document.getElementById("pinList");
         container.innerHTML = "";
         syncPinSearchUI();
@@ -6129,15 +6229,9 @@
           pinCountEl.textContent = `${filteredPins.length}/${pins.length}`;
         }
         if (pinResultSummary) {
-          const qualifier =
-            hasSearch && hasFilters
-              ? "matched"
-              : hasSearch
-                ? "search"
-                : hasFilters
-                  ? "filtered"
-                  : "shown";
-          pinResultSummary.textContent = `${filteredPins.length}/${pins.length} ${qualifier}`;
+          pinResultSummary.textContent = `${filteredPins.length}/${pins.length}`;
+          pinResultSummary.style.minWidth = `${Math.max(5, String(pins.length).length * 2 + 1)}ch`;
+          pinResultSummary.setAttribute("aria-label", `${filteredPins.length} of ${pins.length} pins shown`);
           pinResultSummary.title =
             hasSearch || hasFilters
               ? "Showing pins after search and filter state"
@@ -6227,10 +6321,11 @@
           let cardClickTimer = null;
           item.addEventListener("click", async (event) => {
             if (event.target.closest("button")) return;
-            if (!await selectWorkspaceObject({ kind: "pin", id: pin.uid })) return;
+            const map = currentMapName;
+            if (!await selectWorkspaceObject({ kind: "pin", id: pin.uid }, { inspect: false })) return;
             if (cardClickTimer) window.clearTimeout(cardClickTimer);
             cardClickTimer = window.setTimeout(() => {
-              centerOnPin(pin);
+              if (currentMapName === map && pins.includes(pin)) centerOnPin(pin);
               cardClickTimer = null;
             }, 180);
           });
@@ -6262,6 +6357,10 @@
             }
           });
 
+          item.addEventListener("focusin", () => { focusedPinUid = pin.uid; draw(); });
+          item.addEventListener("focusout", (event) => {
+            if (!item.contains(event.relatedTarget)) { focusedPinUid = null; draw(); }
+          });
           item.addEventListener("mouseenter", () => {
             hoveredPinIndex = index;
             draw();
@@ -6627,6 +6726,7 @@
       async function deletePin(index) {
         const uid = pins[index]?.uid;
         if (!uid) return;
+        const target = pins[index], map = currentMapName;
         if (isPinLocked(pins[index])) {
           showToast("Unlock this pin's layer before deleting it.", "warn");
           return;
@@ -6638,10 +6738,12 @@
         });
         if (!confirmed) return;
         if (!await resolvePendingWorkspaceChanges()) return;
-        index = pins.findIndex((pin) => pin.uid === uid);
+        if (currentMapName !== map || !pins.includes(target)) return;
+        index = pins.indexOf(target);
         if (index < 0 || isPinLocked(pins[index])) return;
         pushHistoryState("Delete Pin");
         pins.splice(index, 1);
+        hoveredPinIndex = null;
         markDirty();
         saveCurrentMap();
         renderPinList();
@@ -6683,9 +6785,11 @@
       async function editPin(index, { center = false } = {}) {
         const uid = pins[index]?.uid;
         if (!uid) return false;
+        const target = pins[index], map = currentMapName;
         if (currentEditIndex === index && pinEditorPanel.style.display === "block") return true;
         if (!await resolvePendingWorkspaceChanges()) return false;
-        index = pins.findIndex((pin) => pin.uid === uid);
+        if (currentMapName !== map || !pins.includes(target)) return false;
+        index = pins.indexOf(target);
         if (index < 0) return false;
         const pin = pins[index];
         if (isPinLocked(pin)) {
@@ -6953,10 +7057,7 @@
         return {
           bgColor: document.getElementById("bgColor")?.value,
           gridColor: document.getElementById("gridColor")?.value,
-          gridSpacing: parseInt(
-            document.getElementById("gridSpacing")?.value || "16",
-            10,
-          ),
+          gridSpacing: readGridSpacing(),
           showGrid: !!document.getElementById("showGrid")?.checked,
           showIcons: !!document.getElementById("showIcons")?.checked,
           showText: !!document.getElementById("showText")?.checked,
@@ -6996,7 +7097,11 @@
 
         if (s.bgColor) set("bgColor", s.bgColor);
         if (s.gridColor) set("gridColor", s.gridColor);
-        if (Number.isFinite(s.gridSpacing)) set("gridSpacing", s.gridSpacing);
+        if ("gridSpacing" in s) {
+          lastValidGridSpacing = window.MapitMineViewSettings.spacing(s.gridSpacing, lastValidGridSpacing);
+          set("gridSpacing", lastValidGridSpacing);
+          readGridSpacing({ restore: true });
+        }
         if ("showGrid" in s) check("showGrid", s.showGrid);
         if ("showIcons" in s) check("showIcons", s.showIcons);
         if ("showText" in s) check("showText", s.showText);
@@ -7299,6 +7404,7 @@
             ? document.activeElement
             : null;
         menu.setAttribute("role", "menu");
+        menu.setAttribute("aria-label", "Actions");
 
         // Build items
         list.innerHTML = "";
@@ -7344,6 +7450,7 @@
               activate(event);
             } else if (event.key === "Escape") {
               event.preventDefault();
+              event.stopPropagation();
               hideContextMenu();
             }
           });
@@ -7406,9 +7513,46 @@
         }
       });
 
+      function canvasObjectAt(clientX, clientY) {
+        const rect = canvas.getBoundingClientRect();
+        const x = (clientX - rect.left - offsetX) / zoom, z = (clientY - rect.top - offsetY) / zoom;
+        const pin = pins.find((pin) => isPinVisible(pin) && Math.hypot(pin.x - x, pin.z - z) < 10 / zoom);
+        const drawing = !pin && [...drawings].reverse().find((drawing) => getLayer(drawing.layerId)?.visible
+          && window.MapitMineDrawing.hitTest(drawing.points, { x, z }, 9 / zoom));
+        const object = pin || drawing;
+        return object ? { kind: pin ? "pin" : "drawing", id: pin ? pin.uid : drawing.id, map: currentMapName, object } : null;
+      }
+
+      async function openCanvasObjectMenu(reference, x, y) {
+        const { kind, id, map, object } = reference;
+        const current = () => currentMapName === map && (kind === "pin" ? pins : drawings).includes(object) && getLayer(object.layerId)?.visible;
+        if (!current()) return;
+        const selection = workspaceState.get().selection;
+        if ((selection?.kind !== kind || selection.id !== id) && !await resolvePendingWorkspaceChanges()) return;
+        if (!current()) return;
+        canvasOnlySelection = contextInspector.hidden ? `${kind}:${id}` : "";
+        workspaceState.select({ kind, id });
+        const run = async (mode) => {
+          if (!current() || !await resolvePendingWorkspaceChanges() || !current()) return;
+          if (!await selectWorkspaceObject({ kind, id }) || !current()) return;
+          if (mode === "vertices" && !getLayer(object.layerId).locked) await drawingTools.editVertices();
+          if (mode === "delete" && !getLayer(object.layerId).locked) await drawingTools.deleteDrawing();
+        };
+        const items = kind === "pin" ? getPinActionItems(pins.indexOf(object)) : [
+          { label: "Properties", iconClass: "iconoir-edit-pencil", action: () => run("properties") },
+          { label: "Edit vertices", iconClass: "iconoir-edit-pencil", disabled: getLayer(object.layerId).locked, action: () => run("vertices") },
+          { label: "Delete drawing", iconClass: "iconoir-trash", disabled: getLayer(object.layerId).locked, action: () => run("delete") },
+        ];
+        showContextMenu(items, x, y);
+        document.getElementById("contextMenu").setAttribute("aria-label", object.label || object.name || "Object actions");
+      }
+
       /* Right-click on the canvas */
       canvas.addEventListener("contextmenu", (e) => {
         e.preventDefault();
+        if (drawingTools?.active()) return;
+        const reference = canvasObjectAt(e.clientX, e.clientY);
+        if (reference) { openCanvasObjectMenu(reference, e.clientX, e.clientY); return; }
 
         const rect = canvas.getBoundingClientRect();
         const mx = e.clientX - rect.left;
@@ -7418,20 +7562,7 @@
         const worldZ = Math.floor((my - offsetY) / zoom);
         lastCursor = { x: worldX, z: worldZ };
 
-        const found = pins.find((pin) => {
-          if (!isPinVisible(pin)) return false;
-          const sx = offsetX + pin.x * zoom;
-          const sy = offsetY + pin.z * zoom;
-          return Math.hypot(mx - sx, my - sy) < 10;
-        });
-
-        if (found) {
-          const index = pins.indexOf(found);
-          showContextMenu(getPinActionItems(index), e.clientX, e.clientY);
-        } else {
-          // quickPinContextItems must be an array of {label, action}
-          showContextMenu(quickPinContextItems, e.clientX, e.clientY);
-        }
+        showContextMenu(quickPinContextItems, e.clientX, e.clientY);
       });
 
       function getHoveredPinIndex(e) {
@@ -7499,6 +7630,8 @@
         if (!isPanning) {
           if (Math.hypot(clientX - panOrigin.x, clientY - panOrigin.y) < 4) return;
           isPanning = true;
+          hoveredPinIndex = null;
+          updatePinListHighlight();
           setDraggingUiState(true);
         }
         offsetX += clientX - panStart.x;
@@ -7546,7 +7679,7 @@
         beginPan: beginCanvasPan,
         movePan: moveCanvasPan,
         endPan: endCanvasPan,
-        interruptEdit: () => drawingTools?.cancelPointerGesture(),
+        interruptEdit: () => { drawingTools?.cancelPointerGesture(); objectMenuGesture?.cancel(); },
         suppressClick: () => { suppressCanvasClick = true; },
         resetClick: () => { suppressCanvasClick = false; },
       });
@@ -7605,14 +7738,10 @@
       });
 
       canvas.addEventListener("mousemove", (e) => {
-        if (pinCanvasDragState) return;
+        if (pinCanvasDragState || isPanning) return;
         const rect = canvas.getBoundingClientRect();
         const mx = e.clientX - rect.left;
         const my = e.clientY - rect.top;
-        lastCursor = {
-          x: Math.round((mx - offsetX) / zoom),
-          z: Math.round((my - offsetY) / zoom),
-        };
         let needsRedraw = false;
 
         let found = null;
@@ -7635,7 +7764,8 @@
           needsRedraw = true;
         }
 
-        if (crosshairMode) {
+        if (found === null) lastCursor = { x: Math.round((mx - offsetX) / zoom), z: Math.round((my - offsetY) / zoom) };
+        if (crosshairMode && found === null) {
           const worldX = Math.round((mx - offsetX) / zoom);
           const worldZ = Math.round((my - offsetY) / zoom);
 
@@ -7648,10 +7778,17 @@
           crosshairX = mx;
           crosshairY = my;
           needsRedraw = true;
+        } else if (found !== null) {
+          document.getElementById("cursorLabel").style.display = "none";
         }
 
         if (needsRedraw) draw();
         else updateStatusStrip();
+      });
+      canvas.addEventListener("mouseleave", () => {
+        hoveredPinIndex = null;
+        document.getElementById("cursorLabel").style.display = "none";
+        updatePinListHighlight(); draw();
       });
 
       canvas.addEventListener(
@@ -7716,6 +7853,7 @@
             clearSelectedPin();
           } else {
             selectedPinIndex = found;
+            canvasOnlySelection = contextInspector.hidden ? `pin:${pins[found].uid}` : "";
             updatePinListHighlight();
             draw();
           }
@@ -7919,6 +8057,7 @@
         applyResponsiveUiDefaults(false);
       });
 
+      document.getElementById("gridSpacing").addEventListener("blur", () => { readGridSpacing({ restore: true }); draw(); });
       document.getElementById("textScale").addEventListener("input", (e) => {
         textScale = parseFloat(e.target.value);
         draw();
@@ -7991,6 +8130,11 @@
       pinSearchInput?.addEventListener("input", () => {
         renderPinList();
       });
+      pinSearchInput?.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && pinSearchInput.value) {
+          event.preventDefault(); event.stopPropagation(); clearPinSearch();
+        }
+      });
 
       pinSearchClearBtn?.addEventListener("click", clearPinSearch);
 
@@ -8028,6 +8172,7 @@
         pinFilterPopover?.classList.toggle("is-hidden");
         if (!pinFilterPopover?.classList.contains("is-hidden")) {
           positionPinFilterPopover();
+          if (event.detail === 0) pinTypeChecklist?.querySelector("input")?.focus();
         }
         pinFilterBtn.setAttribute(
           "aria-expanded",
@@ -8056,6 +8201,15 @@
           positionPinFilterPopover();
         }
       });
+      const dismissPinFilters = (event) => {
+        if (event.key !== "Escape" || pinFilterPopover?.classList.contains("is-hidden")) return;
+        event.preventDefault(); event.stopPropagation();
+        pinFilterPopover.classList.add("is-hidden");
+        pinFilterBtn.setAttribute("aria-expanded", "false");
+        pinFilterBtn.focus();
+      };
+      pinFilterPopover?.addEventListener("keydown", dismissPinFilters);
+      pinFilterBtn?.addEventListener("keydown", dismissPinFilters);
 
       window.addEventListener("beforeunload", (e) => {
         if (shouldWarnBeforeUnload()) {
@@ -8097,19 +8251,25 @@
       drawingCommands.id = "drawingCommands";
       drawingCommands.setAttribute("role", "group");
       drawingCommands.setAttribute("aria-label", "Drawing commands");
-      drawingCommands.append(
+      const drawingSetup = document.createElement("div");
+      drawingSetup.id = "drawingSetup";
+      drawingSetup.append(
+        Object.assign(document.createElement("label"), { htmlFor: "drawingShape", innerHTML: '<span>Shape</span><select id="drawingShape" class="ds-select"><option value="line">Line</option><option value="path">Path</option></select>' }),
         drawingPanel.querySelector('label[for="drawingLayer"]'),
+      );
+      drawingCommands.append(
+        drawingSetup,
         document.getElementById("drawingToolStrip"),
         document.getElementById("drawingProgress"),
       );
       hud.appendChild(drawingCommands);
-      hud.appendChild(document.getElementById("mapStatusStrip"));
+      document.body.appendChild(document.getElementById("mapStatusStrip"));
       drawingPanel.setAttribute("aria-label", "Drawing tools and properties");
       drawingTools = window.MapitMineDrawing.install({
         workspace: workspaceState,
         canvas,
         panel: document.getElementById("drawingPanel"),
-        tools: hud,
+        tools: drawingCommands,
         drawings: () => drawings,
         layers: () => layers,
         hasMap: () => !!currentMapName,
@@ -8138,7 +8298,12 @@
         resolveDraft: resolveWorkspaceDraft,
         prepareTool: resolvePinToolDraft,
         closePinEditor,
-        openLayers: () => { setWorkspaceTab("layers", { openPanel: window.innerWidth > 760 }); },
+        selectCanvasDrawing: (id) => {
+          canvasOnlySelection = contextInspector.hidden && id ? `drawing:${id}` : "";
+          workspaceState.select(id ? { kind: "drawing", id } : null);
+        },
+        inspectDrawing: (id) => selectWorkspaceObject({ kind: "drawing", id }),
+        showMenu: showContextMenu,
       });
       let lastWorkspaceSelection = "";
       function syncContextInspector() {
@@ -8149,13 +8314,16 @@
         const key = editing ? `edit:${currentEditIndex ?? "new"}` : selection ? `${selection.kind}:${selection.id}` : "";
         const changed = inspector.dataset.context !== key;
         inspector.dataset.context = key;
-        inspector.hidden = !key;
+        inspector.hidden = !key || key === canvasOnlySelection;
+        const object = selection?.kind === "drawing" ? drawings.find((drawing) => drawing.id === selection.id)
+          : selection?.kind === "pin" ? pins.find((pin) => pin.uid === selection.id) : selection?.kind === "layer" ? getLayer(selection.id) : null;
         document.getElementById("contextInspectorTitle").textContent = editing
-          ? currentEditIndex === null ? "New pin" : "Editing pin"
-          : selection?.kind === "drawing" ? workspaceState.get().tool === "vertices" ? "Edit vertices" : "Drawing" : selection?.kind === "layer" ? "Layer" : "Pin";
+          ? currentEditIndex === null ? "New pin" : pins[currentEditIndex]?.label || "Untitled pin"
+          : object?.label || object?.name || (selection?.kind === "drawing" ? "Untitled drawing" : selection?.kind === "layer" ? "Layer" : "Untitled pin");
+        document.getElementById("contextInspectorTitle").title = document.getElementById("contextInspectorTitle").textContent;
         document.getElementById("objectInspector").hidden = editing || !selection || selection.kind === "drawing";
         drawingPanel.hidden = editing || selection?.kind !== "drawing";
-        if (key && changed && window.innerWidth <= 900) setWorkspaceCollapsed(true, false);
+        if (key && changed && !inspector.hidden && window.innerWidth <= 900) setWorkspaceCollapsed(true, false);
       }
       function syncWorkspaceToolControls() {
         const tool = workspaceState.get().tool;
@@ -8174,6 +8342,27 @@
         button.addEventListener("click", () => requestWorkspaceTool(button.dataset.canvasTool));
       });
       syncWorkspaceToolControls();
+      objectMenuGesture = window.MapitMineObjectMenuGesture.install({
+        canvas,
+        enabled: () => workspaceState.get().tool === "select" && !drawingTools.active() && !tempPin && currentEditIndex === null,
+        targetAt: canvasObjectAt,
+        interrupt: () => { touchNavigation.cancelGesture(); drawingTools.cancelPointerGesture(); },
+        activate: openCanvasObjectMenu,
+      });
+      window.addEventListener("keydown", (event) => {
+        if (event.defaultPrevented || event.isComposing || event.target.isContentEditable || event.target.closest?.("input, textarea, select, dialog, [role='menu']")) return;
+        if (event.key !== "ContextMenu" && !(event.shiftKey && event.key === "F10")) return;
+        const row = event.target.closest?.("[data-object-id]");
+        const card = event.target.closest?.(".pin-card");
+        const reference = row ? { kind: row.dataset.objectKind, id: row.dataset.objectId }
+          : card ? { kind: "pin", id: pins[Number(card.dataset.index)]?.uid } : workspaceState.get().selection;
+        if (!reference || !["pin", "drawing"].includes(reference.kind)) return;
+        const object = (reference.kind === "pin" ? pins : drawings).find((object) => (object.uid || object.id) === reference.id);
+        if (!object) return;
+        event.preventDefault();
+        const rect = event.target.getBoundingClientRect();
+        openCanvasObjectMenu({ ...reference, map: currentMapName, object }, Math.min(innerWidth - 12, rect.left + 12), Math.min(innerHeight - 12, rect.bottom));
+      });
       workspaceState.subscribe(({ selection }) => {
         syncWorkspaceToolControls();
         const index = selection?.kind === "pin" ? pins.findIndex((pin) => pin.uid === selection.id) : -1;
@@ -8196,7 +8385,7 @@
       });
       objectOutline = window.MapitMineOutline.install({
         root: document.getElementById("layerList"),
-        select: selectWorkspaceObject,
+        select: (reference) => reference?.kind === "layer" ? activateLayerRow(reference.id) : selectWorkspaceObject(reference),
         expand: (id, expanded) => {
           const collapsed = getCollapsedOutlineLayers();
           if (expanded) collapsed.delete(id); else collapsed.add(id);

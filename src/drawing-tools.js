@@ -53,6 +53,10 @@
       else if (api.workspace.get().selection?.kind === "drawing") api.workspace.select(null);
     }
     let preview = null;
+    let draftPointer = null;
+    let suppressDraftClick = false;
+    let draftHover = -1;
+    let draftSelection = -1;
     let editorSnapshot = "";
     let originalEditorValues = "";
     let switching = false;
@@ -75,9 +79,12 @@
       ? api.worldExact(event.clientX, event.clientY) : api.world(event.clientX, event.clientY);
 
     function cancel() {
+      cancelDraftPointer();
       stopVertices();
       draft = null;
       preview = null;
+      draftHover = -1;
+      draftSelection = -1;
       canvas.style.cursor = "";
       api.workspace?.setTool("select");
       refresh();
@@ -103,13 +110,15 @@
       });
       const writable = api.layers().filter((layer) => layer.visible && !layer.locked);
       layerSelect.value = draft ? draft.layerId : writable.some((layer) => layer.id === previous) ? previous : writable[0]?.id || "";
-      const hasDraftContent = !!draft && (draft.points.length > 0 || draft.redoPoints.length > 0);
-      toolRoot.querySelectorAll("[data-draw-tool]").forEach((button) => {
-        button.disabled = !api.hasMap() || !writable.length;
-        button.hidden = hasDraftContent;
-        button.setAttribute("aria-pressed", String(draft?.type === button.dataset.drawTool));
-      });
-      field("drawingFinish").disabled = !draft || !validPoints(draft.points, draft.type);
+      const hasDraftContent = !!draft && (draft.points.length > 0 || draft.redoEdits.length > 0);
+      const shape = field("drawingShape");
+      shape.value = draft?.type || "path";
+      shape.disabled = !api.hasMap() || !writable.length || !!draftPointer;
+      const shapeLabel = shape.closest?.("label");
+      if (shapeLabel) shapeLabel.hidden = hasDraftContent;
+      const setup = shape.closest?.("#drawingSetup");
+      if (setup) setup.hidden = hasDraftContent;
+      field("drawingFinish").disabled = !draft || !!draftPointer || !validPoints(draft.points, draft.type);
       field("drawingCancel").disabled = !draft;
       layerSelect.disabled = hasDraftContent;
       const layerLabel = layerSelect.closest?.("label");
@@ -146,6 +155,7 @@
       const canEdit = editable(drawing);
       if (pointListDrawingId !== drawing.id) {
         pointListDrawingId = drawing.id;
+        activeVertex = 0;
         showAllPoints = false;
         field("drawingStyle").open = false;
       }
@@ -164,6 +174,23 @@
         const row = document.createElement("div");
         row.className = `control-inline${[point.x, point.z].some((value) => String(value).length > 12) ? " has-long-coordinates" : ""}`;
         row.dataset.vertex = index;
+        row.tabIndex = 0;
+        row.setAttribute("role", "group");
+        row.setAttribute("aria-label", `Vertex ${index + 1}`);
+        const activate = () => { activeVertex = index; highlightVertex(); api.redraw(); };
+        row.addEventListener("focus", activate);
+        row.addEventListener("click", activate);
+        row.addEventListener("keydown", (event) => {
+          if (event.target !== row) return;
+          const next = event.key === "ArrowDown" ? Math.min(drawing.points.length - 1, index + 1)
+            : event.key === "ArrowUp" ? Math.max(0, index - 1)
+            : event.key === "Home" ? 0 : event.key === "End" ? drawing.points.length - 1 : null;
+          if (next === null) return;
+          event.preventDefault(); event.stopPropagation?.();
+          activeVertex = next; highlightVertex();
+          points.querySelectorAll("[data-vertex]")[next]?.focus();
+          api.redraw();
+        });
         ["x", "z"].forEach((axis) => {
           const input = document.createElement("input");
           input.className = "ds-input";
@@ -176,7 +203,6 @@
           input.disabled = !canEdit;
           input.addEventListener("focus", () => {
             activeVertex = index;
-            field("drawingVertexSelect").value = String(index);
             highlightVertex();
             api.redraw();
           });
@@ -214,7 +240,10 @@
       if (pointListIcon) pointListIcon.className = "io iconoir-nav-arrow-down";
       field("drawingPoints").querySelectorAll("[data-vertex]").forEach((row) => {
         row.hidden = !showAllPoints && Number(row.dataset.vertex) !== activeVertex;
-        row.classList.toggle("is-active-vertex", !!vertexId && Number(row.dataset.vertex) === activeVertex);
+        const active = Number(row.dataset.vertex) === activeVertex;
+        row.classList.toggle("is-active-vertex", active);
+        row.tabIndex = active ? 0 : -1;
+        row.setAttribute("aria-current", String(active));
       });
     }
 
@@ -223,17 +252,7 @@
       field("drawingVertices").title = enabled ? "Done editing vertices" : "Edit vertices";
       field("drawingVertices").setAttribute("aria-label", field("drawingVertices").title);
       field("drawingVertices").setAttribute("aria-pressed", String(enabled));
-      const selector = field("drawingVertexSelect");
-      selector.replaceChildren();
       activeVertex = Math.min(activeVertex, drawing.points.length - 1);
-      drawing.points.forEach((_, index) => {
-        const option = document.createElement("option");
-        option.value = index;
-        option.textContent = `Vertex ${index + 1}`;
-        selector.appendChild(option);
-      });
-      selector.value = String(activeVertex);
-      selector.disabled = false;
       field("drawingVertexInsert").disabled = !enabled || !canEdit || drawing.type !== "path";
       field("drawingVertexDelete").disabled = !enabled || !canEdit || drawing.type !== "path" || drawing.points.length <= 2;
       highlightVertex();
@@ -265,7 +284,6 @@
         if (vertexId) stopVertices();
         else {
           vertexId = drawing.id;
-          activeVertex = 0;
           api.workspace?.setTool("vertices");
         }
         refresh();
@@ -303,11 +321,6 @@
     }
 
     field("drawingVertices").addEventListener("click", editVertices);
-    field("drawingVertexSelect").addEventListener("change", () => {
-      activeVertex = Number(field("drawingVertexSelect").value);
-      highlightVertex();
-      api.redraw();
-    });
     field("drawingVertexInsert").addEventListener("click", () => insertVertex());
     field("drawingVertexDelete").addEventListener("click", () => {
       if (!canChangeVertices() || selected().type !== "path" || selected().points.length <= 2) return;
@@ -351,7 +364,7 @@
     }
 
     function finish() {
-      if (!draft || !editable(draft) || !validPoints(draft.points, draft.type)) return;
+      if (!draft || draftPointer || !editable(draft) || !validPoints(draft.points, draft.type)) return;
       const drawing = {
         id: `drawing-${crypto.randomUUID()}`,
         type: draft.type,
@@ -377,7 +390,7 @@
         api.closePinEditor();
         api.workspace?.select(null);
         selectDrawing(null);
-        draft = { type, layerId, points: [], redoPoints: [] };
+        draft = { type, layerId, points: [], undoEdits: [], redoEdits: [] };
         canvas.style.cursor = "crosshair";
         api.workspace?.setTool(draft.type);
         api.onToolStarted?.();
@@ -387,6 +400,7 @@
     }
 
     async function leave() {
+      cancelDraftPointer();
       if (!draft) {
         if (!await resolveEdits()) return false;
         stopVertices();
@@ -394,7 +408,7 @@
         api.redraw();
         return true;
       }
-      if (!draft.points.length && !draft.redoPoints.length) { cancel(); return true; }
+      if (!draft.points.length && !draft.redoEdits.length) { cancel(); return true; }
       const choice = api.resolveDraft
         ? await api.resolveDraft({ title: "Unfinished drawing", canFinish: editable(draft) && validPoints(draft.points, draft.type) })
         : await api.confirm({ title: "Discard drawing draft?", message: "Discard the unfinished drawing and switch tools?", confirmText: "Discard" }) ? "discard" : "keep";
@@ -408,31 +422,39 @@
     }
 
     function draftHistoryState() {
-      const available = !!draft && editable(draft) && !switching;
-      return { active: !!draft, canUndo: available && draft.points.length > 0,
-        canRedo: available && draft.redoPoints.length > 0 };
+      const available = !!draft && editable(draft) && !switching && !draftPointer;
+      return { active: !!draft, canUndo: available && draft.undoEdits.length > 0,
+        canRedo: available && draft.redoEdits.length > 0 };
     }
 
     function traverseDraftHistory(redo) {
-      if (!draft || switching || !editable(draft)) return false;
-      const source = redo ? draft.redoPoints : draft.points;
-      const destination = redo ? draft.points : draft.redoPoints;
+      if (!draft || draftPointer || switching || !editable(draft)) return false;
+      const source = redo ? draft.redoEdits : draft.undoEdits;
+      const destination = redo ? draft.undoEdits : draft.redoEdits;
       if (!source.length) return false;
-      destination.push(source.pop());
+      const edit = source.pop();
+      if (edit.kind === "append") {
+        if (redo) draft.points.push({ ...edit.point });
+        else draft.points.pop();
+      } else draft.points[edit.index] = { ...(redo ? edit.after : edit.before) };
+      destination.push(edit);
+      draftSelection = edit.kind === "move" ? edit.index : draft.points.length - 1;
+      draftHover = -1;
       preview = null;
       refresh();
       api.redraw();
       return true;
     }
 
-    toolRoot.querySelectorAll("[data-draw-tool]").forEach((button) => {
-      button.addEventListener("click", () => start(button.dataset.drawTool));
+    field("drawingShape").addEventListener("change", async () => {
+      await start(field("drawingShape").value);
+      refresh();
     });
     field("drawingFinish").addEventListener("click", finish);
     field("drawingCancel").addEventListener("click", cancel);
     field("drawingLayer").addEventListener("change", () => {
       if (!draft) return;
-      if (!draft.points.length && !draft.redoPoints.length && editable({ layerId: field("drawingLayer").value })) {
+      if (!draft.points.length && !draft.redoEdits.length && editable({ layerId: field("drawingLayer").value })) {
         draft.layerId = field("drawingLayer").value;
       }
       refresh();
@@ -458,7 +480,6 @@
           .find((input) => input.value === "" || !Number.isFinite(Number(input.value)));
         if (invalidPoint) {
           activeVertex = Number(invalidPoint.dataset.point);
-          field("drawingVertexSelect").value = String(activeVertex);
           highlightVertex();
           invalidPoint.focus?.();
         } else if (!Number.isFinite(width) || width < 1 || width > 12) {
@@ -477,7 +498,7 @@
       return true;
     }
     field("drawingApply").addEventListener("click", apply);
-    field("drawingDelete").addEventListener("click", async () => {
+    async function deleteDrawing() {
       const drawing = selected();
       if (!drawing || !editable(drawing)) return;
       if (!await api.confirm({ title: "Delete drawing?", message: "Remove the selected drawing?", confirmText: "Delete" })) return;
@@ -485,7 +506,8 @@
       commit("Delete Drawing", () => api.drawings().splice(api.drawings().indexOf(drawing), 1));
       selectDrawing(null);
       refresh();
-    });
+    }
+    field("drawingDelete").addEventListener("click", deleteDrawing);
 
     function vertexAt(event) {
       const drawing = selected();
@@ -564,20 +586,134 @@
       if (segment) insertVertex(segment.point, segment.index);
     }, true);
 
+    canvas.addEventListener("dblclick", () => {
+      if (!draft && !vertexId && api.canSelect() && selected()) api.inspectDrawing?.(selected().id);
+    }, true);
+
     // Capture drawing gestures before the existing pin and pan handlers.
+    function cancelDraftPointer() {
+      const pointer = draftPointer;
+      draftPointer = null;
+      if (!pointer) return;
+      preview = null;
+      suppressDraftClick = true;
+      canvas.style.cursor = draft ? "crosshair" : "";
+      try { canvas.releasePointerCapture?.(pointer.id); } catch (_) { /* Capture may already be lost. */ }
+      refresh();
+      api.redraw();
+    }
+
+    function appendDraftPoint(point) {
+      if (!draft || !editable(draft) || !Number.isFinite(point.x) || !Number.isFinite(point.z)) return;
+      const last = draft.points.at(-1);
+      if (!last || point.x !== last.x || point.z !== last.z) {
+        draft.points.push(point);
+        draft.undoEdits.push({ kind: "append", point: { ...point } });
+        draft.redoEdits = [];
+        draftSelection = draft.points.length - 1;
+      }
+      if (draft.type === "line" && draft.points.length === 2) finish();
+      else { refresh(); api.redraw(); }
+    }
+
+    function draftVertexAt(event) {
+      if (!draft || !editable(draft)) return -1;
+      const point = exactWorld(event);
+      let nearest = -1, distance = (event.pointerType === "touch" ? 16 : 9) / api.camera().zoom;
+      draft.points.forEach((entry, index) => {
+        const next = Math.hypot(point.x - entry.x, point.z - entry.z);
+        if (next <= distance) { distance = next; nearest = index; }
+      });
+      return nearest;
+    }
+
+    canvas.addEventListener("pointerdown", (event) => {
+      suppressDraftClick = false;
+      if (!draft || event.button !== 0 || event.isPrimary === false || !editable(draft)) return;
+      const index = draftVertexAt(event);
+      if (event.pointerType !== "touch" && index < 0) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      draftPointer = { id: event.pointerId, draft, index, start: api.world(event.clientX, event.clientY),
+        clientX: event.clientX, clientY: event.clientY, moved: false };
+      draftSelection = index;
+      suppressDraftClick = true;
+      preview = index >= 0 ? { ...draft.points[index] } : api.world(event.clientX, event.clientY);
+      canvas.style.cursor = index >= 0 ? "grabbing" : "crosshair";
+      try { canvas.setPointerCapture?.(event.pointerId); } catch (_) { /* Window handlers still own release. */ }
+      refresh();
+      api.redraw();
+    }, true);
+    window.addEventListener("pointermove", (event) => {
+      if (!draftPointer && draft && event.target === canvas) {
+        draftHover = draftVertexAt(event);
+        canvas.style.cursor = draftHover >= 0 ? "grab" : "crosshair";
+        api.redraw();
+      }
+      if (event.pointerId !== draftPointer?.id) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      if (draftPointer.index >= 0 && Math.hypot(event.clientX - draftPointer.clientX, event.clientY - draftPointer.clientY) >= 4) draftPointer.moved = true;
+      if (draftPointer.index < 0 || draftPointer.moved) preview = draftPointerPoint(event);
+      api.redraw();
+    }, { capture: true, passive: false });
+    window.addEventListener("pointerup", (event) => {
+      if (event.pointerId !== draftPointer?.id) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const gesture = draftPointer;
+      const point = draftPointerPoint(event);
+      cancelDraftPointer();
+      if (draft !== gesture.draft || !editable(draft)) return;
+      if (gesture.index < 0) appendDraftPoint(point);
+      else if (gesture.moved) {
+        const before = draft.points[gesture.index];
+        if (Number.isFinite(point.x) && Number.isFinite(point.z) && (before.x !== point.x || before.z !== point.z)) {
+          draft.points[gesture.index] = { ...point };
+          draft.undoEdits.push({ kind: "move", index: gesture.index, before: { ...before }, after: { ...point } });
+          draft.redoEdits = [];
+        }
+        refresh(); api.redraw();
+      }
+    }, { capture: true, passive: false });
+    function draftPointerPoint(event) {
+      const point = api.world(event.clientX, event.clientY);
+      if (draftPointer.index < 0) return point;
+      const before = draftPointer.draft.points[draftPointer.index];
+      return { x: before.x + point.x - draftPointer.start.x, z: before.z + point.z - draftPointer.start.z };
+    }
+    window.addEventListener("pointercancel", (event) => {
+      if (event.pointerId === draftPointer?.id) cancelDraftPointer();
+    }, true);
+    canvas.addEventListener("lostpointercapture", (event) => {
+      if (event.pointerId === draftPointer?.id) cancelDraftPointer();
+    });
+    window.addEventListener("blur", cancelDraftPointer);
+    canvas.addEventListener("pointerleave", () => { draftHover = -1; if (!draftPointer) preview = null; api.redraw(); });
     ["mousedown", "pointerdown", "dblclick", "contextmenu"].forEach((name) => {
       canvas.addEventListener(name, (event) => {
         if (!draft) return;
         event.stopImmediatePropagation();
-        if (name === "contextmenu") { event.preventDefault(); cancel(); }
+        if (name === "contextmenu") {
+          event.preventDefault(); cancelDraftPointer();
+          const menuDraft = draft;
+          const act = (action) => () => { if (draft === menuDraft) action(); };
+          api.showMenu?.([
+            { label: "Undo point", disabled: !draftHistoryState().canUndo, action: act(() => traverseDraftHistory(false)) },
+            { label: "Redo point", disabled: !draftHistoryState().canRedo, action: act(() => traverseDraftHistory(true)) },
+            { label: "Finish", disabled: !editable(draft) || !validPoints(draft.points, draft.type), action: act(finish) },
+            { label: "Cancel drawing", action: act(cancel) },
+          ], event.clientX, event.clientY);
+        }
       }, true);
     });
     canvas.addEventListener("mousemove", (event) => {
-      if (!draft) return;
-      preview = api.world(event.clientX, event.clientY);
+      if (!draft || draftPointer || suppressDraftClick) return;
+      preview = draftHover >= 0 ? null : api.world(event.clientX, event.clientY);
       api.redraw();
     });
     canvas.addEventListener("click", (event) => {
+      if (suppressDraftClick) { event.stopImmediatePropagation(); return; }
       if (suppressVertexClick) { suppressVertexClick = false; event.stopImmediatePropagation(); return; }
       // A completed pan is navigation, not a new object-selection click.
       if (api.consumeClick?.()) { event.stopImmediatePropagation(); return; }
@@ -590,14 +726,7 @@
       if (draft) {
         event.stopImmediatePropagation();
         if (!editable(draft)) { cancel(); return; }
-        const point = api.world(event.clientX, event.clientY);
-        const last = draft.points.at(-1);
-        if (!last || point.x !== last.x || point.z !== last.z) {
-          draft.points.push(point);
-          draft.redoPoints = [];
-        }
-        if (draft.type === "line" && draft.points.length === 2) finish();
-        else { refresh(); api.redraw(); }
+        appendDraftPoint(api.world(event.clientX, event.clientY));
         return;
       }
       if (!api.canSelect()) return;
@@ -620,12 +749,16 @@
         ["line", "path"].includes(entry.type) &&
         api.layers().find((layer) => layer.id === entry.layerId)?.visible &&
         hitTest(entry.points, point, 7 / api.camera().zoom));
-      selectDrawing(drawing?.id || null);
-      if (drawing) { event.stopImmediatePropagation(); api.openLayers(); }
+      if (api.selectCanvasDrawing) api.selectCanvasDrawing(drawing?.id || null);
+      else selectDrawing(drawing?.id || null);
+      if (drawing) event.stopImmediatePropagation();
       refresh();
       api.redraw();
     }
     window.addEventListener("keydown", (event) => {
+      if (document.getElementById?.("contextMenu")?.style.display === "block") return;
+      if (event.key === "Escape" && event.target.closest?.("#pinFilterPopover, #pinFilterBtn")
+        && !document.getElementById?.("pinFilterPopover")?.classList.contains("is-hidden")) return;
       if (document.body?.classList.contains("is-layer-reordering")) return;
       if (event.key === "Escape" && vertexDrag) {
         event.preventDefault(); event.stopImmediatePropagation();
@@ -664,7 +797,9 @@
       const { zoom, offsetX, offsetY } = api.camera();
       const paint = (drawing, temporary = false) => {
         if (!["line", "path"].includes(drawing.type) || !api.layers().find((layer) => layer.id === drawing.layerId)?.visible) return;
-        const points = vertexDrag?.drawing === drawing ? vertexDrag.points : temporary && preview ? [...drawing.points, preview] : drawing.points;
+        const movingDraft = temporary && draftPointer?.index >= 0 && preview;
+        const points = movingDraft ? drawing.points.map((point, index) => index === draftPointer.index ? preview : point)
+          : vertexDrag?.drawing === drawing ? vertexDrag.points : temporary && preview ? [...drawing.points, preview] : drawing.points;
         if (!points.length) return;
         ctx.save();
         ctx.lineWidth = Math.min(12, Math.max(1, Number(drawing.style?.width) || 2));
@@ -680,8 +815,13 @@
         });
         ctx.stroke();
         if (temporary) {
-          // Only accepted points get handles; the trailing pointer preview stays unmarked.
-          drawing.points.forEach((point, index) => {
+          if (draftPointer && preview) {
+            const x = offsetX + preview.x * zoom, y = offsetY + preview.z * zoom;
+            ctx.setLineDash([3, 3]);
+            ctx.strokeRect(x - 6, y - 6, 12, 12);
+          }
+          // Accepted points use filled handles; contact candidates use a dashed outline.
+          (movingDraft ? points : drawing.points).forEach((point, index) => {
             const size = index === drawing.points.length - 1 ? 12 : 8;
             const x = offsetX + point.x * zoom - size / 2;
             const y = offsetY + point.z * zoom - size / 2;
@@ -689,6 +829,10 @@
             ctx.fillRect(x - 2, y - 2, size + 4, size + 4);
             ctx.fillStyle = api.color();
             ctx.fillRect(x, y, size, size);
+            if (index === draftSelection || index === draftHover) {
+              ctx.setLineDash(index === draftHover ? [2, 2] : []);
+              ctx.strokeRect(x - 3, y - 3, size + 6, size + 6);
+            }
           });
         }
         if (drawing.id === selectedDrawingId()) {
@@ -705,9 +849,9 @@
     }
 
     refresh();
-    return { render, refresh, reset, start, leave, resolveEdits, hasPendingEdits, editVertices,
+    return { render, refresh, reset, start, leave, resolveEdits, hasPendingEdits, editVertices, deleteDrawing,
       draftHistoryState, undoDraftPoint: () => traverseDraftHistory(false), redoDraftPoint: () => traverseDraftHistory(true),
-      cancelPointerGesture: rollbackVertexGesture,
+      cancelPointerGesture: () => { rollbackVertexGesture(); cancelDraftPointer(); },
       hasPendingChanges: () => !!draft?.points.length || !!vertexDrag || hasPendingEdits(), active: () => !!draft };
   }
 

@@ -77,6 +77,82 @@ try {
     assert.equal(final.dragging, false);
     await page.screenshot({ path: resolve(output, `${theme}-pinch.png`) });
   }
+  // Real browser touch movement previews on contact and appends once on release.
+  for (const theme of ["paper-mint", "steel-night", "amber-terminal"]) {
+    await page.evaluate((value) => MapItTheme.setTheme(value), theme);
+    await setup(); await page.locator('[data-canvas-tool="path"]').click();
+    const before = await read();
+    await page.evaluate(() => {
+      window.ghostMarks = 0;
+      const strokeRect = CanvasRenderingContext2D.prototype.strokeRect;
+      window.restoreGhostProbe = () => { CanvasRenderingContext2D.prototype.strokeRect = strokeRect; };
+      CanvasRenderingContext2D.prototype.strokeRect = function (x, y, width, height) {
+        if (this.canvas.id === "mapCanvas" && width === 12 && height === 12) ghostMarks++;
+        return strokeRect.call(this, x, y, width, height);
+      };
+    });
+    await touch("touchStart", [[1, 100, 300]]);
+    assert.ok(await page.evaluate(() => ghostMarks > 0), "Contact renders a ghost vertex even before the first accepted point");
+    await touch("touchMove", [[1, 160, 330]]);
+    assert.equal(await page.locator("#drawingProgress").textContent(), "Path: 0 points");
+    assert.equal((await read()).pending, false, "Contact preview is not saved draft geometry");
+    await page.screenshot({ path: resolve(output, `${theme}-draft-contact.png`) });
+    await release();
+    await page.evaluate(() => restoreGhostProbe());
+    assert.equal(await page.locator("#drawingProgress").textContent(), "Path: 1 points");
+    await page.locator("#mapCanvas").dispatchEvent("click", { clientX: 160, clientY: 330 });
+    assert.equal(await page.locator("#drawingProgress").textContent(), "Path: 1 points", "Compatibility click cannot duplicate release placement");
+    assert.equal((await read()).history, before.history);
+    assert.equal((await read()).raw, before.raw);
+    assert.equal((await read()).offsetX, before.offsetX, "A drawing swipe does not pan");
+    await page.locator("#undoBtn").click();
+    assert.equal(await page.locator("#drawingProgress").textContent(), "Path: 0 points");
+    await page.locator("#redoBtn").click();
+    for (const interruption of ["cancel", "capture", "blur"]) {
+      await touch("touchStart", [[1, 180, 340]]);
+      await touch("touchMove", [[1, 190, 350]]);
+      if (interruption === "cancel") await touch("touchCancel", []);
+      else {
+        await page.evaluate((kind) => {
+          if (kind === "blur") window.dispatchEvent(new Event("blur"));
+          else {
+            const canvas = document.getElementById("mapCanvas");
+            canvas.releasePointerCapture(touchAcceptance.pointers[0]);
+          }
+        }, interruption);
+        await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        await release();
+      }
+      assert.equal(await page.locator("#drawingProgress").textContent(), "Path: 1 points", `${interruption} drops only the candidate`);
+    }
+    await page.touchscreen.tap(200, 360);
+    await touch("touchStart", [[1, 160, 330]]);
+    await touch("touchMove", [[1, 175, 345]]);
+    assert.equal(await page.locator("#drawingFinish").isDisabled(), true, "Cannot finish during a vertex gesture");
+    assert.equal((await read()).history, before.history);
+    assert.equal((await read()).raw, before.raw);
+    await page.screenshot({ path: resolve(output, `${theme}-draft-vertex-drag.png`) });
+    await release();
+    assert.equal(await page.locator("#drawingProgress").textContent(), "Path: 2 points", "Moving an accepted vertex does not append");
+    await page.locator("#undoBtn").click();
+    assert.equal(await page.locator("#drawingProgress").textContent(), "Path: 2 points", "Undo reverses the move before removing points");
+    await page.touchscreen.tap(160, 330);
+    assert.equal(await page.locator("#redoBtn").isEnabled(), true, "Selecting a vertex without moving preserves Redo");
+    await page.locator("#redoBtn").click();
+    await touch("touchStart", [[1, 175, 345]]);
+    await touch("touchMove", [[1, 190, 355]]);
+    await touch("touchCancel", []);
+    await touch("touchStart", [[1, 175, 345]]);
+    await touch("touchMove", [[1, 185, 350]]);
+    await touch("touchStart", [[1, 185, 350], [2, 285, 350]]);
+    await release();
+    assert.equal(await page.locator("#drawingProgress").textContent(), "Path: 2 points", "Cancelled moves and pinch takeover preserve accepted vertices");
+    await page.locator("#drawingFinish").click();
+    assert.deepEqual(await page.evaluate(() => drawings.at(-1).points), [{ x: 75, z: 95 }, { x: 100, z: 110 }], "Finish includes the moved vertex and excludes interrupted previews");
+    assert.equal((await read()).history, before.history + 1, "Finish remains one committed operation");
+    await page.evaluate(() => workspaceState.select(null));
+  }
+
   // Pinching a live path must not add vertices or finish/cancel the draft.
   await setup(); await page.locator('[data-canvas-tool="path"]').click();
   await page.touchscreen.tap(100, 320);
