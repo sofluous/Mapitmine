@@ -1551,6 +1551,17 @@
       #drawingCommands #drawingToolStrip { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
       #drawingFinish { justify-self: end; }
       #drawingCommands [hidden] { display: none; }
+      #draftVertices { min-width: 0; pointer-events: auto; }
+      #draftVertices > summary { cursor: pointer; padding-block: var(--space-xs); }
+      #draftVertices summary output { margin-inline-start: var(--space-xs); }
+      @media (pointer: coarse) { #draftVertices > summary { min-height: 44px; box-sizing: border-box; } }
+      #draftPoints { max-height: min(28dvh, 240px); overflow: auto; padding: var(--focus-clearance); }
+      #draftPoints .draft-point-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-sm); min-width: 0; }
+      #draftPoints .has-long-coordinates { grid-template-columns: minmax(0, 1fr); }
+      #drawingCommands #draftPoints label { display: grid; gap: var(--space-xs); }
+      #draftPoints input { min-width: 0; width: 100%; min-height: 44px; font-variant-numeric: tabular-nums; }
+      #draftPoints .is-active-vertex { background: var(--ui-surface-active); box-shadow: inset 3px 0 0 var(--color-primary); }
+      #draftPoints [data-draft-vertex]:focus-visible, #draftVertices > summary:focus-visible { outline: 2px solid var(--ds-focus, var(--color-primary)); outline-offset: -2px; }
       #drawingCommands[data-phase="placing"] #drawingToolStrip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       #drawingCommands[data-phase="placing"] #drawingFinish { justify-self: end; }
       #drawingCommands button { min-width: 0; padding-inline: 4px; }
@@ -2182,6 +2193,8 @@
         }
         #mobileDock #drawingCommands button,
         #mobileDock #drawingCommands label { pointer-events: auto; }
+        #mobileDock #draftVertices { background: var(--color-panel); }
+        #mobileDock #draftPoints { max-height: clamp(44px, calc(var(--mobile-view-height, 100dvh) * 0.35 - 140px), 160px); }
         #mobileDock #drawingCommands label,
         #mobileDock #drawingProgress,
         #mobileDock .status-strip-group { background: var(--color-panel); }
@@ -8259,9 +8272,10 @@
       );
       drawingCommands.append(
         drawingSetup,
+        Object.assign(document.createElement("details"), { id: "draftVertices", innerHTML: '<summary aria-label="Draft vertices">Vertices</summary><div id="draftPoints" class="ds-stack" aria-label="Draft vertices"></div>' }),
         document.getElementById("drawingToolStrip"),
-        document.getElementById("drawingProgress"),
       );
+      drawingCommands.querySelector("#draftVertices summary").appendChild(document.getElementById("drawingProgress"));
       hud.appendChild(drawingCommands);
       document.body.appendChild(document.getElementById("mapStatusStrip"));
       drawingPanel.setAttribute("aria-label", "Drawing tools and properties");

@@ -130,6 +130,7 @@
       progress.title = draft ? `Layer: ${api.layers().find((layer) => layer.id === draft.layerId)?.label || draft.layerId}` : "";
       progress.setAttribute("aria-label", draft ? `${progress.textContent}. ${progress.title}` : "");
       api.historyChanged?.();
+      refreshDraftPoints();
       const selection = field("drawingSelection");
       selection.replaceChildren();
       const none = document.createElement("option");
@@ -233,6 +234,93 @@
       refreshVertexControls(drawing, canEdit);
       originalEditorValues = JSON.stringify(readEditor());
       highlightVertex();
+    }
+
+    function refreshDraftPoints() {
+      const section = field("draftVertices"), list = field("draftPoints");
+      if (!section || !list) return;
+      section.hidden = !draft?.points.length;
+      if (!draft) section.open = false;
+      const focused = document.activeElement;
+      const restoreIndex = focused?.dataset?.draftPoint;
+      const restoreAxis = focused?.dataset?.axis;
+      list.replaceChildren();
+      if (!draft) return;
+      const session = draft;
+      const activate = (index) => {
+        draftSelection = index;
+        list.querySelectorAll("[data-draft-vertex]").forEach((row) => {
+          const active = Number(row.dataset.draftVertex) === index;
+          row.tabIndex = active ? 0 : -1;
+          row.classList.toggle("is-active-vertex", active);
+          row.setAttribute("aria-current", String(active));
+        });
+        api.redraw();
+      };
+      draft.points.forEach((point, index) => {
+        const row = document.createElement("div");
+        row.className = `draft-point-row${[point.x, point.z].some((value) => String(value).length > 12) ? " has-long-coordinates" : ""}`;
+        row.dataset.draftVertex = index;
+        row.setAttribute("role", "group");
+        row.setAttribute("aria-label", `Draft vertex ${index + 1}`);
+        row.addEventListener("focus", () => activate(index));
+        row.addEventListener("click", () => activate(index));
+        row.addEventListener("keydown", (event) => {
+          if (event.target !== row) return;
+          const next = event.key === "ArrowDown" ? Math.min(session.points.length - 1, index + 1)
+            : event.key === "ArrowUp" ? Math.max(0, index - 1)
+            : event.key === "Home" ? 0 : event.key === "End" ? session.points.length - 1 : null;
+          if (next === null) return;
+          event.preventDefault(); event.stopPropagation?.();
+          list.querySelectorAll("[data-draft-vertex]")[next]?.focus();
+        });
+        ["x", "z"].forEach((axis) => {
+          const label = document.createElement("label");
+          label.className = "drawing-point-field";
+          const caption = document.createElement("span");
+          caption.textContent = `${axis.toUpperCase()}${index + 1}`;
+          const input = document.createElement("input");
+          input.className = "ds-input";
+          input.type = "number"; input.step = "any";
+          input.value = point[axis];
+          input.dataset.draftPoint = index; input.dataset.axis = axis;
+          input.setAttribute("aria-label", `Draft point ${index + 1} ${axis.toUpperCase()}`);
+          input.disabled = !!draftPointer || !editable(session);
+          input.addEventListener("focus", () => activate(index));
+          input.addEventListener("change", () => {
+            if (draft !== session || draftPointer || !editable(session)) return;
+            const value = input.value.trim() === "" ? NaN : Number(input.value);
+            if (!Number.isFinite(value)) { input.value = session.points[index][axis]; return; }
+            moveDraftPoint(index, { ...session.points[index], [axis]: value });
+          });
+          input.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
+              event.preventDefault(); event.stopPropagation?.();
+              input.value = session.points[index][axis];
+            } else if (event.key === "Enter") {
+              event.preventDefault(); event.stopPropagation?.(); input.blur();
+            }
+          });
+          label.appendChild(caption); label.appendChild(input); row.appendChild(label);
+        });
+        list.appendChild(row);
+      });
+      activate(Math.max(0, Math.min(draftSelection, draft.points.length - 1)));
+      if (restoreIndex !== undefined) {
+        list.querySelector(`[data-draft-point="${restoreIndex}"][data-axis="${restoreAxis}"]`)?.focus();
+      }
+    }
+
+    function moveDraftPoint(index, point) {
+      if (!draft || draftPointer || !editable(draft) || !draft.points[index] ||
+          !Number.isFinite(point.x) || !Number.isFinite(point.z)) return;
+      const before = draft.points[index];
+      if (before.x === point.x && before.z === point.z) return;
+      draft.points[index] = { ...point };
+      draft.undoEdits.push({ kind: "move", index, before: { ...before }, after: { ...point } });
+      draft.redoEdits = [];
+      draftSelection = index;
+      refresh(); api.redraw();
     }
 
     function highlightVertex() {
@@ -667,13 +755,7 @@
       if (draft !== gesture.draft || !editable(draft)) return;
       if (gesture.index < 0) appendDraftPoint(point);
       else if (gesture.moved) {
-        const before = draft.points[gesture.index];
-        if (Number.isFinite(point.x) && Number.isFinite(point.z) && (before.x !== point.x || before.z !== point.z)) {
-          draft.points[gesture.index] = { ...point };
-          draft.undoEdits.push({ kind: "move", index: gesture.index, before: { ...before }, after: { ...point } });
-          draft.redoEdits = [];
-        }
-        refresh(); api.redraw();
+        moveDraftPoint(gesture.index, point);
       }
     }, { capture: true, passive: false });
     function draftPointerPoint(event) {

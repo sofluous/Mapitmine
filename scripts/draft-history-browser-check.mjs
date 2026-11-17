@@ -49,7 +49,8 @@ try {
     await point(0); await point(1); await point(2); await progress(3);
     assert.equal(await page.locator("#drawingShape").isVisible(), false, "Shape selector yields to placement actions");
     assert.equal(await page.locator('label[for="drawingLayer"]').isVisible(), false);
-    assert.ok((await page.locator("#drawingCommands").boundingBox()).height < setupHeight - 20, "Placement commands consume less vertical space than setup");
+    const placementHeight = (await page.locator("#drawingCommands").boundingBox()).height;
+    assert.ok(placementHeight <= setupHeight + 8, `Placement adds at most one spacing unit for the touch-sized vertex disclosure (${placementHeight}/${setupHeight})`);
     if (width === 390) {
       const placementTools = await page.locator("#historyTools").boundingBox();
       assert.ok(Math.abs(placementTools.y - setupTools.y) <= 1, "Primary tools stay anchored between setup and placement");
@@ -59,6 +60,38 @@ try {
     await page.locator('[data-canvas-tool="path"]').click(); await progress(3); await noDialog();
     assert.equal(await page.evaluate(() => draftPromptCount), repeatPrompts, "Reselecting Draw is idempotent");
     assert.equal(await page.locator("#undoBtn").getAttribute("aria-label"), "Undo point");
+    const disclosure = page.locator('#draftVertices summary');
+    await disclosure.click();
+    const draftRows = page.locator('#draftPoints [data-draft-vertex]');
+    assert.equal(await draftRows.count(), 3);
+    await draftRows.nth(2).focus(); await page.keyboard.press('Home');
+    assert.equal(await draftRows.nth(0).getAttribute('aria-current'), 'true');
+    await page.keyboard.press('ArrowDown');
+    assert.equal(await draftRows.nth(1).getAttribute('aria-current'), 'true');
+    await page.keyboard.press('End');
+    assert.equal(await draftRows.nth(2).getAttribute('aria-current'), 'true');
+    const draftX = page.locator('#draftPoints input[data-draft-point="0"][data-axis="x"]');
+    await draftX.fill('-123.5'); await draftX.press('Enter');
+    assert.equal(await draftX.inputValue(), '-123.5');
+    assert.deepEqual(await snapshot(), before, 'Numeric edits remain entirely in the draft');
+    await page.locator('#undoBtn').click(); assert.equal(await draftX.inputValue(), String(x));
+    await page.locator('#redoBtn').click(); assert.equal(await draftX.inputValue(), '-123.5');
+    await page.locator('#undoBtn').click(); assert.equal(await draftX.inputValue(), String(x));
+    await draftX.fill(''); await draftX.press('Tab');
+    assert.equal(await draftX.inputValue(), String(x), 'Blank values restore accepted coordinates');
+    await draftX.fill('1e309'); await draftX.press('Tab');
+    assert.equal(await draftX.inputValue(), String(x), 'Nonfinite values restore accepted coordinates');
+    await draftX.fill('777'); await draftX.press('Escape');
+    assert.equal(await draftX.inputValue(), String(x), 'Escape reverts field text without cancelling draft');
+    assert.equal(await page.evaluate(() => drawingTools.active()), true);
+    if (width === 390) {
+      const finish = await page.locator('#drawingFinish').boundingBox();
+      const commands = await page.locator('#drawingCommands').boundingBox();
+      assert.ok(finish.y + finish.height <= commands.y + commands.height + 1, 'Expanded draft list keeps Finish inside the command viewport');
+      assert.ok((await disclosure.boundingBox()).height >= 44, 'Touch disclosure has a 44px target');
+    }
+    await page.screenshot({ path: resolve(output, `vertices-${theme}-${width}.png`) });
+    await disclosure.click();
     if (width === 1440) {
       await page.mouse.move(x, 350);
       assert.equal(await page.locator("#mapCanvas").evaluate((element) => element.style.cursor), "grab");
@@ -109,11 +142,13 @@ try {
     await page.evaluate(() => { document.getElementById("historyEditableProbe").remove(); setWorkspaceCollapsed(true, false); });
     await progress(2); assert.deepEqual(await snapshot(), before);
     await page.screenshot({ path: resolve(output, `${theme}-${width}.png`) });
+    await disclosure.click();
+    await draftX.fill('-123.5'); await draftX.press('Enter');
     await page.locator("#drawingFinish").click();
     const finished = await snapshot();
     assert.equal(JSON.parse(finished.drawings).length, 1);
     assert.equal(JSON.parse(finished.drawings)[0].layerId, "routes");
-    assert.deepEqual(JSON.parse(finished.drawings)[0].points, [{ x, z: 350 }, { x: x + 75, z: 440 }]);
+    assert.deepEqual(JSON.parse(finished.drawings)[0].points, [{ x: -123.5, z: 350 }, { x: x + 75, z: 440 }]);
     assert.equal(finished.undo, before.undo + 1, "Finish creates one committed action");
     assert.equal(await page.locator("#undoBtn").getAttribute("aria-label"), "Undo");
     await page.locator("#undoBtn").click();

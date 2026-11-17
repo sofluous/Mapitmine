@@ -21,6 +21,8 @@ See [AGENTS.md](AGENTS.md) for product engineering guidance. No hosting provider
 
 ## Checks
 
+During path construction, expand Vertices in the drawing commands to edit accepted draft points. Focus a row and use Up/Down/Home/End to navigate; X/Z accept finite decimals on change or Enter. Escape restores the current field. Moves share draft Undo/Redo and do not save document history until Finish; Cancel discards the session. The list scrolls independently and remains collapsed by default.
+
 Layer disclosure is before the label. Row click/tap or Enter/Space selects and toggles; the chevron and arrow keys expand independently. Row selection keeps the organization panel open, with explicit Properties available from the layer menu. Selected layers reveal quiet lock/visibility controls; hidden/locked indicators persist. New layer is the plus action beside object search/filter. Utility clicks and completed drags do not also toggle disclosure, and pending edits can cancel a row transition.
 
 Map View spacing must be finite and greater than zero; fractions are supported. Invalid edits retain the last valid runtime/snapshot value and restore it on blur; invalid restored settings cannot replace valid spacing. src/view-settings.js bounds grid work per axis so dense grids cannot hide map annotations. Normal qa:hud includes its dependency-free validation tests.
