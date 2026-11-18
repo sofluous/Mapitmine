@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>MapItMine Editor And Maps Layout QA</title>
     <link rel="stylesheet" href="../design-system/theme.css" />
+    <link rel="stylesheet" href="../src/editor-fields.css" />
     <style>
       :root {
         --space-xs: 4px;
@@ -97,29 +98,11 @@
         border-top: 1px solid var(--ui-border-quiet);
       }
 
-      .pin-editor-hint {
-        margin-right: auto;
-      }
-
-      .pin-editor-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: var(--space-sm);
-      }
-
-      .editor-span-2 {
-        grid-column: 1 / -1;
-      }
-
       .control-inline {
         display: grid;
         gap: var(--space-sm);
       }
 
-      .control-inline-triple,
-      .pin-editor-coords {
-        grid-template-columns: repeat(3, minmax(86px, 1fr));
-      }
 
       .ds-input,
       .ds-select {
@@ -136,13 +119,6 @@
       textarea.ds-input {
         min-height: 84px;
         resize: vertical;
-      }
-
-      .pin-editor-mini-group {
-        display: grid;
-        grid-template-columns: 72px 72px;
-        justify-content: end;
-        gap: var(--space-xs);
       }
 
       .map-data-copy {
@@ -176,7 +152,7 @@
       }
 
       .ds-btn {
-        min-height: 36px;
+        min-height: 44px;
       }
 
       .map-gallery-card {
@@ -199,19 +175,6 @@
 
       @media (max-width: 520px) {
         .fixture-grid,
-        .pin-editor-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .pin-editor-mini-group {
-          grid-template-columns: 1fr 72px;
-          justify-content: stretch;
-        }
-
-        .pin-editor-mini {
-          width: 100%;
-          min-width: 0;
-        }
 
         .map-action-grid {
           grid-template-columns: 1fr;
@@ -219,7 +182,7 @@
       }
     </style>
   </head>
-  <body data-theme="tech-grid">
+  <body data-theme="paper-mint">
     <main>
       <header>
         <h1>Editor And Maps Layout QA</h1>
@@ -231,33 +194,31 @@
       </header>
 
       <section class="fixture-grid">
-        <article class="app-panel" aria-label="Pin editor fixture">
+        <article id="pinEditorPanel" class="app-panel compact-editor" aria-label="Pin editor fixture">
           <div class="pin-editor-header">
             <div class="control-section-title">New pin</div>
             <button class="ds-btn" type="button">X</button>
           </div>
           <div class="pin-editor-body">
-            <div class="pin-editor-fields">
-              <div class="control-inline control-inline-triple pin-editor-coords">
-                <input class="ds-input" value="-198" aria-label="Pin X position" />
-                <input class="ds-input" value="72" aria-label="Pin Y position" />
-                <input class="ds-input" value="-127" aria-label="Pin Z position" />
-              </div>
-              <div class="pin-editor-grid">
-                <input class="ds-input editor-span-2" value="Village" />
-                <textarea class="ds-input editor-span-2">Notes</textarea>
-                <select class="ds-select">
-                  <option>Village</option>
-                </select>
-                <div class="pin-editor-mini-group">
-                  <select class="ds-select"><option>Icon</option></select>
-                  <input class="ds-input" type="color" value="#ffcc00" />
-                </div>
-              </div>
+            <div class="editor-coordinates pin-editor-coords">
+              <label class="editor-field" for="fixtureX"><span class="editor-field-label">X</span><input id="fixtureX" class="ds-input" value="-123456789" /></label>
+              <label class="editor-field" for="fixtureY"><span class="editor-field-label">Y</span><input id="fixtureY" class="ds-input" value="72" /></label>
+              <label class="editor-field" for="fixtureZ"><span class="editor-field-label">Z</span><input id="fixtureZ" class="ds-input" value="-987654321" /></label>
+            </div>
+            <label class="editor-field" for="fixtureName"><span class="editor-field-label">Name</span><input id="fixtureName" class="ds-input" value="Village" /></label>
+            <div class="editor-property-pair">
+              <label class="editor-field" for="fixtureLayer"><span class="editor-field-label">Layer</span><select id="fixtureLayer" class="ds-select"><option>Base</option></select></label>
+              <label class="editor-field" for="fixtureType"><span class="editor-field-label">Type</span><select id="fixtureType" class="ds-select"><option>Village</option></select></label>
+            </div>
+            <div class="editor-secondary">
+              <details class="editor-disclosure"><summary>Notes</summary><label class="editor-field" for="fixtureNotes"><span class="editor-field-label">Notes</span><textarea id="fixtureNotes" class="ds-input">Notes</textarea></label></details>
+              <details class="editor-disclosure"><summary>Appearance</summary><div class="editor-appearance">
+                <label class="editor-field editor-swatch" for="fixtureColor"><span class="editor-field-label">Color</span><input id="fixtureColor" type="color" value="#ffcc00" /></label>
+                <label class="editor-field editor-icon" for="fixtureIcon"><span class="editor-field-label">Icon</span><select id="fixtureIcon" class="ds-select"><option>Icon</option></select></label>
+              </div></details>
             </div>
           </div>
-          <div class="pin-editor-actions">
-            <button class="pin-editor-hint ds-btn" type="button">i</button>
+          <div class="pin-editor-actions editor-footer">
             <button class="ds-btn" type="button">Cancel</button>
             <button class="ds-btn ds-btn-primary" type="button">Save</button>
           </div>
@@ -285,5 +246,14 @@
         </article>
       </section>
     </main>
+    <script>
+      document.querySelectorAll('.editor-coordinates input').forEach(input => {
+        const style = getComputedStyle(input), ctx = document.createElement('canvas').getContext('2d');
+        ctx.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+        if (style.letterSpacing !== "normal") ctx.letterSpacing = style.letterSpacing;
+        input.closest('label').style.setProperty('--coordinate-min', `${Math.ceil(ctx.measureText(input.value).width + parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) + 4)}px`);
+        input.closest('label').style.setProperty('--coordinate-weight', input.value.length);
+      });
+    </script>
   </body>
 </html>

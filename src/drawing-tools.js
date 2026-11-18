@@ -154,11 +154,15 @@
       editor.hidden = !drawing;
       if (!drawing) { editorSnapshot = ""; originalEditorValues = ""; return; }
       const canEdit = editable(drawing);
+      const layerContext = field("drawingEditorLayer");
+      if (layerContext) layerContext.textContent = api.layers().find((layer) => layer.id === drawing.layerId)?.label || "Unknown layer";
       if (pointListDrawingId !== drawing.id) {
         pointListDrawingId = drawing.id;
         activeVertex = 0;
         showAllPoints = false;
         field("drawingStyle").open = false;
+        const geometry = field("drawingGeometry");
+        if (geometry) geometry.open = false;
       }
       refreshVertexControls(drawing, canEdit);
       const snapshot = JSON.stringify([drawing.id, drawing.name, drawing.points, drawing.style, canEdit]);
@@ -234,6 +238,7 @@
       refreshVertexControls(drawing, canEdit);
       originalEditorValues = JSON.stringify(readEditor());
       highlightVertex();
+      global.MapitMineEditorFields?.refresh();
     }
 
     function refreshDraftPoints() {
@@ -375,6 +380,8 @@
           api.workspace?.setTool("vertices");
         }
         refresh();
+        const geometry = field("drawingGeometry");
+        if (geometry && vertexId) geometry.open = true;
         api.redraw();
       } finally { switching = false; }
     }
@@ -438,8 +445,16 @@
         : await api.confirm({ title: "Discard drawing changes?", message: "Discard unapplied drawing properties?", confirmText: "Discard" }) ? "discard" : "keep";
       if (choice === "keep") return false;
       if (choice === "finish") return apply();
+      revertEdits();
+      return true;
+    }
+
+    function revertEdits() {
+      if (!selected()) return false;
+      if (vertexDrag) cancelVertexDrag();
       editorSnapshot = "";
       refresh();
+      api.redraw();
       return true;
     }
 
@@ -567,6 +582,8 @@
         const invalidPoint = Array.from(field("drawingPoints").querySelectorAll("input"))
           .find((input) => input.value === "" || !Number.isFinite(Number(input.value)));
         if (invalidPoint) {
+          const geometry = field("drawingGeometry");
+          if (geometry) geometry.open = true;
           activeVertex = Number(invalidPoint.dataset.point);
           highlightVertex();
           invalidPoint.focus?.();
@@ -586,6 +603,7 @@
       return true;
     }
     field("drawingApply").addEventListener("click", apply);
+    field("drawingRevert")?.addEventListener("click", revertEdits);
     async function deleteDrawing() {
       const drawing = selected();
       if (!drawing || !editable(drawing)) return;
@@ -931,7 +949,7 @@
     }
 
     refresh();
-    return { render, refresh, reset, start, leave, resolveEdits, hasPendingEdits, editVertices, deleteDrawing,
+    return { render, refresh, reset, start, leave, resolveEdits, revertEdits, hasPendingEdits, editVertices, deleteDrawing,
       draftHistoryState, undoDraftPoint: () => traverseDraftHistory(false), redoDraftPoint: () => traverseDraftHistory(true),
       cancelPointerGesture: () => { rollbackVertexGesture(); cancelDraftPointer(); },
       hasPendingChanges: () => !!draft?.points.length || !!vertexDrag || hasPendingEdits(), active: () => !!draft };

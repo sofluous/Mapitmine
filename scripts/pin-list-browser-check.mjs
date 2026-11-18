@@ -19,8 +19,17 @@ try {
     })));
     await page.goto(new URL("../index.html", import.meta.url).href, { waitUntil: "domcontentloaded" });
     await page.evaluate((value) => { MapItTheme.setTheme(value); setWorkspaceTab("pins"); }, theme);
-    const search = page.locator("#pinSearchInput"), clear = page.locator("#pinSearchClearBtn"), filter = page.locator("#pinFilterBtn");
-    const rows = page.locator("#pinList .pin-card"), summary = page.locator("#pinResultSummary");
+    const search = page.locator("#objectSearch"), clear = page.locator("#pinSearchClearBtn"), filter = page.locator("#pinFilterBtn");
+    const rows = page.locator("#layerList .pin-card"), summary = page.locator("#pinResultSummary");
+    assert.equal(await page.locator('[data-workspace-tab="objects"]').getAttribute("aria-pressed"), "true");
+    assert.equal(await page.locator("#objectFilter").inputValue(), "pin", "Legacy Pins navigation restricts the unified tree");
+    assert.equal(await page.locator("#pinList, #pinListPanel, #pinSearchInput").count(), 0);
+    for (const row of await rows.all()) {
+      assert.equal(await row.evaluate(el => el.tagName), "DIV");
+      assert.equal(await row.getAttribute("role"), "treeitem");
+      assert.equal(await row.getAttribute("data-object-kind"), "pin");
+      assert.ok(await row.getAttribute("data-object-id"));
+    }
     const snapshot = () => page.evaluate(() => ({ raw: localStorage.getItem(mapKey(currentMapName)), history: undoStack.length, pins: JSON.stringify(pins) }));
     const before = await snapshot();
     assert.equal(await rows.count(), 3);
@@ -35,11 +44,17 @@ try {
     assert.deepEqual(await rows.nth(1).locator('.pin-coord-value').allTextContents(), ['123456789', '-', '-987654321']);
     const longTitle = await rows.nth(1).locator('.pin-label').boundingBox();
     const longCoords = await rows.nth(1).locator('.pin-coords').boundingBox();
-    assert.ok(longCoords.y >= longTitle.y + longTitle.height, 'Extreme values use an explicit continuation line');
+    if (width < 900) assert.ok(longCoords.y >= longTitle.y + longTitle.height, 'Narrow rows move extreme values below the identifying title');
+    assert.equal(await rows.nth(1).locator('.pin-coord-value').evaluateAll(values => values.every(el => el.scrollWidth <= el.clientWidth + 1)), true, 'Complete coordinate values remain visibly readable');
     assert.equal(await summary.textContent(), "3/3");
     assert.equal(await page.locator("#pinFilterSummary").textContent(), "0");
     assert.equal(await page.locator(".pin-toolbar-row").count(), 1, "Toolbar uses one row without duplicate chips");
+    await page.evaluate(() => { offsetX += 79; offsetY += 43; draw(); });
+    const camera = await page.evaluate(() => [offsetX, offsetY]);
     await rows.nth(0).click();
+    await page.waitForFunction(previous => offsetX !== previous[0] || offsetY !== previous[1], camera);
+    assert.notDeepEqual(await page.evaluate(() => [offsetX, offsetY]), camera, "Pin click centers the map");
+    assert.equal(await page.locator("#contextInspector").isVisible(), false, "Pin click only selects");
     assert.equal(await page.evaluate(() => workspaceState.get().selection.id), "farm");
     const a = await rows.nth(0).boundingBox(), b = await rows.nth(1).boundingBox();
     assert.ok(Math.abs(a.y + a.height - b.y) <= 1, "Pin rows meet without a gap");
@@ -84,8 +99,16 @@ try {
       await page.locator("#pinFilterResetBtn").focus(); await page.keyboard.press("Escape");
       assert.equal(await page.evaluate(() => workspaceState.get().selection.id), "route", "Filter Escape does not clear a drawing selection");
     }
+    await page.evaluate(() => setWorkspaceTab("layers"));
+    assert.equal(await page.locator("#objectFilter").inputValue(), "all", "Legacy Layers navigation shows all objects");
+    assert.equal(await summary.textContent(), "4/4");
+    await page.locator('[data-object-filter="drawing"]').click();
+    assert.equal(await rows.count(), 0);
+    assert.equal(await page.locator('#layerList [data-object-kind="drawing"]').count(), 1);
+    assert.equal(await summary.textContent(), "1/1");
+    await page.locator('[data-object-filter="pin"]').click();
     await search.fill("not-a-real-pin");
-    assert.equal(await page.locator(".pin-empty-title").textContent(), "No matching pins");
+    assert.equal(await page.locator(".pin-empty-title").textContent(), "No matching objects");
     await page.locator("#clearPinSearchOnlyBtn").click();
     assert.equal(await rows.count(), 3);
     await search.fill(" "); assert.equal(await clear.isVisible(), true); await clear.click();

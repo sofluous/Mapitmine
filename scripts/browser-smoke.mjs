@@ -81,8 +81,8 @@ try {
   const required = [
     'id="workspaceShell"',
     'id="mapGallery"',
-    'id="pinList"',
-    'id="pinSearchInput"',
+    'id="objectFilter"',
+    'id="objectSearch"',
     'id="pinFilterBtn"',
     'id="pinResultSummary"',
     'id="mapCanvas"',

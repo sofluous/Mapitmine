@@ -8,7 +8,10 @@ const requiredSnippets = [
   'id="mapGallery"',
   'id="mapOpenLibraryBtn"',
   'data-map-card-action="more"',
-  'id="pinList"',
+  'id="objectFilter"',
+  'id="objectSearch"',
+  'data-workspace-tab="objects"',
+  'data-workspace-panel="objects"',
   'id="layerList"',
   'id="pinEditorLayer"',
   'id="pinEditorPanel"',
@@ -59,6 +62,14 @@ const requiredSnippets = [
   'function touchMapMeta(',
   'formatRelativeDate,',
 ];
+
+const retired = ['id="pinList"', 'id="pinListPanel"', 'id="pinSearchInput"', 'data-workspace-tab="pins"', 'data-workspace-tab="layers"'];
+for (const snippet of retired) {
+  if (html.includes(snippet)) throw new Error(`Retired Objects surface remains: ${snippet}`);
+}
+for (const id of ["layerList", "objectSearch", "objectFilter"]) {
+  if ([...html.matchAll(new RegExp(`id="${id}"`, "g"))].length !== 1) throw new Error(`Expected one #${id}`);
+}
 
 const missing = requiredSnippets.filter((snippet) => !html.includes(snippet));
 

@@ -51,7 +51,7 @@ try {
   await page.evaluate(() => editPin(0));
   await edit().fill("Retain source draft");
   await page.evaluate(() => setWorkspaceTab("pins"));
-  await page.locator('.pin-card[data-index="1"] .pin-label').click();
+  await page.locator('#layerList .pin-card[data-index="1"] .pin-label').click();
   await choice("keep").click();
   assert.equal(await page.evaluate(() => currentEditIndex), 0);
   assert.equal(await edit().inputValue(), "Retain source draft");

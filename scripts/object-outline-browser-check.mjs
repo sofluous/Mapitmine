@@ -70,6 +70,7 @@ try {
   await row("path").focus();
   await page.keyboard.press("Enter");
   await page.waitForFunction(() => workspaceState.get().selection?.id === "path");
+  await row("path").focus();
   await page.keyboard.press("ArrowUp");
   assert.equal(await focusId(), "beta");
   assert.equal((await selected()).id, "path");
@@ -92,6 +93,7 @@ try {
   await row("path").focus();
   await page.keyboard.press("Space");
   await page.waitForFunction(() => workspaceState.get().selection?.id === "path");
+  assert.equal(await page.locator("#contextInspector").isVisible(), false, "Drawing Space selects without opening properties");
   await page.keyboard.press("Escape");
   await page.waitForFunction(() => workspaceState.get().selection === null);
   assert.equal(await focusId(), "path");
@@ -136,9 +138,9 @@ try {
   }
   await page.keyboard.press("Enter");
   await page.waitForFunction(() => workspaceState.get().selection?.id === "beta");
-  assert.equal(await page.locator("#inspectorClose").evaluate((element) => element === document.activeElement), true, "Mobile activation hands focus to the inspector");
+  assert.equal(await page.locator("#pinEditorLabel").evaluate((element) => element === document.activeElement), true, "Mobile Enter opens the actual pin editor and focuses its name");
   assert.equal(await page.locator("#workspacePanel").isVisible(), false);
-  await page.locator('[data-workspace-tab="layers"]').click();
+  await page.locator('[data-workspace-tab="objects"]').click();
   assert.equal(await page.locator("#layerList").isVisible(), true);
   assert.deepEqual(errors, []);
   console.log("Outline browser checks passed: tree semantics, independent focus, navigation, editing guards, filtering, focus restoration, locked objects, mobile handoff and three-theme screenshots.");

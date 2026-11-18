@@ -84,7 +84,7 @@
         display: grid;
         grid-template-columns: auto minmax(0, 1fr);
         grid-template-areas:
-          "icon date"
+          ". date"
           "icon bottom"
           "description description";
         align-items: start;
@@ -96,7 +96,7 @@
         grid-area: icon;
         display: flex;
         font-size: 20px;
-        align-self: center;
+        align-self: start;
         line-height: 1;
       }
 
@@ -209,9 +209,9 @@
       <section class="fixture-grid">
         <div class="fixture-panel">
           <h2>Normal Panel</h2>
-          <article class="pin-card is-selected">
+          <div class="object-entry pin-card is-selected" role="treeitem" data-index="0" data-object-kind="pin" data-object-id="fixture-0" tabindex="0" aria-selected="true">
             <div class="pin-card-main">
-              <span class="pin-icon">⌖</span>
+              <span class="pin-icon">Ã¢Å’â€“</span>
               <div class="pin-text">
                 <div class="pin-card-date">Oct 5, 2026</div><div class="pin-line-secondary"><div class="pin-label">Spawn Point</div><div class="pin-tag">[spawn]</div><span class="pin-coords">
                     <span class="pin-coord"><span class="pin-coord-label">X</span><span class="pin-coord-value">0</span></span>
@@ -221,12 +221,12 @@
                 <div class="pin-description">Primary working spawn area with a short description.</div>
               </div>
             </div>
-            <div class="pin-controls"><button>⧉</button><button>⋯</button></div>
-          </article>
+            <div class="pin-controls"><button class="btn-copy-coords" data-outline-action="copy" aria-label="Copy coordinates">Ã¢Â§â€°</button><button class="btn-more" data-outline-action="more" aria-label="Pin actions">Ã¢â€¹Â¯</button></div>
+          </div>
 
-          <article class="pin-card is-hovered">
+          <div class="object-entry pin-card is-hovered" role="treeitem" data-index="1" data-object-kind="pin" data-object-id="fixture-1" tabindex="-1" aria-selected="false">
             <div class="pin-card-main">
-              <span class="pin-icon">◆</span>
+              <span class="pin-icon">Ã¢â€”â€ </span>
               <div class="pin-text">
                 <div class="pin-card-date">Sep 28, 2026</div><div class="pin-line-secondary"><div class="pin-label">Very Long Settlement Name That Should Truncate Only When Needed</div><div class="pin-tag">[settlement]</div><span class="pin-coords">
                     <span class="pin-coord"><span class="pin-coord-label">X</span><span class="pin-coord-value">-12840</span></span>
@@ -235,15 +235,15 @@
                   </span></div>
               </div>
             </div>
-            <div class="pin-controls"><button>⧉</button><button>⋯</button></div>
-          </article>
+            <div class="pin-controls"><button class="btn-copy-coords" data-outline-action="copy" aria-label="Copy coordinates">Ã¢Â§â€°</button><button class="btn-more" data-outline-action="more" aria-label="Pin actions">Ã¢â€¹Â¯</button></div>
+          </div>
         </div>
 
         <div class="fixture-panel">
           <h2>Narrow Panel</h2>
-          <article class="pin-card is-editing">
+          <div class="object-entry pin-card is-editing" role="treeitem" data-index="2" data-object-kind="pin" data-object-id="fixture-2" tabindex="-1" aria-selected="false">
             <div class="pin-card-main">
-              <span class="pin-icon">◆</span>
+              <span class="pin-icon">Ã¢â€”â€ </span>
               <div class="pin-text">
                 <div class="pin-card-date">Sep 28, 2026</div><div class="pin-line-secondary"><div class="pin-label">Very Long Settlement Name That Should Truncate Only When Needed</div><div class="pin-tag">[settlement]</div><span class="pin-coords">
                     <span class="pin-coord"><span class="pin-coord-label">X</span><span class="pin-coord-value">-12840</span></span>
@@ -253,8 +253,8 @@
                 <div class="pin-description">This longer note should sit below the scan row without stealing coordinate space.</div>
               </div>
             </div>
-            <div class="pin-controls"><button>⧉</button><button>⋯</button></div>
-          </article>
+            <div class="pin-controls"><button class="btn-copy-coords" data-outline-action="copy" aria-label="Copy coordinates">Ã¢Â§â€°</button><button class="btn-more" data-outline-action="more" aria-label="Pin actions">Ã¢â€¹Â¯</button></div>
+          </div>
         </div>
       </section>
     </main>

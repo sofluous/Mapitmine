@@ -249,6 +249,7 @@ try {
   // A second finger rolls back a live vertex preview rather than committing it.
   await setup();
   await page.evaluate(() => { workspaceState.select({ kind: "drawing", id: "route" }); drawingTools.refresh(); });
+  await page.locator("#drawingGeometry > summary").click();
   await page.locator("#drawingVertices").click();
   const vertexBefore = await read();
   await touch("touchStart", [[1, 100, 250]]); await touch("touchMove", [[1, 110, 260]]);
@@ -274,7 +275,7 @@ try {
   for (const theme of ["paper-mint", "steel-night", "amber-terminal"]) for (const width of [320, 390, 901, 1440]) {
     await page.evaluate((value) => MapItTheme.setTheme(value), theme);
     await page.setViewportSize({ width, height: 900 });
-    for (const tab of ["maps", "pins", "layers", "map-view", "settings", "inspector"]) {
+    for (const tab of ["maps", "objects", "map-view", "settings", "inspector"]) {
       await page.evaluate((value) => {
         if (value !== "inspector") setWorkspaceTab(value, { persist: false, openPanel: true });
         else { setWorkspaceCollapsed(true, false); workspaceState.select({ kind: "drawing", id: "route" }); drawingTools.refresh(); }

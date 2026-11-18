@@ -40,6 +40,7 @@ try {
       workspaceState.select({ kind: "drawing", id: value });
       drawingTools.refresh(); draw();
     }, id);
+    if (!await page.locator("#drawingGeometry").evaluate(el => el.open)) await page.locator("#drawingGeometry > summary").click();
     await page.locator("#drawingVertices").click();
     await page.waitForFunction(() => workspaceState.get().tool === "vertices");
   };

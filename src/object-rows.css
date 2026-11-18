@@ -1,0 +1,64 @@
+/* One pin-focused tree; Detailed/Summary changes presentation only. */
+#workspacePanel { padding: 0; }
+#layersPanelSection { min-height: 0; }
+#layersPanelSection .workspace-section-body { display: flex; flex-direction: column; min-height: 0; gap: var(--space-sm); padding: 0; overflow: hidden; }
+#layersPanelSection :is(.workspace-tab-header,.pin-filter-shell,.object-filter-tabs) { margin-inline: var(--space-md); }
+#layersPanelSection .workspace-tab-header { padding-top: var(--space-md); }
+.pin-browser-head-actions { display: flex; align-items: center; gap: var(--space-xs); }
+#pinRowView { width: auto; max-width: 112px; min-height: 32px; font-size: var(--font-sm); }
+#layerList { flex: 1 1 auto; min-height: 0; overflow: auto; gap: 0; padding: 0; scroll-padding: var(--focus-clearance); }
+#layersPanelSection .workspace-section-body > #layerList { flex-shrink: 1; }
+#layerListContent { padding: var(--focus-clearance) var(--space-md); }
+#layerList .object-layer:focus-visible { outline: none; outline-width: 0; outline-offset: 0; }
+#layerList .layer-row { background: color-mix(in oklab,var(--color-text) 5%,var(--color-panel)); border-block: 1px solid var(--ui-border-quiet); min-height: 40px; }
+#layerList .layer-name { font-weight: 700; color: var(--color-text-heading); }
+#layerList .layer-count { font-variant-numeric: tabular-nums; }
+#layerList .object-layer.is-selected > .layer-row { background: var(--ui-surface-active); }
+#layerList .object-children { display: grid; gap: 0; padding: 0 0 0 22px; }
+#layerList .object-entry { display: block; position: relative; width: 100%; min-width: 0; margin: 0; padding: var(--space-xs) var(--space-sm); border-radius: 0; border: 1px solid transparent; border-bottom-color: var(--ui-border-quiet); box-shadow: none; background: transparent; text-align: left; cursor: pointer; }
+#layerList .object-entry:hover { border-color: var(--item-card-hover-color,var(--color-primary)); }
+#layerList .object-entry.is-selected { --item-card-selected-color: var(--color-primary); background: var(--item-card-active-bg,var(--ui-surface-active)); box-shadow: inset 3px 0 0 var(--item-card-selected-color); }
+#layerList .object-entry:focus-visible { outline: 2px solid var(--ds-focus,var(--color-primary)); outline-offset: -2px; }
+#layerList .pin-card-main { grid-template-columns: 18px minmax(0,1fr); grid-template-areas: ". date" "icon bottom" "description description"; column-gap: var(--space-sm); row-gap: 2px; }
+#layerList .pin-icon { align-self: start; margin-top: 1px; font-size: 18px; }
+#layerList .pin-card-date { min-height: 24px; line-height: 20px; padding-right: 52px; }
+#layerList .pin-line-secondary { gap: var(--space-xs); align-items: center; }
+#layerList .object-name { flex: 1 1 8ch; }
+#layerList .pin-coords { display: flex; flex-wrap: wrap; width: max-content; justify-content: flex-end; column-gap: 6px; overflow: visible; white-space: normal; }
+#layerList .pin-coord { max-width: 100%; grid-template-columns: 1ch minmax(0,max-content); }
+#layerList .pin-coord-value { min-width: 0; overflow-wrap: anywhere; }
+#layerList .object-state { margin-left: var(--space-sm); }
+#layerList .shape-summary { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--color-text-muted); white-space: nowrap; }
+#layerList .pin-controls { top: 2px; right: 2px; }
+#layerList .pin-controls .ds-btn { width: 24px; height: 24px; min-width: 24px; min-height: 24px; }
+#layerList .object-entry:is(:hover,:focus-within,.is-selected) .pin-controls { opacity: 1; pointer-events: auto; }
+#layerList[data-view=summary] .object-entry { display: grid; grid-template-columns: minmax(0,1fr) 28px; align-items: center; gap: var(--space-xs); min-height: 36px; }
+#layerList[data-view=summary] .pin-card-main { grid-template-areas: "icon bottom"; }
+#layerList[data-view=summary] :is(.pin-card-date,.pin-description,.btn-copy-coords) { display: none; }
+#layerList[data-view=summary] .pin-controls { position: static; }
+.object-filter-tabs { display: flex; gap: var(--space-xs); }
+.object-filter-tabs button { flex: 1; min-width: 0; }
+.object-filter-tabs button[aria-pressed=true] { background: var(--ui-surface-active); color: var(--color-primary); }
+#layersPanelSection .pin-filter-shell { position: relative; }
+#layersPanelSection .pin-toolbar-row { display: grid; grid-template-columns: minmax(0,1fr) max-content max-content; align-items: center; gap: var(--space-xs); }
+#layersPanelSection .pin-search-wrap { min-width: 0; }
+#layersPanelSection .pin-search-wrap input { width: 100%; min-width: 0; }
+@media (pointer: coarse) {
+  #pinRowView { min-height: 44px; }
+  #layerList .object-children { padding-left: 32px; }
+  #layerList .object-entry { display: grid; grid-template-columns: minmax(0,1fr) 44px; align-items: center; gap: var(--space-xs); }
+  #layerList .pin-controls { position: static; opacity: 1; pointer-events: auto; }
+  #layerList .pin-controls .ds-btn { width: 44px; height: 44px; min-width: 44px; min-height: 44px; }
+  #layerList .pin-card-date { min-height: 16px; line-height: 16px; padding-right: 0; }
+  #layerList .btn-copy-coords { display: none; }
+  #layerList[data-view=summary] .object-entry { grid-template-columns: minmax(0,1fr) 44px; min-height: 48px; }
+}
+@media (min-width: 1200px) {
+  #contextInspector { top: 12px; bottom: 12px; max-height: none; width: 320px; }
+}
+/* Short sheets scroll the whole browser so its header cannot squeeze the tree
+   to zero height. Keep a single edge-aligned viewport. */
+@media (max-width: 900px) and (max-height: 500px) {
+  #layersPanelSection .workspace-section-body { overflow: auto; }
+  #layersPanelSection .workspace-section-body > #layerList { flex: 0 0 auto; overflow: visible; }
+}

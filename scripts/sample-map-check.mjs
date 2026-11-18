@@ -1,0 +1,37 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import vm from "node:vm";
+const context = { window: {} };
+for (const file of ["map-data.js", "sample-map.js"]) vm.runInNewContext(await readFile(new URL(`../src/${file}`, import.meta.url), "utf8"), context);
+const sample = context.window.MapitMineSampleMap;
+const data = context.window.MapitMineData;
+const document = sample.create();
+assert.equal(document.version, 3);
+assert.equal(document.layers.length, 6);
+assert.equal(document.pins.length, 16);
+assert.equal(document.drawings.length, 3);
+assert.equal(new Set(document.pins.map(pin => pin.uid)).size, 16);
+assert.ok(document.layers.some(layer => layer.visible === false && layer.locked));
+assert.ok(document.pins.every(pin => Number.isFinite(pin.x) && Number.isFinite(pin.y) && Number.isFinite(pin.z) && document.layers.some(layer => layer.id === pin.layerId)));
+assert.ok(Math.min(...document.pins.map(pin => pin.x)) < -400 && Math.max(...document.pins.map(pin => pin.x)) > 400);
+assert.ok(data.normalizeMapDocument(document));
+document.pins[0].label = "Edited";
+document.layers[0].visible = false;
+assert.equal(sample.create().pins[0].label, "Village Green");
+assert.notEqual(sample.create().layers[0].visible, false);
+const values = new Map();
+const storage = { get length() { return values.size; }, key: index => [...values.keys()][index], setItem: (key, value) => values.set(key, value) };
+assert.equal(sample.ensure(storage), sample.name);
+const original = values.get(`map:${sample.name}`);
+assert.equal(sample.ensure(storage), null);
+assert.equal(values.get(`map:${sample.name}`), original);
+for (const raw of ["[]", "invalid", '{"version":99}']) {
+  values.clear(); values.set("map:Owner map", raw);
+  assert.equal(sample.ensure(storage), null, "Any existing map key is preserved, including invalid/newer data");
+  assert.equal(values.size, 1); assert.equal(values.get("map:Owner map"), raw);
+}
+values.clear(); values.set("mapbackup:Old", "kept");
+assert.equal(sample.ensure(storage), sample.name, "Backups do not count as live maps");
+assert.equal(values.get("mapbackup:Old"), "kept");
+assert.throws(() => sample.ensure({ length: 0, setItem() { throw new Error("Storage full"); } }), /Storage full/);
+console.log("Bundled sample checks passed: deterministic content, cloned data, safe/idempotent seeding and storage failure propagation.");

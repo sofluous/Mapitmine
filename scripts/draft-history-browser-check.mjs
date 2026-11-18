@@ -61,10 +61,13 @@ try {
     assert.equal(await page.evaluate(() => draftPromptCount), repeatPrompts, "Reselecting Draw is idempotent");
     assert.equal(await page.locator("#undoBtn").getAttribute("aria-label"), "Undo point");
     const disclosure = page.locator('#draftVertices summary');
+    assert.equal(await page.locator('#draftVertices').evaluate(el => el.open), false, 'Draft vertices start collapsed');
     await disclosure.click();
     const draftRows = page.locator('#draftPoints [data-draft-vertex]');
     assert.equal(await draftRows.count(), 3);
-    await draftRows.nth(2).focus(); await page.keyboard.press('Home');
+    await draftRows.nth(2).focus();
+    assert.equal(await draftRows.nth(2).evaluate(el => document.activeElement === el), true, 'Draft row receives keyboard focus');
+    await page.keyboard.press('Home');
     assert.equal(await draftRows.nth(0).getAttribute('aria-current'), 'true');
     await page.keyboard.press('ArrowDown');
     assert.equal(await draftRows.nth(1).getAttribute('aria-current'), 'true');

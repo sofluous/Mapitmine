@@ -31,13 +31,15 @@ try {
   await page.keyboard.press("Escape");
   assert.equal(await page.evaluate(() => workspaceState.get().selection.id), "farm", "Closing menu preserves selection");
   await page.mouse.dblclick(100, 200);
-  assert.equal(await page.locator("#contextInspectorTitle").textContent(), "Farm");
+  assert.equal(await page.locator("#contextInspectorTitle").textContent(), "Edit pin");
+  assert.equal(await page.locator("#pinEditorLabel").inputValue(), "Farm");
   await page.locator("#pinEditorCancelBtn").click();
-  await page.evaluate(() => { setWorkspaceTab("pins"); renderPinList(); });
-  await page.locator('.pin-card[data-index="0"] .pin-label').click();
+  await page.evaluate(() => { setWorkspaceTab("pins"); renderLayers(); });
+  await page.locator('#layerList .pin-card[data-index="0"] .pin-label').click();
   assert.equal(await inspector.evaluate((element) => element.hidden), true, "Pin-list selection does not open properties");
-  await page.locator('.pin-card[data-index="0"] .pin-label').dblclick();
-  assert.equal(await page.locator("#contextInspectorTitle").textContent(), "Farm");
+  await page.locator('#layerList .pin-card[data-index="0"] .pin-label').dblclick();
+  assert.equal(await page.locator("#contextInspectorTitle").textContent(), "Edit pin");
+  assert.equal(await page.locator("#pinEditorLabel").inputValue(), "Farm");
   await page.locator("#pinEditorCancelBtn").click();
   for (const theme of ["paper-mint", "steel-night", "amber-terminal"]) {
     await page.evaluate((value) => MapItTheme.setTheme(value), theme); await setup();
@@ -49,7 +51,7 @@ try {
     await page.screenshot({ path: resolve(output, `${theme}-drawing-menu.png`) });
     await page.getByRole("menuitem", { name: "Properties", exact: true }).click();
     await inspector.waitFor({ state: "visible" });
-    assert.equal(await page.locator("#contextInspectorTitle").textContent(), "Trail");
+    assert.equal(await page.locator("#contextInspectorTitle").textContent(), "Edit path");
     await page.locator("#drawingName").fill("Pending trail");
     await page.mouse.click(100, 200, { button: "right" });
     await page.locator('[data-draft-choice="keep"]').click();

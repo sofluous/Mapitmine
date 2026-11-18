@@ -43,8 +43,13 @@ try {
     expanded: layers.map((layer) => [layer.id, !getCollapsedOutlineLayers().has(layer.id)]),
   }));
   await page.evaluate(() => setWorkspaceTab("layers"));
-  assert.equal(await page.locator("#layersPanelSection > .workspace-tab-header").count(), 0, "Redundant Objects header is removed");
-  assert.equal(await page.locator(".object-filter-row > #createLayerBtn").count(), 1, "New layer shares the search/filter action row");
+  assert.equal(await page.locator('[data-workspace-panel="objects"] .workspace-tab-header').count(), 1, "Objects has one header");
+  assert.equal(await page.locator('.workspace-tab-header .workspace-tab-title-row .pin-browser-head-actions > #createLayerBtn').count(), 1, "New layer shares the Pins title action row");
+  const createBounds = await page.locator("#createLayerBtn").boundingBox();
+  const titleBounds = await page.locator('[data-workspace-panel="objects"] .workspace-tab-header .workspace-section-title').boundingBox();
+  assert.ok(createBounds.width >= 44 && createBounds.height >= 44, "New layer retains a 44px target");
+  assert.ok(Math.abs(createBounds.y + createBounds.height / 2 - titleBounds.y - titleBounds.height / 2) <= 1, "New layer aligns with the header title");
+  assert.equal(await layer("work").locator(".layer-count").textContent(), "(2)", "Layer count includes its pin and drawing");
   const disclosureDocument = await page.evaluate(() => ({ raw: localStorage.getItem("map:A"), history: undoStack.length }));
   await layer("default").locator(".layer-name").click();
   assert.equal(await layer("default").getAttribute("aria-expanded"), "false", "Row click collapses once");
@@ -58,7 +63,7 @@ try {
   await page.keyboard.press("ArrowRight");
   assert.equal(await layer("default").getAttribute("aria-expanded"), "true", "Arrow navigation remains conventional");
   await page.locator("#objectSearch").focus(); await page.mouse.move(1000, 400);
-  assert.equal(await layer("default").locator('[data-outline-action="lock"]').evaluate((element) => getComputedStyle(element).opacity), "1", "Selected row reveals inactive utilities away from hover/focus");
+  assert.equal(await layer("default").locator('[data-outline-action="lock"]').evaluate((element) => getComputedStyle(element).opacity), "0.55", "Selected row faintly reveals inactive utilities away from hover/focus");
   assert.deepEqual(await page.evaluate(() => ({ raw: localStorage.getItem("map:A"), history: undoStack.length })), disclosureDocument);
   await layer("default").locator('[data-outline-action="more"]').click();
   assert.equal(await layer("default").getAttribute("aria-expanded"), "true", "Utility click cannot toggle disclosure");

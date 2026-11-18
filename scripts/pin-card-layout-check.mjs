@@ -4,8 +4,13 @@ const fixture = await readFile(new URL("../qa/pin-card-layout.html", import.meta
 
 const required = [
   "Pin Card Layout QA",
+  'class="object-entry pin-card',
+  'role="treeitem"',
+  'data-object-kind="pin"',
+  'class="btn-copy-coords"',
+  'class="btn-more"',
   "grid-template-areas:",
-  '"icon date"',
+  '". date"',
   '"icon bottom"',
   '"description description"',
   "flex-wrap: wrap",

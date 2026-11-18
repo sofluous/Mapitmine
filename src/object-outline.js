@@ -98,7 +98,7 @@
         activating = true;
         try {
           if (event.key === "Escape") await api.select(null);
-          else if (event.key === "F2") await api.edit(reference(row));
+          else if (event.key === "F2" || (event.key === "Enter" && row.dataset.objectKind !== "layer")) await api.edit(reference(row));
           else await api.select(reference(row));
         } finally { activating = false; }
         return;

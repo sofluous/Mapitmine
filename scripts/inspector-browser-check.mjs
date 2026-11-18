@@ -22,6 +22,7 @@ try {
   const select = async () => {
     await page.evaluate(() => { setWorkspaceCollapsed(true, false); workspaceState.select({ kind: "drawing", id: "route" }); drawingTools.refresh(); });
     await settle();
+    if (!await page.locator("#drawingGeometry").evaluate(el => el.open)) await page.locator("#drawingGeometry > summary").click();
   };
   const xInput = (index) => page.locator(`#drawingPoints input[data-point="${index}"][data-axis="x"]`);
   const chooseVertex = async (index) => {
@@ -53,9 +54,18 @@ try {
       assert.equal(await page.evaluate(() => undoStack.length), count);
       const box = await xInput(24).boundingBox();
       const nameBox = await page.locator("#drawingName").boundingBox();
-      assert.ok(box.width >= 100 && box.y < nameBox.y, "Readable coordinates precede name/style fields");
+      assert.ok(box.width >= 100 && box.y > nameBox.y, "Readable coordinates live in Vertices below the persistent Name field");
       const zBox = await page.locator('#drawingPoints input[data-point="24"][data-axis="z"]').boundingBox();
-      assert.ok(zBox.y > box.y, "Long coordinates stack without shrinking field text");
+      assert.ok(zBox.y >= box.y + box.height || zBox.x >= box.x + box.width, "Long coordinate fields wrap or share a row without overlap");
+      for (const axis of ["x", "z"]) {
+        const fits = await page.locator(`#drawingPoints input[data-point="24"][data-axis="${axis}"]`).evaluate(input => {
+          const style = getComputedStyle(input), canvas = document.createElement("canvas");
+          const context = canvas.getContext("2d"); context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+          if (style.letterSpacing !== "normal") context.letterSpacing = style.letterSpacing;
+          return context.measureText(input.value).width <= input.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight) + 1;
+        });
+        assert.equal(fits, true, "Exact long fractional coordinates remain readable");
+      }
       await page.locator(".drawing-points-toggle").focus(); await page.keyboard.press("Enter");
       assert.notEqual(await page.locator(".drawing-points-toggle .io").evaluate((e) => getComputedStyle(e, "::before").maskImage), "none", "Disclosure uses an installed icon");
       assert.equal(await page.locator("#drawingPoints input:visible").count(), 200);

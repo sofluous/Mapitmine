@@ -1,0 +1,55 @@
+/* Owner-requested Bonsai/Raden action previews; scoped to layer utilities only.
+   Load after the shell styles. No data-quiet: legacy focus-within reveal must
+   not retain default icons following a mouse click. */
+#layerList .layer-action.layer-utility {
+  display: grid;
+  opacity: 0;
+  pointer-events: auto;
+  color: var(--color-text);
+  background: transparent;
+  background-image: none;
+  box-shadow: none;
+}
+#layerList .layer-action.layer-utility > span { grid-area: 1 / 1; }
+#layerList .layer-action.layer-utility > .layer-utility-preview { display: none; }
+#layerList .layer-row:hover .layer-action.layer-utility,
+#layerList .layer-action.layer-utility:focus-visible,
+#layerList .layer-row:has(:focus-visible) .layer-action.layer-utility,
+#layerList .object-layer.is-selected > .layer-row .layer-action.layer-utility,
+#layerList .object-layer:focus-visible > .layer-row .layer-action.layer-utility {
+  opacity: .55;
+}
+#layerList .layer-action.layer-utility[aria-pressed="true"],
+#layerList .layer-row .layer-action.layer-utility[aria-pressed="true"] {
+  opacity: 1;
+  color: var(--ds-icon-action-fg-active, var(--color-primary));
+  background: transparent;
+  background-image: none;
+  box-shadow: none;
+}
+#layerList .layer-action.layer-utility:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+#layerList .layer-action.layer-utility[aria-pressed="true"]:is(:hover, :focus-visible) > .layer-utility-state { display: none; }
+#layerList .layer-action.layer-utility[aria-pressed="true"]:is(:hover, :focus-visible) > .layer-utility-preview { display: inline-flex; }
+#layerList .layer-action.layer-utility:hover { background: var(--ui-surface-hover); }
+
+:root:is([data-layer-utility-input="touch"], [data-layer-utility-input="pen"]) #layerList .layer-action.layer-utility {
+  opacity: 1;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+}
+/* Hardware fallback applies until actual mouse input; touch contact and pen
+   hover switch back to directly visible targets. */
+@media (any-hover: none), (any-pointer: coarse) {
+  :root:not([data-layer-utility-input="mouse"]) #layerList .layer-action.layer-utility {
+    opacity: 1;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

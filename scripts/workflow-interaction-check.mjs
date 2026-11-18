@@ -2,6 +2,9 @@ import { readFile } from "node:fs/promises";
 
 const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
 
+const rows = await readFile(new URL("../src/object-rows.js", import.meta.url), "utf8");
+const surface = html + rows;
+
 const required = [
   'case "open":',
   'case "rename":',
@@ -13,16 +16,20 @@ const required = [
   'event.key === "Escape"',
   'clearSelectedPin()',
   'selectedPinIndex = found;',
-  'item.addEventListener("dblclick"',
+  'row.dataset.objectKind = entry.kind',
   'centerOnPin(pin)',
-  'showContextMenu(getPinActionItems(index)',
+  'row.addEventListener("dblclick"',
+  'api.activate(entry, true)',
+  'row.addEventListener("contextmenu"',
+  'api.menu(entry, event.clientX, event.clientY)',
+  'getPinActionItems(pins.indexOf(object))',
   'parseMapPayload(data, file.name)',
   'saveMapAs(parsed.name, parsed)',
   'version: MAP_DOCUMENT_VERSION',
   '...getCurrentMapDocument(collectSettingsSnapshot())',
 ];
 
-const missing = required.filter((snippet) => !html.includes(snippet));
+const missing = required.filter((snippet) => !surface.includes(snippet));
 if (missing.length) {
   console.error("Workflow interaction coverage is missing expected behavior:");
   for (const snippet of missing) console.error(`- ${snippet}`);

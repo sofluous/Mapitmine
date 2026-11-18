@@ -115,7 +115,7 @@ try {
       assert.equal(await branch.getAttribute("aria-expanded"), expanded, "Chevron toggles only once");
       if (expanded === "true") {
         const parentLabel = await layerRow.locator(".layer-name").boundingBox();
-        const childLabel = await branch.locator(".object-entry .object-name").first().boundingBox();
+        const childLabel = await branch.locator(".object-entry .pin-label, .object-entry .object-name").first().boundingBox();
         assert.ok(childLabel.x > parentLabel.x, "Children remain indented beyond the parent label");
       }
       await page.screenshot({ path: resolve(output, `layer-rows-${theme}-${viewport.width}x${viewport.height}.png`) });
@@ -171,7 +171,7 @@ try {
   assert.equal(await spacingField.inputValue(), "100", "Undo restores valid spacing");
   await page.evaluate(() => redoPinsChange());
   assert.equal(await spacingField.inputValue(), "125", "Redo restores valid spacing");
-  for (const tab of ["maps", "pins", "layers", "map-view", "settings"]) {
+  for (const tab of ["maps", "objects", "map-view", "settings"]) {
     await page.locator(`[data-workspace-tab="${tab}"]`).tap();
     assert.equal(await page.locator(`[data-workspace-tab="${tab}"]`).getAttribute("aria-pressed"), "true");
   }

@@ -1,0 +1,60 @@
+/* App-owned compact inspector layout; 44px targets are intentional across densities. */
+.compact-editor { --editor-gap: var(--ds-space-3, 12px); }
+#pinEditorPanel.compact-editor .pin-editor-body,
+#drawingEditor.compact-editor { display: flex; flex-direction: column; gap: var(--editor-gap); min-width: 0; }
+.compact-editor .editor-field,
+.compact-editor .drawing-point-field {
+  position: relative; display: flex; flex-direction: column; gap: 0;
+  min-width: 0; margin: 6px 0 0; padding: 0;
+}
+.compact-editor .editor-field-label,
+.compact-editor .drawing-point-field > span {
+  position: absolute; top: -0.65em; left: 10px; z-index: 1;
+  padding: 0 4px; background: var(--ds-card-bg); color: var(--ds-text-muted);
+  font-size: 12px; line-height: 1.2; pointer-events: none;
+}
+.compact-editor .editor-field > :is(input, select, textarea, output),
+.compact-editor .drawing-point-field input {
+  box-sizing: border-box; width: 100%; min-width: 0; min-height: 44px;
+  padding: 10px 12px; border: 1px solid var(--ds-border); border-radius: var(--ds-radius-2);
+  background: var(--ds-card-bg); color: var(--ds-text);
+}
+.compact-editor .editor-field:focus-within > .editor-field-label { color: var(--ds-accent); }
+.compact-editor .editor-field > :disabled { opacity: 0.6; cursor: not-allowed; }
+.compact-editor .editor-field input:user-invalid { border-color: var(--ds-danger); }
+.compact-editor .editor-field textarea { min-height: 88px; resize: vertical; }
+.compact-editor .editor-coordinates { display: flex; flex-wrap: wrap; gap: var(--ds-space-2, 8px); }
+.compact-editor .editor-coordinates input { padding-inline: 8px; font-variant-numeric: tabular-nums; }
+.compact-editor .editor-coordinates > .editor-field,
+.compact-editor .drawing-point-field {
+  flex: var(--coordinate-weight, 3) 1 var(--coordinate-min, 5ch);
+  min-width: min(100%, var(--coordinate-min, 5ch)); max-width: 100%;
+}
+.compact-editor :is(.editor-coordinates, #drawingPoints) input[type=number] { appearance: textfield; }
+.compact-editor :is(.editor-coordinates, #drawingPoints) input::-webkit-inner-spin-button,
+.compact-editor :is(.editor-coordinates, #drawingPoints) input::-webkit-outer-spin-button { appearance: none; margin: 0; }
+.compact-editor .editor-property-pair,
+.compact-editor .editor-secondary { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--editor-gap); }
+.compact-editor .editor-secondary > details[open] { grid-column: 1 / -1; }
+.compact-editor .editor-disclosure { min-width: 0; margin: 0; }
+.compact-editor .editor-disclosure > summary { min-height: 44px; box-sizing: border-box; padding: 12px 0; cursor: pointer; }
+.compact-editor .editor-disclosure > :not(summary) { margin-top: 6px; }
+.compact-editor .editor-appearance { display: flex; flex-wrap: wrap; align-items: start; gap: var(--editor-gap); }
+.compact-editor .editor-swatch { flex: 0 0 44px; width: 44px; }
+.compact-editor .editor-swatch > input { width: 44px; height: 44px; padding: 4px; }
+.compact-editor .editor-icon { flex: 0 1 104px; width: 104px; }
+.compact-editor .editor-stroke { flex: 0 1 88px; width: 88px; }
+.compact-editor .editor-footer { display: flex; justify-content: space-between; gap: var(--editor-gap); }
+#pinEditorPanel.compact-editor .pin-editor-hint { margin-left: auto; margin-right: 0; }
+#drawingEditor.compact-editor > #drawingDelete { align-self: flex-start; }
+#drawingEditor.compact-editor #drawingPoints > .control-inline:not([hidden]) { display: flex; flex-wrap: wrap; gap: var(--editor-gap); }
+
+/* Keep the commit footer outside the pin form's independent scroll area. */
+#contextInspector:not([hidden]) { display: flex; flex-direction: column; overflow: hidden; }
+#contextInspector > .inspector-header { flex: 0 0 auto; }
+#contextInspector > #pinEditorPanel[style*="display: block"] { display: flex !important; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow: hidden; }
+#pinEditorPanel.compact-editor .pin-editor-body { flex: 1 1 auto; min-height: 0; overflow: auto; padding-bottom: var(--ds-space-4, 16px); }
+#pinEditorPanel.compact-editor .pin-editor-body > * { flex-shrink: 0; }
+#pinEditorPanel.compact-editor .pin-editor-actions { position: static; flex: 0 0 auto; }
+#contextInspector > #drawingPanel { min-height: 0; overflow: auto; padding: var(--focus-clearance); scroll-padding: var(--focus-clearance); }
+#drawingEditor.compact-editor > * { flex-shrink: 0; }

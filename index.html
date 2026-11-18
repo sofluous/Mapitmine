@@ -556,16 +556,7 @@
       .ds-switch input:disabled + .ds-switch-track { opacity: 0.5; cursor: not-allowed; }
       @media (max-width: 900px) { .ds-switch { min-height: 44px; } }
 
-      #pinListPanel .workspace-section-body {
-        overflow: hidden;
-        height: 100%;
-        min-height: 0;
-        display: grid;
-        grid-template-rows: auto minmax(0, 1fr);
-      }
-
-      #settings,
-      #pinListPanel {
+      #settings {
         position: relative;
         inset: auto;
         width: auto;
@@ -718,10 +709,9 @@
       }
       .object-entry .object-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .object-entry .object-state { font-size: var(--font-sm); color: color-mix(in oklab, var(--color-text) 60%, transparent); }
-      .object-filter-row { display: grid; grid-template-columns: minmax(0, 1fr) 88px 44px; gap: var(--space-xs); align-items: center; }
       #createLayerBtn { min-width: 44px; min-height: 44px; }
       #layersPanelSection .workspace-section-body > * { flex-shrink: 0; }
-      #layersPanelSection .layer-list { overflow: visible; }
+      #layersPanelSection .layer-list { overflow: auto; }
 
       #drawingEditor[hidden] { display: none; }
       #objectInspector[hidden] { display: none; }
@@ -821,22 +811,6 @@
       }
 
       /* 7) Pin list & cards */
-      .scrollable-pin-list {
-        display: grid;
-        align-content: start;
-        overflow-y: auto;
-        flex: 1 1 auto;
-        min-height: 0;
-        height: auto;
-        padding: var(--focus-clearance);
-        gap: 0;
-        border-radius: 0;
-        background: transparent;
-      }
-      #pinList .pin-card { margin: 0; border-radius: 0; box-shadow: none; border-block-end: 0; }
-      #pinList .pin-card:last-child { border-block-end: 1px solid var(--ui-border-quiet); }
-      #pinList .pin-card:focus-visible { outline-offset: -2px; }
-      #pinList .pin-card.is-selected { box-shadow: inset 3px 0 0 var(--item-card-selected-color); }
       #pinFilterBtn { display: inline-flex; gap: var(--space-xs); width: auto; min-width: 54px; min-height: 44px; padding-inline: var(--space-xs); }
       #pinFilterSummary { min-width: 2ch; font-size: var(--font-sm); font-variant-numeric: tabular-nums; }
 
@@ -1554,6 +1528,7 @@
       #draftVertices { min-width: 0; pointer-events: auto; }
       #draftVertices > summary { cursor: pointer; padding-block: var(--space-xs); }
       #draftVertices summary output { margin-inline-start: var(--space-xs); }
+      #draftVertices summary output { pointer-events: none; }
       @media (pointer: coarse) { #draftVertices > summary { min-height: 44px; box-sizing: border-box; } }
       #draftPoints { max-height: min(28dvh, 240px); overflow: auto; padding: var(--focus-clearance); }
       #draftPoints .draft-point-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-sm); min-width: 0; }
@@ -1597,12 +1572,12 @@
         overflow: hidden;
       }
 
-      body.is-map-dragging #workspaceShell,
-      body.is-map-dragging #hud {
+      body.is-map-dragging #workspaceShell {
         pointer-events: none;
         opacity: 0.48;
         transition: opacity 80ms linear;
       }
+      body.is-map-dragging #hud { opacity: 1; pointer-events: none; }
 
       .pin-editor-stack {
         display: grid;
@@ -1633,47 +1608,6 @@
         gap: var(--space-sm);
         padding: var(--space-md);
         overflow: auto;
-      }
-
-      .pin-editor-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: var(--space-sm);
-      }
-
-      .pin-editor-grid .control-field {
-        grid-template-columns: 1fr;
-        gap: 0;
-        align-items: start;
-      }
-
-      .pin-editor-grid .control-field > label:first-child {
-        display: none;
-      }
-
-      .pin-editor-grid .editor-span-2 {
-        grid-column: 1 / -1;
-      }
-
-      .pin-editor-fields {
-        display: grid;
-        gap: var(--space-sm);
-      }
-
-      .pin-editor-mini-group {
-        display: grid;
-        grid-template-columns: 72px 72px;
-        justify-content: end;
-        gap: var(--space-xs);
-      }
-
-      .pin-editor-mini {
-        width: 72px;
-        min-width: 72px;
-      }
-
-      .pin-editor-mini[type="color"] {
-        padding: 4px;
       }
 
       .pin-editor-actions {
@@ -2310,7 +2244,7 @@
         }
         #workspacePanel .workspace-section { height: auto; flex: 1 1 auto; }
         #workspacePanel .workspace-section-head, #workspacePanel .workspace-tab-header { flex-shrink: 0; }
-        #pinListPanel .workspace-section-body, #workspacePanel .map-gallery { height: auto; }
+        #workspacePanel .map-gallery { height: auto; }
 
         #workspaceShell.is-collapsed #workspacePanel {
           display: none;
@@ -2397,6 +2331,10 @@
       .view-surface-grid input[type="color"] { min-height: 36px; }
       #gridSpacing[aria-invalid="true"] { outline: 2px solid var(--ds-danger, var(--color-primary)); outline-offset: -2px; }
     </style>
+    <link rel="stylesheet" href="./src/object-rows.css" />
+    <link rel="stylesheet" href="./src/editor-fields.css" />
+    <link rel="stylesheet" href="./src/layer-utilities.css" />
+    <link rel="stylesheet" href="./src/scroll-layout.css" />
   </head>
 
   <body>
@@ -2430,22 +2368,12 @@
           <button
             class="ds-btn ds-btn-icon ds-icon-action rail-tab-btn"
             type="button"
-            data-workspace-tab="pins"
+            data-workspace-tab="objects"
             aria-pressed="false"
             title="Pins"
             aria-label="Pins"
           >
             <span class="io iconoir-map-pin" aria-hidden="true"></span>
-          </button>
-          <button
-            class="ds-btn ds-btn-icon ds-icon-action rail-tab-btn"
-            type="button"
-            data-workspace-tab="layers"
-            aria-pressed="false"
-            title="Objects"
-            aria-label="Objects"
-          >
-            <span class="io iconoir-multiple-pages" aria-hidden="true"></span>
           </button>
           <button
             class="ds-btn ds-btn-icon ds-icon-action rail-tab-btn"
@@ -2489,6 +2417,7 @@
                   <span class="io iconoir-plus" aria-hidden="true"></span>
                   New
                 </button>
+                <button id="createSampleMapBtn" class="ds-btn ds-btn-sm" type="button" title="Create a fresh presentation sample without replacing existing maps">Sample</button>
                 <button id="mapImportBtn" class="ds-btn ds-btn-sm" type="button">
                   <span class="io iconoir-download" aria-hidden="true"></span>
                   Import
@@ -2516,29 +2445,30 @@
         </div>
 
         <div
-          id="pinListPanel"
+          id="layersPanelSection"
           class="workspace-section"
-          data-workspace-panel="pins"
+          data-workspace-panel="objects"
         >
           <div class="workspace-section-body">
+            <div class="workspace-tab-header"><div class="workspace-tab-title-row"><div class="workspace-section-title">Pins</div><div class="pin-browser-head-actions"><select id="pinRowView" class="ds-select" aria-label="Pin row view"><option value="detailed">Detailed</option><option value="summary">Summary</option></select><button id="createLayerBtn" class="ds-btn ds-btn-icon ds-icon-action" type="button" aria-label="New layer" title="New layer"><span class="io iconoir-plus" aria-hidden="true"></span></button></div></div></div>
             <div class="pin-filter-shell">
               <div class="pin-toolbar">
                 <div class="pin-toolbar-row">
                   <div class="pin-search-wrap">
                     <span class="io iconoir-search" aria-hidden="true"></span>
                     <input
-                      id="pinSearchInput"
+                      id="objectSearch"
                       class="ds-input"
                       type="search"
-                      placeholder="Search pins"
-                      aria-label="Search pins"
+                      placeholder="Search"
+                      aria-label="Search pins and shapes"
                     />
                     <button
                       id="pinSearchClearBtn"
                       class="pin-search-clear ds-btn ds-btn-icon ds-icon-action"
                       type="button"
-                      aria-label="Clear pin search"
-                      title="Clear pin search"
+                      aria-label="Clear search"
+                      title="Clear search"
                     >
                       <span class="io iconoir-xmark" aria-hidden="true"></span>
                     </button>
@@ -2580,24 +2510,9 @@
                 <div id="pinTypeChecklist" class="pin-filter-checklist"></div>
               </div>
             </div>
-            <div id="pinList" class="scrollable-pin-list">
-              <!-- Pins will render here -->
-            </div>
-          </div>
-        </div>
-
-        <div
-          id="layersPanelSection"
-          class="workspace-section"
-          data-workspace-panel="layers"
-        >
-          <div class="workspace-section-body">
-            <div class="object-filter-row">
-              <input id="objectSearch" class="ds-input" type="search" placeholder="Find objects" aria-label="Find objects" />
-              <select id="objectFilter" class="ds-select" aria-label="Object type filter"><option value="all">All</option><option value="pin">Pins</option><option value="drawing">Drawings</option></select>
-              <button id="createLayerBtn" class="ds-btn ds-btn-icon ds-icon-action" type="button" aria-label="New layer" title="New layer"><span class="io iconoir-plus" aria-hidden="true"></span></button>
-            </div>
-            <div id="layerList" class="layer-list" role="tree" aria-label="Map objects"></div>
+            <select id="objectFilter" hidden aria-label="Object type filter"><option value="all">All</option><option value="pin">Pins</option><option value="drawing">Shapes</option></select>
+            <div class="object-filter-tabs" role="group" aria-label="Object type"><button class="ds-btn ds-btn-sm" type="button" data-object-filter="all" aria-pressed="true">All</button><button class="ds-btn ds-btn-sm" type="button" data-object-filter="pin" aria-pressed="false">Pins</button><button class="ds-btn ds-btn-sm" type="button" data-object-filter="drawing" aria-pressed="false">Shapes</button></div>
+            <div id="layerList" class="layer-list" role="tree" aria-label="Map pins and shapes"></div>
             <section id="objectInspector" class="control-section ds-stack" hidden>
               <div id="objectInspectorKind" class="control-section-title"></div>
               <div id="objectInspectorName"></div>
@@ -3119,80 +3034,15 @@
         </button>
       </div>
       <div class="pin-editor-body">
-        <div class="pin-editor-fields">
-          <div class="control-field">
-            <div class="control-inline control-inline-triple pin-editor-coords">
-              <input
-                class="ds-input"
-                type="number"
-                id="pinEditorX"
-                placeholder="X"
-                aria-label="Pin X position"
-              />
-              <input
-                class="ds-input"
-                type="number"
-                id="pinEditorY"
-                placeholder="Y"
-                aria-label="Pin Y position"
-              />
-              <input
-                class="ds-input"
-                type="number"
-                id="pinEditorZ"
-                placeholder="Z"
-                aria-label="Pin Z position"
-              />
-            </div>
-          </div>
-          <div class="pin-editor-grid">
-            <div class="control-field editor-span-2">
-              <input
-                class="ds-input"
-                type="text"
-                id="pinEditorLabel"
-                placeholder="Label"
-              />
-            </div>
-            <div class="control-field editor-span-2">
-              <textarea
-                class="ds-input"
-                id="pinEditorDescription"
-                placeholder="Notes"
-              ></textarea>
-            </div>
-            <div class="control-field">
-              <select
-                id="pinEditorID"
-                class="ds-select"
-                aria-label="Pin type"
-              ></select>
-            </div>
-            <div class="control-field">
-              <select
-                id="pinEditorLayer"
-                class="ds-select"
-                aria-label="Pin layer"
-              ></select>
-            </div>
-            <div class="control-field">
-              <div class="pin-editor-mini-group">
-                <select
-                  id="pinEditorIcon"
-                  class="ds-select pin-editor-mini"
-                  aria-label="Pin icon"
-                ></select>
-                <input
-                  class="ds-input pin-editor-mini"
-                  type="color"
-                  id="pinEditorColor"
-                  value="#ffcc00"
-                  aria-label="Pin color"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+        <input id="pinEditorX" class="ds-input" type="number" aria-label="Pin X position" />
+        <input id="pinEditorY" class="ds-input" type="number" aria-label="Pin Y position" />
+        <input id="pinEditorZ" class="ds-input" type="number" aria-label="Pin Z position" />
+        <input id="pinEditorLabel" class="ds-input" type="text" />
+        <textarea id="pinEditorDescription" class="ds-input"></textarea>
+        <select id="pinEditorID" class="ds-select" aria-label="Pin type"></select>
+        <select id="pinEditorLayer" class="ds-select" aria-label="Pin layer"></select>
+        <select id="pinEditorIcon" class="ds-select" aria-label="Pin icon"></select>
+        <input id="pinEditorColor" class="ds-input" type="color" value="#ffcc00" aria-label="Pin color" />
       </div>
       <div class="pin-editor-actions">
         <button
@@ -3327,8 +3177,13 @@
     <script src="./design-system/js/theme-registry.js"></script>
     <script src="./design-system/js/theme-selector.js"></script>
     <script src="./src/map-data.js"></script>
+    <script src="./src/sample-map.js"></script>
     <script src="./src/workspace-state.js"></script>
     <script src="./src/object-outline.js"></script>
+    <script src="./src/object-rows.js"></script>
+    <script src="./src/layer-utilities.js"></script>
+    <script src="./src/scroll-layout.js"></script>
+    <script src="./src/editor-fields.js"></script>
     <script src="./src/layer-reorder.js"></script>
     <script src="./src/drawing-tools.js"></script>
     <script src="./src/touch-navigation.js"></script>
@@ -3405,19 +3260,7 @@
       let panStart = {},
         isPanning = false;
 
-      let pins = [
-        {
-          x: 0,
-          z: 0,
-          y: 64,
-          id: "spawn",
-          label: "Spawn Point",
-          uid: "pin-spawn",
-          description: "Where you begin.",
-          icon: "",
-          layerId: DEFAULT_LAYER_ID,
-        },
-      ];
+      let pins = [];
       let layers = [createDefaultLayer()];
       let drawings = [];
       let drawingTools = null;
@@ -3432,6 +3275,8 @@
       const collapsedObjectLayers = new Set();
       const filteredCollapsedObjectLayers = new Set();
       let objectOutline = null;
+      let outlineCenterTimer = null;
+      let outlineActivation = 0;
       let layerReorder = null;
       let currentEditIndex = null;
       let isPlacingPin = false;
@@ -3590,7 +3435,7 @@
       );
       const confirmDialogOk = document.getElementById("confirmDialogOk");
       const textPromptDialog = document.getElementById("textPromptDialog");
-      const pinSearchInput = document.getElementById("pinSearchInput");
+      const pinSearchInput = document.getElementById("objectSearch");
       const pinSearchClearBtn = document.getElementById("pinSearchClearBtn");
       const pinFilterBtn = document.getElementById("pinFilterBtn");
       const pinFilterSummary = document.getElementById("pinFilterSummary");
@@ -3952,6 +3797,22 @@
         createNewMapFlow();
       }
 
+      async function createSampleMap() {
+        if (!await resolvePendingWorkspaceChanges()) return false;
+        const sample = window.MapitMineSampleMap;
+        const name = dedupeMapName(sample.name);
+        try {
+          writeStoredMapDocument(name, sample.create());
+          loadMapNames({ autoLoadFirst: false });
+          loadMap(name);
+          showToast("Created a fresh sample map. Existing maps are unchanged.");
+          return true;
+        } catch (_) {
+          showToast("The sample map could not be saved. Check available browser storage.", "error");
+          return false;
+        }
+      }
+
       // Overlay button -> import via the hidden file input.
       function triggerImportMap() {
         const input = document.getElementById("importJsonInput");
@@ -4057,7 +3918,7 @@
         saveCurrentMap();
         renderLayers();
         populatePinLayerOptions();
-        renderPinList();
+        renderObjectBrowser();
         draw();
         return true;
       }
@@ -4199,7 +4060,77 @@
       function getCollapsedOutlineLayers() {
         const search = document.getElementById("objectSearch")?.value.trim() || "";
         const filter = document.getElementById("objectFilter")?.value || "all";
-        return search || filter !== "all" ? filteredCollapsedObjectLayers : collapsedObjectLayers;
+        return search || filter !== "all" || hasActivePinFilters() ? filteredCollapsedObjectLayers : collapsedObjectLayers;
+      }
+
+      function setObjectFilter(value, render = true) {
+        const filter = document.getElementById("objectFilter");
+        filter.value = ["all", "pin", "drawing"].includes(value) ? value : "all";
+        document.querySelectorAll("[data-object-filter]").forEach(button => button.setAttribute("aria-pressed", String(button.dataset.objectFilter === filter.value)));
+        filteredCollapsedObjectLayers.clear();
+        if (render) renderObjectBrowser();
+      }
+
+      function outlineEntries() {
+        return [
+          ...pins.map(pin => ({ kind: "pin", id: pin.uid, name: pin.label || "Untitled pin", object: pin })),
+          ...drawings.map(drawing => ({ kind: "drawing", id: drawing.id, name: drawing.name || drawing.type, object: drawing })),
+        ];
+      }
+
+      function matchesOutlineEntry(entry) {
+        const filter = document.getElementById("objectFilter").value;
+        if (filter !== "all" && entry.kind !== filter) return false;
+        if (entry.kind === "pin" && pinTypeFilterSelection && !pinTypeFilterSelection.has(entry.object.id || "custom")) return false;
+        const search = getPinSearchValue().toLowerCase();
+        const object = entry.object;
+        return !search || [entry.name, object.id, object.description, object.x, object.y, object.z, getLayer(object.layerId)?.label]
+          .filter(value => value !== undefined && value !== null).join(" ").toLowerCase().includes(search);
+      }
+
+      async function activateOutlineObject(reference, edit = false) {
+        if (!reference) return selectWorkspaceObject(null);
+        if (reference.kind === "layer") return edit ? renameLayer(reference.id) : activateLayerRow(reference.id);
+        const object = (reference.kind === "pin" ? pins : drawings).find(object => (object.uid || object.id) === reference.id);
+        if (!object) return false;
+        const map = currentMapName, activation = ++outlineActivation;
+        window.clearTimeout(outlineCenterTimer);
+        if (!await selectWorkspaceObject(reference, { inspect: edit })) return false;
+        const current = () => currentMapName === map && activation === outlineActivation &&
+          (reference.kind === "pin" ? pins : drawings).includes(object);
+        if (!current()) return false;
+        if (edit) {
+          if (reference.kind === "pin" && !isPinLocked(object) && isPinVisible(object)) {
+            const opened = await editPin(pins.indexOf(object), { center: true });
+            if (opened && current()) document.getElementById("pinEditorLabel").focus();
+            return opened;
+          }
+          if (reference.kind === "drawing") document.getElementById("drawingName").focus();
+        } else if (reference.kind === "pin" && isPinVisible(object)) {
+          outlineCenterTimer = window.setTimeout(() => {
+            const selected = workspaceState.get().selection;
+            if (current() && selected?.kind === "pin" && selected.id === reference.id) centerOnPin(object);
+          }, 180);
+        }
+        return true;
+      }
+
+      function showOutlineObjectMenu(entry, x, y) {
+        const object = entry.object || (entry.kind === "pin" ? pins : drawings).find(object => (object.uid || object.id) === entry.id);
+        if (!object) return;
+        const map = currentMapName;
+        const current = () => currentMapName === map && (entry.kind === "pin" ? pins : drawings).includes(object);
+        const edit = () => { if (current()) return activateOutlineObject(entry, true); };
+        const items = entry.kind === "pin" ? getPinActionItems(pins.indexOf(object)) : [
+          { label: "Properties", iconClass: "iconoir-edit-pencil", action: edit },
+          { label: "Edit vertices", iconClass: "iconoir-edit-pencil", disabled: !getLayer(object.layerId)?.visible || getLayer(object.layerId)?.locked,
+            action: async () => { if (current() && await activateOutlineObject(entry, true) && current()) await drawingTools.editVertices(); } },
+          { label: "Delete drawing", iconClass: "iconoir-trash", disabled: getLayer(object.layerId)?.locked,
+            action: async () => { if (current() && await activateOutlineObject(entry, true) && current()) await drawingTools.deleteDrawing(); } },
+        ];
+        if (entry.kind === "pin" && (isPinLocked(object) || !isPinVisible(object))) items.unshift({ label: "Properties", iconClass: "iconoir-info-circle", action: edit });
+        showContextMenu(items, x, y);
+        document.getElementById("contextMenu").setAttribute("aria-label", object.label || object.name || "Object actions");
       }
 
       let activatingLayerRow = false;
@@ -4227,11 +4158,26 @@
           : reference.kind === "drawing" ? drawings.some((drawing) => drawing.id === reference.id)
           : layers.some((layer) => layer.id === reference.id))) workspaceState.select(null);
         drawingTools?.refresh();
-        const container = document.getElementById("layerList");
-        if (!container) return;
+        const viewport = document.getElementById("layerList");
+        if (!viewport) return;
         layerReorder?.cancel();
         objectOutline?.beforeRender();
-        container.replaceChildren();
+        const container = document.createElement("div");
+        container.id = "layerListContent";
+        viewport.replaceChildren(container);
+        const allEntries = outlineEntries();
+        const matchedEntries = allEntries.filter(matchesOutlineEntry);
+        const filtered = !!getPinSearchValue() || document.getElementById("objectFilter").value !== "all" || hasActivePinFilters();
+        if (pinResultSummary) {
+          const kind = document.getElementById("objectFilter").value;
+          const countable = allEntries.filter(entry => kind === "all" || entry.kind === kind);
+          const noun = kind === "pin" ? "pins" : kind === "drawing" ? "shapes" : "objects";
+          pinResultSummary.textContent = `${matchedEntries.length}/${countable.length}`;
+          pinResultSummary.style.minWidth = `${Math.max(5, String(countable.length).length * 2 + 1)}ch`;
+          pinResultSummary.setAttribute("aria-label", `${matchedEntries.length} of ${countable.length} ${noun} shown`);
+          pinResultSummary.title = `${matchedEntries.length} of ${countable.length} ${noun}, including hidden layers`;
+        }
+
         if (!layers.length) {
           const empty = document.createElement("p");
           empty.className = "layer-empty";
@@ -4240,8 +4186,19 @@
           objectOutline?.afterRender();
           return;
         }
+        if (!matchedEntries.length && filtered) {
+          const empty = document.createElement("div");
+          empty.className = "section-note";
+          empty.innerHTML = '<div class="pin-empty-title">No matching objects</div><div class="pin-empty-actions"><button id="clearPinSearchOnlyBtn" class="ds-btn ds-btn-sm" type="button">Clear search</button><button id="clearPinFiltersOnlyBtn" class="ds-btn ds-btn-sm" type="button">Clear type filters</button><button id="clearPinSearchFiltersBtn" class="ds-btn ds-btn-sm" type="button">Show all objects</button></div>';
+          empty.querySelector("#clearPinSearchOnlyBtn").addEventListener("click", clearPinSearch);
+          empty.querySelector("#clearPinFiltersOnlyBtn").addEventListener("click", clearPinFilters);
+          empty.querySelector("#clearPinSearchFiltersBtn").addEventListener("click", () => { setObjectFilter("all", false); clearPinSearchAndFilters(); });
+          container.appendChild(empty);
+        }
 
         layers.forEach((layer) => {
+          const entries = matchedEntries.filter(entry => entry.object.layerId === layer.id);
+          if (filtered && !entries.length) return;
           const branch = document.createElement("div");
           branch.className = "object-layer";
           branch.setAttribute("role", "treeitem");
@@ -4257,27 +4214,14 @@
           row.className = `layer-row${layer.visible ? "" : " is-hidden-layer"}`;
           row.dataset.layerId = layer.id;
 
-          const visibility = document.createElement("button");
-          visibility.className = "layer-action";
-          visibility.type = "button";
-          visibility.dataset.outlineAction = "visibility";
-          visibility.title = layer.visible ? "Hide layer" : "Show layer";
-          visibility.setAttribute("aria-label", "Layer visibility");
-          visibility.setAttribute("aria-pressed", String(layer.visible));
-          visibility.dataset.quiet = String(layer.visible);
-          visibility.innerHTML = `<span class="io ${layer.visible ? "iconoir-eye" : "iconoir-eye-closed"}" aria-hidden="true"></span>`;
-          visibility.addEventListener("click", () => toggleLayerVisibility(layer.id));
-
-          const lock = document.createElement("button");
-          lock.className = "layer-action";
-          lock.type = "button";
-          lock.dataset.outlineAction = "lock";
-          lock.title = layer.locked ? "Unlock layer" : "Lock layer";
-          lock.setAttribute("aria-label", "Layer lock");
-          lock.setAttribute("aria-pressed", String(layer.locked));
-          lock.dataset.quiet = String(!layer.locked);
-          lock.innerHTML = `<span class="io ${layer.locked ? "iconoir-lock" : "iconoir-lock-slash"}" aria-hidden="true"></span>`;
-          lock.addEventListener("click", () => toggleLayerLock(layer.id));
+          const visibility = window.MapitMineLayerUtilities.create({
+            kind: "visibility", active: !layer.visible, label: "Layer visibility",
+            title: layer.visible ? "Hide layer" : "Show layer", activate: () => toggleLayerVisibility(layer.id),
+          });
+          const lock = window.MapitMineLayerUtilities.create({
+            kind: "lock", active: layer.locked, label: "Layer lock",
+            title: layer.locked ? "Unlock layer" : "Lock layer", activate: () => toggleLayerLock(layer.id),
+          });
 
           const copy = document.createElement("div");
           copy.className = "layer-copy";
@@ -4290,7 +4234,8 @@
           const drawingCount = drawings.filter(
             (drawing) => drawing.layerId === layer.id,
           ).length;
-          count.textContent = `(${pinCount})`;
+          const total = pinCount + drawingCount;
+          count.textContent = filtered ? `(${entries.length}/${total})` : `(${total})`;
           count.title = `${pinCount} pins, ${drawingCount} drawings`;
           copy.append(name, count);
 
@@ -4337,47 +4282,21 @@
           const children = document.createElement("div");
           children.className = "object-children";
           children.setAttribute("role", "group");
-          const search = document.getElementById("objectSearch")?.value.trim().toLowerCase() || "";
-          const filter = document.getElementById("objectFilter")?.value || "all";
           children.hidden = collapsed.has(layer.id);
-          const entries = [
-            ...pins.map((pin) => ({ kind: "pin", id: pin.uid, name: pin.label || "Untitled pin", object: pin })),
-            ...drawings.map((drawing) => ({ kind: "drawing", id: drawing.id, name: drawing.name || drawing.type, object: drawing })),
-          ].filter((entry) => entry.object.layerId === layer.id &&
-            (filter === "all" || filter === entry.kind) &&
-            (!search || `${entry.name} ${entry.object.id || ""} ${layer.label}`.toLowerCase().includes(search)));
-          entries.forEach((entry) => {
-            const button = document.createElement("button");
-            button.type = "button";
-            button.className = "object-entry item-card";
-            button.dataset.objectId = entry.id;
-            button.dataset.objectKind = entry.kind;
-            button.dataset.parentKey = `layer:${layer.id}`;
-            button.dataset.outlineName = entry.name;
-            button.setAttribute("role", "treeitem");
-            button.setAttribute("aria-level", "2");
-            button.tabIndex = -1;
-            const selected = workspaceState.get().selection;
-            button.classList.toggle("is-selected", selected?.kind === entry.kind && selected?.id === entry.id);
-            button.setAttribute("aria-selected", String(selected?.kind === entry.kind && selected?.id === entry.id));
-            const mark = document.createElement("span");
-            mark.className = `io ${entry.kind === "pin" ? "iconoir-map-pin" : "iconoir-edit-pencil"}`;
-            mark.setAttribute("aria-hidden", "true");
-            const title = document.createElement("span"); title.className = "object-name"; title.textContent = entry.name;
-            const status = document.createElement("span"); status.className = "object-state";
-            status.textContent = !layer.visible ? "Hidden" : layer.locked ? "Locked" : entry.kind === "drawing" ? entry.object.type : "";
-            button.append(mark, title, status);
-            button.addEventListener("click", () => selectWorkspaceObject({ kind: entry.kind, id: entry.id }));
-            button.addEventListener("dblclick", async () => {
-              if (!await selectWorkspaceObject({ kind: entry.kind, id: entry.id })) return;
-              if (entry.kind === "pin") editPin(pins.findIndex((pin) => pin.uid === entry.id), { center: true });
-              else document.getElementById("drawingName")?.focus();
-            });
-            children.appendChild(button);
-          });
+          entries.forEach(entry => children.appendChild(window.MapitMineObjectRows.create(entry, layer, {
+            selection: () => workspaceState.get().selection,
+            pinIndex: pin => pins.indexOf(pin),
+            editing: pin => pins[currentEditIndex] === pin,
+            escape: escapeHtml, icon: renderPinIconMarkup, coordinates: formatPinCoordsMarkup,
+            activate: (entry, edit) => activateOutlineObject(entry, edit),
+            menu: showOutlineObjectMenu,
+            copy: entry => { if (pins.includes(entry.object)) copyPinCoords(entry.object); },
+            hover: pin => { hoveredPinIndex = pin ? pins.indexOf(pin) : null; draw(); },
+            focus: pin => { focusedPinUid = pin?.uid || null; draw(); },
+          })));
           if (!entries.length) {
             const empty = document.createElement("span"); empty.className = "layer-count";
-            empty.textContent = search || filter !== "all" ? "No matching objects" : "Empty layer";
+            empty.textContent = "Empty layer";
             children.appendChild(empty);
           }
           branch.appendChild(children);
@@ -4413,7 +4332,7 @@
         const selected = workspaceState.get().selection;
         const same = reference && reference.kind === selected?.kind && reference.id === selected?.id;
         if (!same && !await resolvePendingWorkspaceChanges()) return false;
-        canvasOnlySelection = !inspect && contextInspector.hidden && reference ? `${reference.kind}:${reference.id}` : "";
+        canvasOnlySelection = !inspect && reference ? `${reference.kind}:${reference.id}` : "";
         if (!same) workspaceState.select(reference);
         renderObjectInspector();
         if (inspect && reference && window.innerWidth <= 900) {
@@ -4818,7 +4737,7 @@
           hoveredPinIndex = null;
           selectedPinIndex = null;
           renderLayers();
-          renderPinList();
+          renderObjectBrowser();
           updateOverlayVisibility();
           draw();
           return;
@@ -4834,8 +4753,9 @@
 
         currentMapName = name;
         setCurrentMapNameUI(name);
+        if (window.MapitMineSampleMap.containsSample(document)) frameSampleMap();
         renderLayers();
-        renderPinList();
+        renderObjectBrowser();
         updateOverlayVisibility();
         clearDirty();
         syncMapMetaUI();
@@ -4861,6 +4781,28 @@
 
         // Update overlay visibility
         updateOverlayVisibility?.();
+      }
+
+      function frameSampleMap() {
+        const visible = pins.filter(isPinVisible);
+        if (!visible.length) return;
+        const panel = getWorkspaceShell();
+        const bounds = panel.getBoundingClientRect();
+        const mobile = window.innerWidth <= 900;
+        const left = !mobile && !panel.classList.contains("is-collapsed") ? bounds.right + 24 : 32;
+        const top = 110;
+        const viewportWidth = window.innerWidth, viewportHeight = window.innerHeight;
+        let bottom = viewportHeight - 64;
+        const dock = document.getElementById("mobileDock");
+        if (mobile && dock) bottom = Math.min(bottom, dock.getBoundingClientRect().top - 24);
+        if (mobile && !panel.classList.contains("is-collapsed")) bottom = Math.min(bottom, bounds.top - 24);
+        const minX = Math.min(...visible.map(pin => pin.x)), maxX = Math.max(...visible.map(pin => pin.x));
+        const minZ = Math.min(...visible.map(pin => pin.z)), maxZ = Math.max(...visible.map(pin => pin.z));
+        zoom = Math.max(0.25, Math.min(1, (viewportWidth - left - 120) / (maxX - minX + 160), Math.max(180, bottom - top) / (maxZ - minZ + 160)));
+        offsetX = left + (viewportWidth - left) / 2 - (minX + maxX) / 2 * zoom;
+        offsetY = top + Math.max(180, bottom - top) / 2 - (minZ + maxZ) / 2 * zoom;
+        document.getElementById("zoom").value = zoom;
+        updateStatusStrip();
       }
 
       // Draw functions
@@ -5465,6 +5407,8 @@
       }
 
       function initApp() {
+        try { window.MapitMineSampleMap.ensure(localStorage); }
+        catch (_) { showToast("The sample map could not be saved. Check available browser storage.", "error"); }
         zoom = 4;
         resizeMinimapCanvas();
         resizeCanvas();
@@ -5583,6 +5527,10 @@
         const { openPanel = true, persist = true } = options;
         const panels = document.querySelectorAll("[data-workspace-panel]");
         let resolved = tabId || "maps";
+        if (resolved === "pins" || resolved === "layers") {
+          setObjectFilter(resolved === "pins" ? "pin" : "all");
+          resolved = "objects";
+        }
 
         if (
           !Array.from(panels).some(
@@ -5741,7 +5689,7 @@
       }
 
       // UI rendering
-      // renderPinList(), centerOnPin(), updateOverlayVisibility()
+      // renderObjectBrowser(), centerOnPin(), updateOverlayVisibility()
 
       function escapeHtml(value) {
         return String(value ?? "")
@@ -5808,7 +5756,7 @@
           {
             label: "Edit Pin",
             iconClass: "iconoir-edit-pencil",
-            disabled: isPinLocked(pin),
+            disabled: isPinLocked(pin) || !isPinVisible(pin),
             action: () => { const index = current(); if (index >= 0) return editPin(index); },
           },
           {
@@ -5818,38 +5766,6 @@
             action: () => { const index = current(); if (index >= 0) return deletePin(index); },
           },
         ];
-      }
-
-      function getFilteredPins() {
-        const search = getPinSearchValue().toLowerCase();
-        const activeTypeSelection = pinTypeFilterSelection;
-
-        return pins
-          .map((pin, index) => ({ pin, index }))
-          .filter(({ pin }) => {
-            if (!isPinVisible(pin)) return false;
-            if (
-              activeTypeSelection &&
-              !activeTypeSelection.has(pin.id || "custom")
-            ) {
-              return false;
-            }
-            if (!search) return true;
-
-            const haystack = [
-              pin.label,
-              pin.description,
-              pin.id,
-              pin.x,
-              pin.y,
-              pin.z,
-            ]
-              .filter((value) => value !== undefined && value !== null)
-              .join(" ")
-              .toLowerCase();
-
-            return haystack.includes(search);
-          });
       }
 
       function getPinSearchValue() {
@@ -5868,20 +5784,23 @@
       function clearPinSearchAndFilters() {
         if (pinSearchInput) pinSearchInput.value = "";
         pinTypeFilterSelection = null;
-        renderPinList();
+        filteredCollapsedObjectLayers.clear();
+        renderObjectBrowser();
       }
 
       function clearPinSearch() {
+        filteredCollapsedObjectLayers.clear();
         if (pinSearchInput) {
           pinSearchInput.value = "";
           pinSearchInput.focus();
         }
-        renderPinList();
+        renderObjectBrowser();
       }
 
       function clearPinFilters() {
         pinTypeFilterSelection = null;
-        renderPinList();
+        filteredCollapsedObjectLayers.clear();
+        renderObjectBrowser();
       }
 
       function getFilterablePinTypes() {
@@ -5933,7 +5852,8 @@
 
             pinTypeFilterSelection =
               next.size === availableIds.size ? null : next;
-            renderPinList();
+            filteredCollapsedObjectLayers.clear();
+            renderObjectBrowser();
           });
 
           const text = document.createElement("span");
@@ -6105,7 +6025,7 @@
             drawings = [];
             selectedPinIndex = null;
             hoveredPinIndex = null;
-            renderPinList();
+            renderObjectBrowser();
             updateOverlayVisibility();
             draw();
           }
@@ -6225,193 +6145,12 @@
         });
       }
 
-      function renderPinList() {
+      function renderObjectBrowser() {
         focusedPinUid = null;
-        const container = document.getElementById("pinList");
-        container.innerHTML = "";
         syncPinSearchUI();
         syncPinTypeFilterOptions();
         syncMapMetaUI();
-
-        const pinCountEl = document.getElementById("pinCount");
-        const filteredPins = getFilteredPins();
-        const search = getPinSearchValue();
-        const hasSearch = !!search;
-        const hasFilters = hasActivePinFilters();
-        if (pinCountEl) {
-          pinCountEl.textContent = `${filteredPins.length}/${pins.length}`;
-        }
-        if (pinResultSummary) {
-          pinResultSummary.textContent = `${filteredPins.length}/${pins.length}`;
-          pinResultSummary.style.minWidth = `${Math.max(5, String(pins.length).length * 2 + 1)}ch`;
-          pinResultSummary.setAttribute("aria-label", `${filteredPins.length} of ${pins.length} pins shown`);
-          pinResultSummary.title =
-            hasSearch || hasFilters
-              ? "Showing pins after search and filter state"
-              : "Showing all pins";
-        }
-
-        if (!Array.isArray(pins) || pins.length === 0) {
-          container.innerHTML =
-            '<div class="section-note"><div class="pin-empty-title">No pins yet</div><div>Right-click the map or choose a pin type to place your first marker.</div></div>';
-          return;
-        }
-
-        if (filteredPins.length === 0) {
-          const hiddenByLayer =
-            !hasSearch && !hasFilters && pins.some((pin) => !isPinVisible(pin));
-          if (hiddenByLayer) {
-            container.innerHTML =
-              '<div class="section-note"><div class="pin-empty-title">No visible pins</div><div>All pins belong to hidden layers.</div><div class="pin-empty-actions"><button id="openLayersBtn" class="ds-btn ds-btn-sm" type="button">Open layers</button></div></div>';
-            document
-              .getElementById("openLayersBtn")
-              ?.addEventListener("click", () => setWorkspaceTab("layers"));
-            return;
-          }
-          const searchCopy = hasSearch
-            ? ` for "${escapeHtml(search)}"`
-            : "";
-          const filterCopy = hasFilters ? " with the selected type filters" : "";
-          const searchButton = hasSearch
-            ? '<button id="clearPinSearchOnlyBtn" class="ds-btn ds-btn-sm ds-btn-ghost" type="button">Clear search</button>'
-            : "";
-          const filterButton = hasFilters
-            ? '<button id="clearPinFiltersOnlyBtn" class="ds-btn ds-btn-sm ds-btn-ghost" type="button">Clear filters</button>'
-            : "";
-          container.innerHTML =
-            `<div class="section-note"><div class="pin-empty-title">No matching pins</div><div>No pins match${searchCopy}${filterCopy}.</div><div class="pin-empty-actions">${searchButton}${filterButton}<button id="clearPinSearchFiltersBtn" class="ds-btn ds-btn-sm" type="button">Show all pins</button></div></div>`;
-          document
-            .getElementById("clearPinSearchOnlyBtn")
-            ?.addEventListener("click", clearPinSearch);
-          document
-            .getElementById("clearPinFiltersOnlyBtn")
-            ?.addEventListener("click", clearPinFilters);
-          document
-            .getElementById("clearPinSearchFiltersBtn")
-            ?.addEventListener("click", clearPinSearchAndFilters);
-          return;
-        }
-
-        filteredPins.forEach(({ pin, index }) => {
-          const item = document.createElement("div");
-          item.className = "pin-card item-card ds-card";
-          item.classList.toggle("is-selected", index === selectedPinIndex);
-          item.classList.toggle("is-editing", index === currentEditIndex);
-          item.dataset.index = index;
-          item.tabIndex = 0;
-
-          const time = pin.timestamp
-            ? new Date(pin.timestamp).toLocaleDateString(undefined, {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-              })
-            : "";
-          const safeLabel = escapeHtml(pin.label || "(no label)");
-          const safeTag = pin.id ? `[${escapeHtml(pin.id)}]` : "";
-          const safeIcon = renderPinIconMarkup(pin.icon);
-          const safeDescription = escapeHtml(pin.description || "");
-          const safeCoords = formatPinCoordsMarkup(pin);
-
-          item.innerHTML = `
-            <div class="pin-card-content pin-card-compact">
-              <div class="pin-card-main">
-                <span class="pin-icon">${safeIcon}</span>
-                <div class="pin-text">
-                  <div class="pin-card-date">${time}</div>
-                  <div class="pin-line-secondary">
-                    <div class="pin-label">${safeLabel}</div>
-                    <div class="pin-tag">${safeTag}</div>
-                    <span class="pin-coords">${safeCoords}</span>
-                  </div>
-                  ${safeDescription ? `<div class="pin-description">${safeDescription}</div>` : ""}
-                </div>
-              </div>
-            </div>
-          `;
-
-          // Single click centers; double click opens editor without an extra camera jump.
-          let cardClickTimer = null;
-          item.addEventListener("click", async (event) => {
-            if (event.target.closest("button")) return;
-            const map = currentMapName;
-            if (!await selectWorkspaceObject({ kind: "pin", id: pin.uid }, { inspect: false })) return;
-            if (cardClickTimer) window.clearTimeout(cardClickTimer);
-            cardClickTimer = window.setTimeout(() => {
-              if (currentMapName === map && pins.includes(pin)) centerOnPin(pin);
-              cardClickTimer = null;
-            }, 180);
-          });
-          item.addEventListener("dblclick", (event) => {
-            event.preventDefault();
-            if (cardClickTimer) {
-              window.clearTimeout(cardClickTimer);
-              cardClickTimer = null;
-            }
-            editPin(index, { center: true });
-          });
-          item.addEventListener("contextmenu", (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            showContextMenu(getPinActionItems(index), event.clientX, event.clientY);
-          });
-          item.addEventListener("keydown", (event) => {
-            if (event.target.closest("button, input, select, textarea")) return;
-            const key = event.key.toLowerCase();
-            if (key === "enter") {
-              event.preventDefault();
-              editPin(index, { center: true });
-            } else if (key === "c") {
-              event.preventDefault();
-              copyPinCoords(pin);
-            } else if (event.key === "Delete" || event.key === "Backspace") {
-              event.preventDefault();
-              deletePin(index);
-            }
-          });
-
-          item.addEventListener("focusin", () => { focusedPinUid = pin.uid; draw(); });
-          item.addEventListener("focusout", (event) => {
-            if (!item.contains(event.relatedTarget)) { focusedPinUid = null; draw(); }
-          });
-          item.addEventListener("mouseenter", () => {
-            hoveredPinIndex = index;
-            draw();
-          });
-          item.addEventListener("mouseleave", () => {
-            hoveredPinIndex = null;
-            draw();
-          });
-
-          const controls = document.createElement("div");
-          controls.className = "pin-controls";
-
-          const btnCopy = document.createElement("button");
-          btnCopy.className =
-            "btn-copy-coords ds-btn ds-btn-icon ds-btn-sm ds-icon-action";
-          btnCopy.title = "Copy coordinates";
-          btnCopy.setAttribute("aria-label", "Copy coordinates");
-          btnCopy.innerHTML =
-            '<span class="io iconoir-copy" aria-hidden="true"></span>';
-          btnCopy.dataset.action = "copy";
-          btnCopy.dataset.index = String(index);
-
-          const btnMore = document.createElement("button");
-          btnMore.className =
-            "btn-more ds-btn ds-btn-icon ds-btn-sm ds-icon-action";
-          btnMore.title = "More pin actions";
-          btnMore.setAttribute("aria-label", "More pin actions");
-          btnMore.innerHTML =
-            '<span class="io iconoir-more-horiz" aria-hidden="true"></span>';
-          btnMore.dataset.action = "more";
-          btnMore.dataset.index = String(index);
-
-          controls.appendChild(btnCopy);
-          controls.appendChild(btnMore);
-          item.appendChild(controls);
-
-          container.appendChild(item);
-        });
+        renderLayers();
       }
 
       function centerOnPin(pin) {
@@ -6576,6 +6315,7 @@
           pinEditorSaveText.textContent =
             currentEditIndex !== null && !dirty && draft.valid ? "Saved" : "Save";
         }
+        window.MapitMineEditorFields.refresh();
       }
 
       function clampPinEditorPosition(screenX, screenY) {
@@ -6718,6 +6458,7 @@
         }, 0);
 
         pinEditorOriginalInputs = readPinEditorInputs();
+        window.MapitMineEditorFields.refresh({ resetPin: true });
         updatePinEditorState();
         updateStatusStrip();
         draw();
@@ -6759,7 +6500,7 @@
         hoveredPinIndex = null;
         markDirty();
         saveCurrentMap();
-        renderPinList();
+        renderObjectBrowser();
         draw();
         showToast("Pin deleted.");
       }
@@ -6778,7 +6519,7 @@
             y: pinEditOriginalSnapshot.y,
             z: pinEditOriginalSnapshot.z,
           };
-          renderPinList();
+          renderObjectBrowser();
         }
         isPlacingPin = false;
         currentEditIndex = null;
@@ -6836,12 +6577,14 @@
         populatePinLayerOptions(pin.layerId || DEFAULT_LAYER_ID);
         pinEditorOriginalDraft = getPinSnapshotForEditor(pin);
         pinEditorOriginalInputs = readPinEditorInputs();
+        window.MapitMineEditorFields.refresh({ resetPin: true });
 
         selectedPinIndex = index;
         updatePinEditorState();
         updatePinListHighlight();
         draw();
         drawMinimap();
+        return true;
       }
 
       function submitPinEditor() {
@@ -6894,7 +6637,7 @@
           }
           pins.push(pinData);
         }
-        renderPinList();
+        renderObjectBrowser();
         closePinEditor({ commit: true });
         currentEditIndex = null;
         pinEditOriginalSnapshot = null;
@@ -6907,7 +6650,7 @@
       }
 
       // UI helpers and toggles
-      // hidePinList(), resetView(), focusNextInput(), hideContextMenu()
+      // resetView(), focusNextInput(), hideContextMenu()
       function hideSettings() {
         setWorkspaceTab("settings");
       }
@@ -6918,10 +6661,6 @@
         pushHistoryState("Toggle Minimap");
         toggle.checked = !toggle.checked;
         syncMinimapOverlay();
-      }
-
-      function hidePinList() {
-        setWorkspaceTab("pins");
       }
 
       function fitViewToBounds(bounds, label) {
@@ -7207,7 +6946,7 @@
         loadMapNames({ autoLoadFirst: false });
 
         // Refresh UI
-        renderPinList();
+        renderObjectBrowser();
         draw();
 
         showToast(`Imported as "${finalName}".`);
@@ -7309,7 +7048,7 @@
             applySettingsSnapshot(parsed.settings);
           }
 
-          renderPinList();
+          renderObjectBrowser();
           draw();
           updateOverlayVisibility?.();
         } catch (err) {
@@ -7390,6 +7129,7 @@
       /* Signature: showContextMenu(items, x, y) */
 
       let contextMenuReturnFocus = null;
+      let contextMenuReturnReference = null;
 
       function getContextMenuItems() {
         return Array.from(
@@ -7416,6 +7156,11 @@
           document.activeElement instanceof HTMLElement
             ? document.activeElement
             : null;
+        const returnRow = contextMenuReturnFocus?.closest("[data-object-id]");
+        contextMenuReturnReference = returnRow ? {
+          map: currentMapName, kind: returnRow.dataset.objectKind, id: returnRow.dataset.objectId,
+          parent: returnRow.dataset.parentKey, action: contextMenuReturnFocus.dataset.outlineAction,
+        } : null;
         menu.setAttribute("role", "menu");
         menu.setAttribute("aria-label", "Actions");
 
@@ -7492,8 +7237,16 @@
         if (menu) menu.style.display = "none";
         if (restoreFocus && contextMenuReturnFocus?.isConnected) {
           contextMenuReturnFocus.focus();
+        } else if (restoreFocus && contextMenuReturnReference?.map === currentMapName) {
+          const target = contextMenuReturnReference;
+          const rows = Array.from(document.querySelectorAll("#layerList [data-object-id]"));
+          const row = rows.find(row => row.dataset.objectId === target.id && row.dataset.objectKind === target.kind && !row.closest("[hidden]")) ||
+            rows.find(row => `${row.dataset.objectKind}:${row.dataset.objectId}` === target.parent);
+          const action = target.action && row ? Array.from(row.querySelectorAll("[data-outline-action]")).find(button => button.dataset.outlineAction === target.action) : null;
+          (action || row || document.getElementById("layerList"))?.focus({ preventScroll: true });
         }
         contextMenuReturnFocus = null;
+        contextMenuReturnReference = null;
       }
 
       window.addEventListener("click", hideContextMenu);
@@ -7735,7 +7488,7 @@
         if (pinCanvasDragState) {
           suppressCanvasClick = true;
           if (pinCanvasDragState.mode === "existing") {
-            renderPinList();
+            renderObjectBrowser();
           }
           pinCanvasDragState = null;
           updateStatusStrip();
@@ -7964,31 +7717,11 @@
       document.getElementById("mapOpenLibraryBtn")?.addEventListener("click", () => {
         openMapFromDisk();
       });
+      document.getElementById("createSampleMapBtn").addEventListener("click", createSampleMap);
       document.getElementById("mapImportBtn")?.addEventListener("click", () => {
         triggerImportMap();
       });
-      // Delegated handlers for pin list buttons
-      document.getElementById("pinList").addEventListener("click", (e) => {
-        const btn = e.target.closest("button");
-        if (!btn || !btn.dataset.action) return;
 
-        e.stopPropagation();
-        const idx = Number(btn.dataset.index);
-        const p = pins[idx];
-        if (!p) return;
-
-        switch (btn.dataset.action) {
-          case "copy": {
-            copyPinCoords(p);
-            break;
-          }
-          case "more": {
-            const rect = btn.getBoundingClientRect();
-            showContextMenu(getPinActionItems(idx), rect.right, rect.bottom + 4);
-            break;
-          }
-        }
-      });
 
       window.addEventListener("keydown", (event) => {
         const modifier = event.ctrlKey || event.metaKey;
@@ -8141,7 +7874,8 @@
       });
 
       pinSearchInput?.addEventListener("input", () => {
-        renderPinList();
+        filteredCollapsedObjectLayers.clear();
+        renderObjectBrowser();
       });
       pinSearchInput?.addEventListener("keydown", (event) => {
         if (event.key === "Escape" && pinSearchInput.value) {
@@ -8279,6 +8013,10 @@
       hud.appendChild(drawingCommands);
       document.body.appendChild(document.getElementById("mapStatusStrip"));
       drawingPanel.setAttribute("aria-label", "Drawing tools and properties");
+      window.MapitMineEditorFields.install();
+      window.MapitMineScrollLayout.install();
+      window.MapitMineObjectRows.installView(document.getElementById("layerList"), document.getElementById("pinRowView"));
+      inspectorHeader.insertBefore(document.getElementById("pinEditorHelpBtn"), document.getElementById("inspectorClose"));
       drawingTools = window.MapitMineDrawing.install({
         workspace: workspaceState,
         canvas,
@@ -8332,8 +8070,10 @@
         const object = selection?.kind === "drawing" ? drawings.find((drawing) => drawing.id === selection.id)
           : selection?.kind === "pin" ? pins.find((pin) => pin.uid === selection.id) : selection?.kind === "layer" ? getLayer(selection.id) : null;
         document.getElementById("contextInspectorTitle").textContent = editing
-          ? currentEditIndex === null ? "New pin" : pins[currentEditIndex]?.label || "Untitled pin"
-          : object?.label || object?.name || (selection?.kind === "drawing" ? "Untitled drawing" : selection?.kind === "layer" ? "Layer" : "Untitled pin");
+          ? currentEditIndex === null ? "New pin" : "Edit pin"
+          : selection?.kind === "drawing" ? `${getLayer(object?.layerId)?.locked || !getLayer(object?.layerId)?.visible ? "Inspect" : "Edit"} ${object?.type === "line" ? "line" : "path"}`
+          : object?.label || object?.name || (selection?.kind === "layer" ? "Layer" : "Pin");
+        document.getElementById("pinEditorHelpBtn").hidden = !editing;
         document.getElementById("contextInspectorTitle").title = document.getElementById("contextInspectorTitle").textContent;
         document.getElementById("objectInspector").hidden = editing || !selection || selection.kind === "drawing";
         drawingPanel.hidden = editing || selection?.kind !== "drawing";
@@ -8375,7 +8115,8 @@
         if (!object) return;
         event.preventDefault();
         const rect = event.target.getBoundingClientRect();
-        openCanvasObjectMenu({ ...reference, map: currentMapName, object }, Math.min(innerWidth - 12, rect.left + 12), Math.min(innerHeight - 12, rect.bottom));
+        if (row) showOutlineObjectMenu({ ...reference, object }, Math.min(innerWidth - 12, rect.left + 12), Math.min(innerHeight - 12, rect.bottom));
+        else openCanvasObjectMenu({ ...reference, map: currentMapName, object }, Math.min(innerWidth - 12, rect.left + 12), Math.min(innerHeight - 12, rect.bottom));
       });
       workspaceState.subscribe(({ selection }) => {
         syncWorkspaceToolControls();
@@ -8399,32 +8140,18 @@
       });
       objectOutline = window.MapitMineOutline.install({
         root: document.getElementById("layerList"),
-        select: (reference) => reference?.kind === "layer" ? activateLayerRow(reference.id) : selectWorkspaceObject(reference),
+        select: reference => activateOutlineObject(reference),
         expand: (id, expanded) => {
           const collapsed = getCollapsedOutlineLayers();
           if (expanded) collapsed.delete(id); else collapsed.add(id);
           renderLayers();
         },
-        edit: async (reference) => {
-          if (!await selectWorkspaceObject(reference)) return;
-          if (reference.kind === "pin") {
-            const index = pins.findIndex((pin) => pin.uid === reference.id);
-            if (index < 0 || !isPinVisible(pins[index]) || isPinLocked(pins[index])) {
-              showToast("Show and unlock this pin's layer before editing.", "warn"); return;
-            }
-            await editPin(index, { center: true });
-            document.getElementById("pinEditorLabel").focus();
-          } else if (reference.kind === "drawing") {
-            const field = document.getElementById("drawingName");
-            if (!field.disabled) field.focus();
-            else showToast("Show and unlock this drawing's layer before editing.", "warn");
-          } else await renameLayer(reference.id);
-        },
+        edit: reference => activateOutlineObject(reference, true),
       });
       layerReorder = window.MapitMineLayerReorder.install({
         root: document.getElementById("layerList"),
         map: () => currentMapName,
-        enabled: () => !!currentMapName && !document.getElementById("objectSearch").value.trim() && document.getElementById("objectFilter").value === "all",
+        enabled: () => !!currentMapName && !document.getElementById("objectSearch").value.trim() && document.getElementById("objectFilter").value === "all" && !hasActivePinFilters(),
         commit: reorderLayer,
       });
       function positionWorkspaceToolbar() {
@@ -8455,8 +8182,9 @@
         obstacles: () => ["workspaceShell", "contextInspector", "mobileDock", "hud", "mapStatusStrip", "minimapContainer"].map((id) => document.getElementById(id)),
       });
       positionWorkspaceToolbar();
-      document.getElementById("objectSearch").addEventListener("input", () => { filteredCollapsedObjectLayers.clear(); renderLayers(); });
-      document.getElementById("objectFilter").addEventListener("change", () => { filteredCollapsedObjectLayers.clear(); renderLayers(); });
+
+      document.getElementById("objectFilter").addEventListener("change", () => setObjectFilter(document.getElementById("objectFilter").value));
+      document.querySelectorAll("[data-object-filter]").forEach(button => button.addEventListener("click", () => setObjectFilter(button.dataset.objectFilter)));
       document.getElementById("inspectorLayerVisible").addEventListener("change", () => {
         const selection = workspaceState.get().selection;
         if (selection?.kind === "layer") toggleLayerVisibility(selection.id);

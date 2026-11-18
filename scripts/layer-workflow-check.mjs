@@ -3,8 +3,8 @@ import { readFile } from "node:fs/promises";
 const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
 
 const required = [
-  'data-workspace-tab="layers"',
-  'data-workspace-panel="layers"',
+  'data-workspace-tab="objects"',
+  'data-workspace-panel="objects"',
   'id="createLayerBtn"',
   'id="layerList"',
   'id="pinEditorLayer"',
@@ -22,7 +22,7 @@ const required = [
   'pushHistoryState(label)',
   'async function commitLayerChange(',
   'mapName !== currentMapName || !valid()',
-  'if (!isPinVisible(pin)) return false',
+  'if (isPinLocked(pin) || !isPinVisible(pin)) return null',
   'if (!isPinVisible(pins[i])) continue',
   'if (isPinLocked(pins[index]))',
   'if (layerId === DEFAULT_LAYER_ID)',
@@ -30,7 +30,7 @@ const required = [
   "drawing.layerId = DEFAULT_LAYER_ID",
   "layerId: draft.layerId",
   "pins.filter(isPinVisible)",
-  'setWorkspaceTab("layers")',
+  'resolved = "objects"',
 ];
 
 const missing = required.filter((snippet) => !html.includes(snippet));

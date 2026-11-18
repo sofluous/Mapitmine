@@ -1,0 +1,87 @@
+/* MAPITMINE-026: app-local scroll/content ownership. Load after editor-fields.css.
+   DS-mapped padding retains the existing accessibility minimum. The parent
+   integration owns workspace headers, outer shell padding and #layerList. */
+:is(#mapPanelSection, #mapViewPanelSection, #settings, #contextInspector, #draftVertices) {
+  --scroll-layout-pad-x: max(var(--focus-clearance), var(--ds-panel-scroll-pad-x));
+  --scroll-layout-pad-y: max(var(--focus-clearance), var(--ds-panel-scroll-pad-y));
+}
+
+:is(#mapViewPanelSection, #settings) > .workspace-section-body:has(> .scroll-layout-content),
+#pinEditorPanel.compact-editor > .pin-editor-body:has(> .scroll-layout-content) {
+  padding: 0;
+  gap: 0;
+  min-width: 0;
+  scroll-padding: var(--scroll-layout-pad-y) var(--scroll-layout-pad-x);
+}
+
+.scroll-layout-content {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  min-width: 0;
+  gap: var(--space-sm);
+  padding: var(--scroll-layout-pad-y) var(--scroll-layout-pad-x);
+}
+
+.scroll-layout-content > * { flex-shrink: 0; }
+#pinEditorPanel.compact-editor .pin-editor-body > .scroll-layout-content { gap: var(--editor-gap); }
+
+/* #mapGallery is the real scroll owner; its parent must not add another inset
+   or independently scroll. Padding on the grid is inside its own scrollport. */
+#mapPanelSection > .workspace-section-body {
+  padding: 0;
+  overflow: hidden;
+  gap: 0;
+}
+#mapPanelSection > .workspace-tab-header { padding: var(--space-md); }
+#mapPanelSection #mapGallery {
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  height: auto;
+  overflow: auto;
+  padding: var(--scroll-layout-pad-y) var(--scroll-layout-pad-x);
+  scroll-padding: var(--scroll-layout-pad-y) var(--scroll-layout-pad-x);
+}
+
+/* Preserve editor-fields' flex/hidden roots and non-scrolling pin footer.
+   Only the content/header/footer own padding, never the inspector shell. */
+#contextInspector { padding: 0; gap: 0; }
+#contextInspector > .inspector-header,
+#contextInspector > #objectInspector {
+  box-sizing: border-box;
+  padding: var(--scroll-layout-pad-y) var(--scroll-layout-pad-x);
+}
+#contextInspector > #objectInspector:empty { padding: 0; }
+#contextInspector > #objectInspector { min-height: 0; flex: 1 1 auto; overflow: auto; }
+#contextInspector #pinEditorPanel .pin-editor-actions {
+  padding: var(--scroll-layout-pad-y) var(--scroll-layout-pad-x);
+}
+#contextInspector > #drawingPanel {
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0;
+  scroll-padding: var(--scroll-layout-pad-y) var(--scroll-layout-pad-x);
+}
+#contextInspector #drawingPanel #drawingEditor {
+  box-sizing: border-box;
+  padding: var(--scroll-layout-pad-y) var(--scroll-layout-pad-x);
+}
+
+/* Keep generated rows as direct children, with only one content gutter.
+   Committed vertices share the drawing panel's scrollport; draft vertices
+   retain their bounded independent scrollport and mobile height rules. */
+#contextInspector #drawingPoints {
+  margin-inline: calc(-1 * var(--scroll-layout-pad-x));
+  padding: var(--scroll-layout-pad-y) var(--scroll-layout-pad-x);
+  scroll-padding: var(--scroll-layout-pad-y) var(--scroll-layout-pad-x);
+}
+#draftVertices #draftPoints {
+  box-sizing: border-box;
+  min-width: 0;
+  padding: var(--scroll-layout-pad-y) var(--scroll-layout-pad-x);
+  scroll-padding: var(--scroll-layout-pad-y) var(--scroll-layout-pad-x);
+}
