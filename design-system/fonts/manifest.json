@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "5bb28733cec313b63fbd415b574b5ae35c8aa8b8",
+  "license": "OFL-1.1",
+  "faces": [
+    {
+      "family": "Inter",
+      "file": "fonts/inter/Inter[opsz,wght].ttf",
+      "weight": "100 900",
+      "style": "normal",
+      "licenseFile": "fonts/inter/OFL.txt",
+      "source": "https://raw.githubusercontent.com/google/fonts/5bb28733cec313b63fbd415b574b5ae35c8aa8b8/ofl/inter/Inter%5Bopsz%2Cwght%5D.ttf",
+      "sha256": "29160a80ff49ddcab2c97711247e08b1fab27a484a329ce8b813d820dc559031",
+      "licenseSha256": "5b9321a4298cfeb6b34354164a1c3afc3db114569984c502b9b35d988fd58c57"
+    },
+    {
+      "family": "Space Mono",
+      "file": "fonts/spacemono/SpaceMono-Regular.ttf",
+      "weight": "400",
+      "style": "normal",
+      "licenseFile": "fonts/spacemono/OFL.txt",
+      "source": "https://raw.githubusercontent.com/google/fonts/5bb28733cec313b63fbd415b574b5ae35c8aa8b8/ofl/spacemono/SpaceMono-Regular.ttf",
+      "sha256": "95837e182baeeada83368f7748db28357f0a1b75c6b84ff7065b5edf933c8e18",
+      "licenseSha256": "8e4ee42b2553e1e01504e61cb0d46d148cd8c9e5eacaa3622a7df2d4f2955b9f"
+    },
+    {
+      "family": "Space Mono",
+      "file": "fonts/spacemono/SpaceMono-Bold.ttf",
+      "weight": "700",
+      "style": "normal",
+      "licenseFile": "fonts/spacemono/OFL.txt",
+      "source": "https://raw.githubusercontent.com/google/fonts/5bb28733cec313b63fbd415b574b5ae35c8aa8b8/ofl/spacemono/SpaceMono-Bold.ttf",
+      "sha256": "405e73d41afb7e5906efce206a326af5c956f38e255f35421c260e861e599c59",
+      "licenseSha256": "8e4ee42b2553e1e01504e61cb0d46d148cd8c9e5eacaa3622a7df2d4f2955b9f"
+    },
+    {
+      "family": "Baloo 2",
+      "file": "fonts/baloo2/Baloo2[wght].ttf",
+      "weight": "400 800",
+      "style": "normal",
+      "licenseFile": "fonts/baloo2/OFL.txt",
+      "source": "https://raw.githubusercontent.com/google/fonts/5bb28733cec313b63fbd415b574b5ae35c8aa8b8/ofl/baloo2/Baloo2%5Bwght%5D.ttf",
+      "sha256": "d47a6852548059b1db49a1319d06d499d546c3fa2237cf9eee9c43c8abb025c2",
+      "licenseSha256": "ad09b05dc8bc678c9daf7c4c5f7ef1f55e5726127f4330b2e98e40b9dffcb860"
+    },
+    {
+      "family": "Sora",
+      "file": "fonts/sora/Sora[wght].ttf",
+      "weight": "100 800",
+      "style": "normal",
+      "licenseFile": "fonts/sora/OFL.txt",
+      "source": "https://raw.githubusercontent.com/google/fonts/5bb28733cec313b63fbd415b574b5ae35c8aa8b8/ofl/sora/Sora%5Bwght%5D.ttf",
+      "sha256": "84ff7096ae3ec6c8be47d906d1a0ba4de7f2ce78c615275c77301964a316e16c",
+      "licenseSha256": "ba0b9729c9428ba79a0459ab8ec575791b51509dbec213e383d0316d37fec299"
+    },
+    {
+      "family": "Outfit",
+      "file": "fonts/outfit/Outfit[wght].ttf",
+      "weight": "100 900",
+      "style": "normal",
+      "licenseFile": "fonts/outfit/OFL.txt",
+      "source": "https://raw.githubusercontent.com/google/fonts/5bb28733cec313b63fbd415b574b5ae35c8aa8b8/ofl/outfit/Outfit%5Bwght%5D.ttf",
+      "sha256": "fc7287273e66929776e2ba54f144fe699080bec29f61bf649d70d871468aeade",
+      "licenseSha256": "c676351bf8576b9aba743cd5eaa8c0e7ee0d51f805d720447b4df4ddb6a2e416"
+    },
+    {
+      "family": "Archivo Black",
+      "file": "fonts/archivoblack/ArchivoBlack-Regular.ttf",
+      "weight": "400",
+      "style": "normal",
+      "licenseFile": "fonts/archivoblack/OFL.txt",
+      "source": "https://raw.githubusercontent.com/google/fonts/5bb28733cec313b63fbd415b574b5ae35c8aa8b8/ofl/archivoblack/ArchivoBlack-Regular.ttf",
+      "sha256": "dd9a89a019b4849f66ab75455fe7bdf931311042cbb0f0f97acc061539703180",
+      "licenseSha256": "3173acd82f8c6159b5b1037b539fcbd4edff68e65c2ea8b9412b5a5ca97b08ff"
+    },
+    {
+      "family": "Share Tech Mono",
+      "file": "fonts/sharetechmono/ShareTechMono-Regular.ttf",
+      "weight": "400",
+      "style": "normal",
+      "licenseFile": "fonts/sharetechmono/OFL.txt",
+      "source": "https://raw.githubusercontent.com/google/fonts/5bb28733cec313b63fbd415b574b5ae35c8aa8b8/ofl/sharetechmono/ShareTechMono-Regular.ttf",
+      "sha256": "9ceab1f87414829af259c0f537573ae03ef7dd3147c0b27a36a1a0beb6732677",
+      "licenseSha256": "9d96f445b6e9c701428811d0177f894874f8d6f07ecc30d568c506542368f3ff"
+    },
+    {
+      "family": "Chakra Petch",
+      "file": "fonts/chakrapetch/ChakraPetch-Regular.ttf",
+      "weight": "400",
+      "style": "normal",
+      "licenseFile": "fonts/chakrapetch/OFL.txt",
+      "source": "https://raw.githubusercontent.com/google/fonts/5bb28733cec313b63fbd415b574b5ae35c8aa8b8/ofl/chakrapetch/ChakraPetch-Regular.ttf",
+      "sha256": "98fcd638baa5c81ff0316b7538ce330ee3b23b1302726de3526d5933a8ecf986",
+      "licenseSha256": "13831d02389d917d22fcfa6c79f98f8acbf61d230add0e73a4d4dc5f3bfb9e56"
+    },
+    {
+      "family": "Chakra Petch",
+      "file": "fonts/chakrapetch/ChakraPetch-SemiBold.ttf",
+      "weight": "600",
+      "style": "normal",
+      "licenseFile": "fonts/chakrapetch/OFL.txt",
+      "source": "https://raw.githubusercontent.com/google/fonts/5bb28733cec313b63fbd415b574b5ae35c8aa8b8/ofl/chakrapetch/ChakraPetch-SemiBold.ttf",
+      "sha256": "45264de3204ddbd5fb3e14a2402acd5c630d16650ae5fc221d2c52da46a6734b",
+      "licenseSha256": "13831d02389d917d22fcfa6c79f98f8acbf61d230add0e73a4d4dc5f3bfb9e56"
+    },
+    {
+      "family": "Chakra Petch",
+      "file": "fonts/chakrapetch/ChakraPetch-Bold.ttf",
+      "weight": "700",
+      "style": "normal",
+      "licenseFile": "fonts/chakrapetch/OFL.txt",
+      "source": "https://raw.githubusercontent.com/google/fonts/5bb28733cec313b63fbd415b574b5ae35c8aa8b8/ofl/chakrapetch/ChakraPetch-Bold.ttf",
+      "sha256": "65fbf76d95651697275e19db4d717c0e95a789ddd3476478b05292104db278a0",
+      "licenseSha256": "13831d02389d917d22fcfa6c79f98f8acbf61d230add0e73a4d4dc5f3bfb9e56"
+    }
+  ],
+  "systemFamilies": [
+    "Segoe UI",
+    "Tahoma",
+    "Helvetica Neue",
+    "Arial Narrow"
+  ]
+}

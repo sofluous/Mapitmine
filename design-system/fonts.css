@@ -1,0 +1,12 @@
+/* Local OFL fonts; preserve per-family OFL.txt notices and manifest.json. */
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 100 900; font-display: swap; src: url("./fonts/inter/Inter[opsz,wght].ttf") format("truetype"); }
+@font-face { font-family: "Space Mono"; font-style: normal; font-weight: 400; font-display: swap; src: url("./fonts/spacemono/SpaceMono-Regular.ttf") format("truetype"); }
+@font-face { font-family: "Space Mono"; font-style: normal; font-weight: 700; font-display: swap; src: url("./fonts/spacemono/SpaceMono-Bold.ttf") format("truetype"); }
+@font-face { font-family: "Baloo 2"; font-style: normal; font-weight: 400 800; font-display: swap; src: url("./fonts/baloo2/Baloo2[wght].ttf") format("truetype"); }
+@font-face { font-family: "Sora"; font-style: normal; font-weight: 100 800; font-display: swap; src: url("./fonts/sora/Sora[wght].ttf") format("truetype"); }
+@font-face { font-family: "Outfit"; font-style: normal; font-weight: 100 900; font-display: swap; src: url("./fonts/outfit/Outfit[wght].ttf") format("truetype"); }
+@font-face { font-family: "Archivo Black"; font-style: normal; font-weight: 400; font-display: swap; src: url("./fonts/archivoblack/ArchivoBlack-Regular.ttf") format("truetype"); }
+@font-face { font-family: "Share Tech Mono"; font-style: normal; font-weight: 400; font-display: swap; src: url("./fonts/sharetechmono/ShareTechMono-Regular.ttf") format("truetype"); }
+@font-face { font-family: "Chakra Petch"; font-style: normal; font-weight: 400; font-display: swap; src: url("./fonts/chakrapetch/ChakraPetch-Regular.ttf") format("truetype"); }
+@font-face { font-family: "Chakra Petch"; font-style: normal; font-weight: 600; font-display: swap; src: url("./fonts/chakrapetch/ChakraPetch-SemiBold.ttf") format("truetype"); }
+@font-face { font-family: "Chakra Petch"; font-style: normal; font-weight: 700; font-display: swap; src: url("./fonts/chakrapetch/ChakraPetch-Bold.ttf") format("truetype"); }

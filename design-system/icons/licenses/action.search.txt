@@ -1,0 +1,1 @@
+Project-owned Design System asset. No third-party source is declared in the existing registry. Distribution follows the owning project license; no additional public license is granted.

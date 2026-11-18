@@ -1,0 +1,779 @@
+{
+  "schemaVersion": 1,
+  "version": "0.1.0",
+  "primaryLibrary": "lucide",
+  "icons": [
+    {
+      "alias": "action.close",
+      "source": {
+        "library": "local",
+        "name": "close",
+        "revision": "existing-ds-2026-10-25",
+        "url": "",
+        "license": "Project-owned",
+        "licenseText": "Project-owned Design System asset. No third-party source is declared in the existing registry. Distribution follows the owning project license; no additional public license is granted."
+      },
+      "modifications": "None; adopted existing project-owned SVG.",
+      "exceptionReason": "",
+      "file": "approved/action.close-1e8cbd253495f9eb.svg",
+      "sha256": "1e8cbd253495f9eb8754f4e652d09a52b02c5981c41ecb7f0ea79808a7839022"
+    },
+    {
+      "alias": "action.search",
+      "source": {
+        "library": "local",
+        "name": "search",
+        "revision": "existing-ds-2026-10-25",
+        "url": "",
+        "license": "Project-owned",
+        "licenseText": "Project-owned Design System asset. No third-party source is declared in the existing registry. Distribution follows the owning project license; no additional public license is granted."
+      },
+      "modifications": "None; adopted existing project-owned SVG.",
+      "exceptionReason": "",
+      "file": "approved/action.search-b33e901406a70997.svg",
+      "sha256": "b33e901406a709975330e0ba10dcdc369da4c8dd09f46e5f670bcc053bf49e51"
+    },
+    {
+      "alias": "nav.chevron-down",
+      "source": {
+        "library": "local",
+        "name": "chevron-down",
+        "revision": "existing-ds-2026-10-25",
+        "url": "",
+        "license": "Project-owned",
+        "licenseText": "Project-owned Design System asset. No third-party source is declared in the existing registry. Distribution follows the owning project license; no additional public license is granted."
+      },
+      "modifications": "None; adopted existing project-owned SVG.",
+      "exceptionReason": "",
+      "file": "approved/nav.chevron-down-8a24fe1b5963b24e.svg",
+      "sha256": "8a24fe1b5963b24e3d5c22330fb5ba14f50d6a5fb4d3562ec195ab713cfe09c3"
+    },
+    {
+      "alias": "nav.menu",
+      "source": {
+        "library": "local",
+        "name": "menu",
+        "revision": "existing-ds-2026-10-25",
+        "url": "",
+        "license": "Project-owned",
+        "licenseText": "Project-owned Design System asset. No third-party source is declared in the existing registry. Distribution follows the owning project license; no additional public license is granted."
+      },
+      "modifications": "None; adopted existing project-owned SVG.",
+      "exceptionReason": "",
+      "file": "approved/nav.menu-9dca097b7352246d.svg",
+      "sha256": "9dca097b7352246dba9612fa05931a8a25c5a7c0910593603133fe34d2caabaa"
+    }
+  ],
+  "situations": [
+    {
+      "alias": "action.search",
+      "name": "Search",
+      "category": "navigation",
+      "usage": "Default search affordance for toolbars, inline field icons, and command surfaces.",
+      "apps": [
+        "KataCart",
+        "Bonsai",
+        "Trekulate",
+        "PROJEKTIK",
+        "MapitMine"
+      ],
+      "status": "approved"
+    },
+    {
+      "alias": "action.close",
+      "name": "Close",
+      "category": "actions",
+      "usage": "Primary dismiss affordance for modals, drawers, and toasts.",
+      "apps": [
+        "DesignSystem",
+        "Bonsai",
+        "KataCart",
+        "PROJEKTIK"
+      ],
+      "status": "approved"
+    },
+    {
+      "alias": "nav.chevron-down",
+      "name": "Chevron Down",
+      "category": "navigation",
+      "usage": "Shared disclosure affordance for rows, menus, and accordions.",
+      "apps": [
+        "KataCart",
+        "Trekulate",
+        "DesignSystem",
+        "PROJEKTIK"
+      ],
+      "status": "approved"
+    },
+    {
+      "alias": "nav.menu",
+      "name": "Menu",
+      "category": "navigation",
+      "usage": "Primary drawer/menu trigger when a textual label is not appropriate.",
+      "apps": [
+        "Bonsai",
+        "KataCart",
+        "PROJEKTIK"
+      ],
+      "status": "approved"
+    },
+    {
+      "alias": "feedback.info",
+      "name": "Info",
+      "category": "feedback",
+      "usage": "Low-emphasis contextual help action.",
+      "apps": [
+        "DesignSystem",
+        "Bonsai",
+        "PROJEKTIK"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "feedback.warning",
+      "name": "Warning",
+      "category": "feedback",
+      "usage": "Non-fatal warning state and caution indicator.",
+      "apps": [
+        "KataCart",
+        "Trekulate",
+        "PROJEKTIK",
+        "MapitMine"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "feedback.success",
+      "name": "Success Check",
+      "category": "feedback",
+      "usage": "Positive completion and confirmation state.",
+      "apps": [
+        "KataCart",
+        "Bonsai",
+        "PROJEKTIK"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "action.delete",
+      "name": "Delete/Trash",
+      "category": "actions",
+      "usage": "Destructive remove/delete action.",
+      "apps": [
+        "KataCart",
+        "Bonsai",
+        "Trekulate",
+        "PROJEKTIK"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "action.edit",
+      "name": "Edit/Pencil",
+      "category": "actions",
+      "usage": "General edit/rename affordance.",
+      "apps": [
+        "KataCart",
+        "Bonsai",
+        "PROJEKTIK"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "action.copy",
+      "name": "Copy",
+      "category": "actions",
+      "usage": "Duplicate or copy-to-clipboard action.",
+      "apps": [
+        "DesignSystem",
+        "KataCart",
+        "PROJEKTIK",
+        "MapitMine"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "action.download",
+      "name": "Download",
+      "category": "actions",
+      "usage": "Download/export action for files and generated assets.",
+      "apps": [
+        "DesignSystem",
+        "Bonsai",
+        "PROJEKTIK",
+        "MapitMine"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "action.upload",
+      "name": "Upload",
+      "category": "actions",
+      "usage": "Upload/import action for local files.",
+      "apps": [
+        "KataCart",
+        "PROJEKTIK",
+        "MapitMine"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "data.calendar",
+      "name": "Calendar",
+      "category": "data",
+      "usage": "Date picker and calendar navigation affordance.",
+      "apps": [
+        "Trekulate",
+        "Bonsai",
+        "PROJEKTIK"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "data.time",
+      "name": "Clock/Time",
+      "category": "data",
+      "usage": "Time picker, schedule, and elapsed-time affordance.",
+      "apps": [
+        "Trekulate",
+        "PROJEKTIK",
+        "MapitMine"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "map.location-pin",
+      "name": "Location Pin",
+      "category": "map",
+      "usage": "Primary geographic marker icon.",
+      "apps": [
+        "Trekulate"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "map.route-path",
+      "name": "Route Path",
+      "category": "map",
+      "usage": "Path/route overlay toggle or legend icon.",
+      "apps": [
+        "Trekulate"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "data.layers",
+      "name": "Layers",
+      "category": "map",
+      "usage": "Layer stack, overlays, or visibility grouping.",
+      "apps": [
+        "Trekulate",
+        "PROJEKTIK"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "data.filter",
+      "name": "Filter",
+      "category": "data",
+      "usage": "Filter and query narrowing.",
+      "apps": [
+        "KataCart",
+        "Bonsai",
+        "PROJEKTIK",
+        "MapitMine"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "data.sort",
+      "name": "Sort",
+      "category": "data",
+      "usage": "Sort order control distinct from filter.",
+      "apps": [
+        "KataCart",
+        "PROJEKTIK",
+        "MapitMine"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "action.settings",
+      "name": "Settings",
+      "category": "navigation",
+      "usage": "General settings/preferences entry point.",
+      "apps": [
+        "All",
+        "MapitMine"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "nav.sidebar-collapse",
+      "name": "Sidebar Collapse",
+      "category": "navigation",
+      "usage": "Collapse/expand workspace rail or side panel.",
+      "apps": [
+        "MapitMine"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "data.folder",
+      "name": "Folder / Library",
+      "category": "data",
+      "usage": "File library, project collection, or folder browser.",
+      "apps": [
+        "MapitMine",
+        "PROJEKTIK"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "action.add",
+      "name": "Add / Plus",
+      "category": "actions",
+      "usage": "Create/add action for new entities and quick additions.",
+      "apps": [
+        "MapitMine",
+        "PROJEKTIK",
+        "KEADigi"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "action.save",
+      "name": "Save",
+      "category": "actions",
+      "usage": "Save current document, map, or project state.",
+      "apps": [
+        "MapitMine",
+        "PROJEKTIK"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "data.database",
+      "name": "Database",
+      "category": "data",
+      "usage": "Stored dataset, source library, or database-backed map source.",
+      "apps": [
+        "MapitMine"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "action.undo",
+      "name": "Undo",
+      "category": "actions",
+      "usage": "Reverse the most recent reversible action.",
+      "apps": [
+        "MapitMine",
+        "KEADigi"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "action.redo",
+      "name": "Redo",
+      "category": "actions",
+      "usage": "Reapply the most recent undone action.",
+      "apps": [
+        "MapitMine",
+        "KEADigi"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "map.map-view",
+      "name": "Map",
+      "category": "map",
+      "usage": "Map view, map panel, or map mode affordance.",
+      "apps": [
+        "MapitMine",
+        "Trekulate"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "typography.text",
+      "name": "Text / Labels",
+      "category": "data",
+      "usage": "Toggle or mode for text labels and text-centric display.",
+      "apps": [
+        "MapitMine"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "layout.place-top-left",
+      "name": "Place Top Left",
+      "category": "layout",
+      "usage": "Place or anchor an element to the top-left corner.",
+      "apps": [
+        "MapitMine"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "layout.place-top-right",
+      "name": "Place Top Right",
+      "category": "layout",
+      "usage": "Place or anchor an element to the top-right corner.",
+      "apps": [
+        "MapitMine"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "layout.place-bottom-left",
+      "name": "Place Bottom Left",
+      "category": "layout",
+      "usage": "Place or anchor an element to the bottom-left corner.",
+      "apps": [
+        "MapitMine"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "layout.place-bottom-right",
+      "name": "Place Bottom Right",
+      "category": "layout",
+      "usage": "Place or anchor an element to the bottom-right corner.",
+      "apps": [
+        "MapitMine"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "feedback.help",
+      "name": "Help",
+      "category": "feedback",
+      "usage": "Open help, tutorial, or explanation overlay.",
+      "apps": [
+        "KEADigi",
+        "DesignSystem"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "data.file",
+      "name": "File / Document",
+      "category": "data",
+      "usage": "Project file menu, document record, or saved-file object.",
+      "apps": [
+        "PROJEKTIK",
+        "MapitMine"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "data.reference-image",
+      "name": "Reference Image",
+      "category": "data",
+      "usage": "Reference/guide image or imported overlay source.",
+      "apps": [
+        "PROJEKTIK"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "data.surface-shape",
+      "name": "Surface / Shape",
+      "category": "data",
+      "usage": "Projection surface or editable shape region.",
+      "apps": [
+        "PROJEKTIK"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "nav.chevron-right",
+      "name": "Chevron Right",
+      "category": "navigation",
+      "usage": "Tree expansion, forward disclosure, and nested navigation.",
+      "apps": [
+        "PROJEKTIK",
+        "MapitMine"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "nav.arrow-up",
+      "name": "Arrow Up",
+      "category": "navigation",
+      "usage": "Directional up control for navigation, panning, or gizmo movement.",
+      "apps": [
+        "PROJEKTIK",
+        "KEADigi"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "nav.arrow-down",
+      "name": "Arrow Down",
+      "category": "navigation",
+      "usage": "Directional down control for navigation, panning, or gizmo movement.",
+      "apps": [
+        "PROJEKTIK",
+        "KEADigi"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "nav.arrow-left",
+      "name": "Arrow Left",
+      "category": "navigation",
+      "usage": "Directional left control for navigation, panning, or gizmo movement.",
+      "apps": [
+        "PROJEKTIK",
+        "KEADigi"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "nav.arrow-right",
+      "name": "Arrow Right",
+      "category": "navigation",
+      "usage": "Directional right control for navigation, panning, or gizmo movement.",
+      "apps": [
+        "PROJEKTIK",
+        "KEADigi"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "action.center-target",
+      "name": "Center / Target",
+      "category": "actions",
+      "usage": "Center target, home view, or focus-on-object action.",
+      "apps": [
+        "PROJEKTIK",
+        "Trekulate"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "action.zoom-in",
+      "name": "Zoom In",
+      "category": "actions",
+      "usage": "Increase zoom level or magnification.",
+      "apps": [
+        "PROJEKTIK",
+        "KEADigi",
+        "MapitMine"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "action.zoom-out",
+      "name": "Zoom Out",
+      "category": "actions",
+      "usage": "Decrease zoom level or magnification.",
+      "apps": [
+        "PROJEKTIK",
+        "KEADigi",
+        "MapitMine"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "action.reset-view",
+      "name": "Reset View",
+      "category": "actions",
+      "usage": "Reset zoom/camera/view back to the default framing.",
+      "apps": [
+        "PROJEKTIK",
+        "KEADigi",
+        "Trekulate"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "layout.grid-guides",
+      "name": "Grid / Guides",
+      "category": "layout",
+      "usage": "Toggle guides, alignment grids, or helper overlays.",
+      "apps": [
+        "PROJEKTIK",
+        "DesignSystem"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "action.link",
+      "name": "Link / Connect",
+      "category": "actions",
+      "usage": "Link objects, bind follow behavior, or connect related items.",
+      "apps": [
+        "PROJEKTIK",
+        "MapitMine"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "nav.drawer-left",
+      "name": "Left Drawer",
+      "category": "navigation",
+      "usage": "Open or focus a left-side drawer, layers rail, or navigation panel.",
+      "apps": [
+        "PROJEKTIK"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "nav.drawer-right",
+      "name": "Right Drawer",
+      "category": "navigation",
+      "usage": "Open or focus a right-side drawer, inspector, or tools panel.",
+      "apps": [
+        "PROJEKTIK"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "action.tune-controls",
+      "name": "Tune / Controls",
+      "category": "actions",
+      "usage": "Open controls, tuning settings, or parameter adjustment surfaces.",
+      "apps": [
+        "PROJEKTIK",
+        "DesignSystem"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "data.display",
+      "name": "Display / Preview",
+      "category": "data",
+      "usage": "Monitor, output preview, or display-target representation.",
+      "apps": [
+        "PROJEKTIK"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "action.fullscreen",
+      "name": "Fullscreen",
+      "category": "actions",
+      "usage": "Expand a window, stage, or preview to fullscreen.",
+      "apps": [
+        "PROJEKTIK",
+        "MapitMine"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "action.play",
+      "name": "Play / Live",
+      "category": "actions",
+      "usage": "Start playback, live output, or execution.",
+      "apps": [
+        "PROJEKTIK",
+        "KEADigi"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "action.pause",
+      "name": "Pause",
+      "category": "actions",
+      "usage": "Pause playback, live output, or a running state.",
+      "apps": [
+        "PROJEKTIK",
+        "KEADigi"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "action.visibility-on",
+      "name": "Visibility On",
+      "category": "actions",
+      "usage": "Visible state for toggles controlling whether an item is shown.",
+      "apps": [
+        "PROJEKTIK"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "action.visibility-off",
+      "name": "Visibility Off",
+      "category": "actions",
+      "usage": "Hidden state for toggles controlling whether an item is shown.",
+      "apps": [
+        "PROJEKTIK"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "action.lock",
+      "name": "Lock",
+      "category": "actions",
+      "usage": "Locked state for layers, surfaces, or protected controls.",
+      "apps": [
+        "PROJEKTIK"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "action.unlock",
+      "name": "Unlock",
+      "category": "actions",
+      "usage": "Unlocked state for layers, surfaces, or protected controls.",
+      "apps": [
+        "PROJEKTIK"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "feedback.blackout",
+      "name": "Blackout",
+      "category": "feedback",
+      "usage": "Blackout or output-off state for projection and presentation workflows.",
+      "apps": [
+        "PROJEKTIK"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "layout.nudge-up-left",
+      "name": "Nudge Up Left",
+      "category": "layout",
+      "usage": "Diagonal nudge or directional move toward the top-left.",
+      "apps": [
+        "PROJEKTIK"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "layout.nudge-up-right",
+      "name": "Nudge Up Right",
+      "category": "layout",
+      "usage": "Diagonal nudge or directional move toward the top-right.",
+      "apps": [
+        "PROJEKTIK"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "layout.nudge-down-left",
+      "name": "Nudge Down Left",
+      "category": "layout",
+      "usage": "Diagonal nudge or directional move toward the bottom-left.",
+      "apps": [
+        "PROJEKTIK"
+      ],
+      "status": "needs-icon"
+    },
+    {
+      "alias": "layout.nudge-down-right",
+      "name": "Nudge Down Right",
+      "category": "layout",
+      "usage": "Diagonal nudge or directional move toward the bottom-right.",
+      "apps": [
+        "PROJEKTIK"
+      ],
+      "status": "needs-icon"
+    }
+  ]
+}

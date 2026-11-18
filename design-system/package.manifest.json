@@ -1,0 +1,217 @@
+{
+  "schemaVersion": 1,
+  "presetRevision": "37f4503c24ddb4b9",
+  "sourceRevision": "9a77bfc145526a1242afb02b3da63acb2b7555bd1280a778c13f20956ce1c489",
+  "files": [
+    {
+      "path": "INSTALL.md",
+      "bytes": 2181,
+      "sha256": "a30fd0ca6c24d53b856898b87d2695c7530d83fc92acaa22cef3bf46ded6b98d"
+    },
+    {
+      "path": "VERSION.txt",
+      "bytes": 53,
+      "sha256": "e1d9a06261de7e6973cb77928079802cb0132d5c81058e6bae7a37095c9a157c"
+    },
+    {
+      "path": "fonts.css",
+      "bytes": 1970,
+      "sha256": "96fa00a4d06e48015e32919cae9384a198669de2a8450141dcb2f7c51f45bf86"
+    },
+    {
+      "path": "fonts/archivoblack/ArchivoBlack-Regular.ttf",
+      "bytes": 90988,
+      "sha256": "dd9a89a019b4849f66ab75455fe7bdf931311042cbb0f0f97acc061539703180"
+    },
+    {
+      "path": "fonts/archivoblack/OFL.txt",
+      "bytes": 4492,
+      "sha256": "3173acd82f8c6159b5b1037b539fcbd4edff68e65c2ea8b9412b5a5ca97b08ff"
+    },
+    {
+      "path": "fonts/baloo2/Baloo2[wght].ttf",
+      "bytes": 683200,
+      "sha256": "d47a6852548059b1db49a1319d06d499d546c3fa2237cf9eee9c43c8abb025c2"
+    },
+    {
+      "path": "fonts/baloo2/OFL.txt",
+      "bytes": 4384,
+      "sha256": "ad09b05dc8bc678c9daf7c4c5f7ef1f55e5726127f4330b2e98e40b9dffcb860"
+    },
+    {
+      "path": "fonts/chakrapetch/ChakraPetch-Bold.ttf",
+      "bytes": 78384,
+      "sha256": "65fbf76d95651697275e19db4d717c0e95a789ddd3476478b05292104db278a0"
+    },
+    {
+      "path": "fonts/chakrapetch/ChakraPetch-Regular.ttf",
+      "bytes": 78488,
+      "sha256": "98fcd638baa5c81ff0316b7538ce330ee3b23b1302726de3526d5933a8ecf986"
+    },
+    {
+      "path": "fonts/chakrapetch/ChakraPetch-SemiBold.ttf",
+      "bytes": 78604,
+      "sha256": "45264de3204ddbd5fb3e14a2402acd5c630d16650ae5fc221d2c52da46a6734b"
+    },
+    {
+      "path": "fonts/chakrapetch/OFL.txt",
+      "bytes": 4396,
+      "sha256": "13831d02389d917d22fcfa6c79f98f8acbf61d230add0e73a4d4dc5f3bfb9e56"
+    },
+    {
+      "path": "fonts/inter/Inter[opsz,wght].ttf",
+      "bytes": 876576,
+      "sha256": "29160a80ff49ddcab2c97711247e08b1fab27a484a329ce8b813d820dc559031"
+    },
+    {
+      "path": "fonts/inter/OFL.txt",
+      "bytes": 4377,
+      "sha256": "5b9321a4298cfeb6b34354164a1c3afc3db114569984c502b9b35d988fd58c57"
+    },
+    {
+      "path": "fonts/manifest.json",
+      "bytes": 5853,
+      "sha256": "359f07da35d832529aa3834781d9a8b2521400b81391c0b17cd8327f19bd57b6"
+    },
+    {
+      "path": "fonts/outfit/OFL.txt",
+      "bytes": 4389,
+      "sha256": "c676351bf8576b9aba743cd5eaa8c0e7ee0d51f805d720447b4df4ddb6a2e416"
+    },
+    {
+      "path": "fonts/outfit/Outfit[wght].ttf",
+      "bytes": 110884,
+      "sha256": "fc7287273e66929776e2ba54f144fe699080bec29f61bf649d70d871468aeade"
+    },
+    {
+      "path": "fonts/sharetechmono/OFL.txt",
+      "bytes": 4429,
+      "sha256": "9d96f445b6e9c701428811d0177f894874f8d6f07ecc30d568c506542368f3ff"
+    },
+    {
+      "path": "fonts/sharetechmono/ShareTechMono-Regular.ttf",
+      "bytes": 43272,
+      "sha256": "9ceab1f87414829af259c0f537573ae03ef7dd3147c0b27a36a1a0beb6732677"
+    },
+    {
+      "path": "fonts/sora/OFL.txt",
+      "bytes": 4385,
+      "sha256": "ba0b9729c9428ba79a0459ab8ec575791b51509dbec213e383d0316d37fec299"
+    },
+    {
+      "path": "fonts/sora/Sora[wght].ttf",
+      "bytes": 111400,
+      "sha256": "84ff7096ae3ec6c8be47d906d1a0ba4de7f2ce78c615275c77301964a316e16c"
+    },
+    {
+      "path": "fonts/spacemono/OFL.txt",
+      "bytes": 4392,
+      "sha256": "8e4ee42b2553e1e01504e61cb0d46d148cd8c9e5eacaa3622a7df2d4f2955b9f"
+    },
+    {
+      "path": "fonts/spacemono/SpaceMono-Bold.ttf",
+      "bytes": 98232,
+      "sha256": "405e73d41afb7e5906efce206a326af5c956f38e255f35421c260e861e599c59"
+    },
+    {
+      "path": "fonts/spacemono/SpaceMono-Regular.ttf",
+      "bytes": 99356,
+      "sha256": "95837e182baeeada83368f7748db28357f0a1b75c6b84ff7065b5edf933c8e18"
+    },
+    {
+      "path": "icons/README.md",
+      "bytes": 558,
+      "sha256": "3eabe1515295bbf3f52d1f7dc90bae4fb1d525601771d8d40921359886a35e60"
+    },
+    {
+      "path": "icons/approved/action.close-1e8cbd253495f9eb.svg",
+      "bytes": 273,
+      "sha256": "1e8cbd253495f9eb8754f4e652d09a52b02c5981c41ecb7f0ea79808a7839022"
+    },
+    {
+      "path": "icons/approved/action.search-b33e901406a70997.svg",
+      "bytes": 270,
+      "sha256": "b33e901406a709975330e0ba10dcdc369da4c8dd09f46e5f670bcc053bf49e51"
+    },
+    {
+      "path": "icons/approved/nav.chevron-down-8a24fe1b5963b24e.svg",
+      "bytes": 237,
+      "sha256": "8a24fe1b5963b24e3d5c22330fb5ba14f50d6a5fb4d3562ec195ab713cfe09c3"
+    },
+    {
+      "path": "icons/approved/nav.menu-9dca097b7352246d.svg",
+      "bytes": 314,
+      "sha256": "9dca097b7352246dba9612fa05931a8a25c5a7c0910593603133fe34d2caabaa"
+    },
+    {
+      "path": "icons/chevron-down.svg",
+      "bytes": 237,
+      "sha256": "8a24fe1b5963b24e3d5c22330fb5ba14f50d6a5fb4d3562ec195ab713cfe09c3"
+    },
+    {
+      "path": "icons/close.svg",
+      "bytes": 273,
+      "sha256": "1e8cbd253495f9eb8754f4e652d09a52b02c5981c41ecb7f0ea79808a7839022"
+    },
+    {
+      "path": "icons/licenses/action.close.txt",
+      "bytes": 185,
+      "sha256": "e096f0a02b40146d242134f3093b90911ec9a21ca962d23bfd8d60d1a4ccaf40"
+    },
+    {
+      "path": "icons/licenses/action.search.txt",
+      "bytes": 185,
+      "sha256": "e096f0a02b40146d242134f3093b90911ec9a21ca962d23bfd8d60d1a4ccaf40"
+    },
+    {
+      "path": "icons/licenses/nav.chevron-down.txt",
+      "bytes": 185,
+      "sha256": "e096f0a02b40146d242134f3093b90911ec9a21ca962d23bfd8d60d1a4ccaf40"
+    },
+    {
+      "path": "icons/licenses/nav.menu.txt",
+      "bytes": 185,
+      "sha256": "e096f0a02b40146d242134f3093b90911ec9a21ca962d23bfd8d60d1a4ccaf40"
+    },
+    {
+      "path": "icons/manifest.json",
+      "bytes": 20137,
+      "sha256": "529c7cc73a73c2f04b76c88c59d01ab2a54f619968dcaad380c96e5a68fc5a5a"
+    },
+    {
+      "path": "icons/menu.svg",
+      "bytes": 314,
+      "sha256": "9dca097b7352246dba9612fa05931a8a25c5a7c0910593603133fe34d2caabaa"
+    },
+    {
+      "path": "icons/search.svg",
+      "bytes": 270,
+      "sha256": "b33e901406a709975330e0ba10dcdc369da4c8dd09f46e5f670bcc053bf49e51"
+    },
+    {
+      "path": "js/icon-approved.js",
+      "bytes": 5480,
+      "sha256": "04be2f1abb047e94858ebcb537acc443e79c7a922a64146cd23e5763a4a3a51c"
+    },
+    {
+      "path": "js/icon-runtime.js",
+      "bytes": 1612,
+      "sha256": "d0c82d21f618ca236121450385f6c3362e8880591cf08358bab264170ca44610"
+    },
+    {
+      "path": "js/theme-registry.js",
+      "bytes": 1675,
+      "sha256": "f4d7ee1c312e6c6c5fec2afd39ad0e1e5310ccef1e6d78487cfab27e01636380"
+    },
+    {
+      "path": "js/theme-selector.js",
+      "bytes": 5858,
+      "sha256": "2a76a79ca92617b14d4817ab1b5d257c0afba8b71a8ab6afaa91610638e69fc5"
+    },
+    {
+      "path": "theme.css",
+      "bytes": 422447,
+      "sha256": "e9fe53c990f084f19fe72e899738303576566d1a59ae93477a37f4610ca97652"
+    }
+  ]
+}
