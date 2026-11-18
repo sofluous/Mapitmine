@@ -1,0 +1,55 @@
+/* App shell geometry: a 44px navigation target plus DS-owned gutters. */
+#workspaceShell { --workspace-rail-width: calc(44px + 2 * var(--space-sm) + 1px); grid-template-columns: var(--workspace-rail-width) minmax(0,420px); }
+#workspaceShell.is-collapsed { grid-template-columns: var(--workspace-rail-width) 0; }
+#appRail { box-sizing: border-box; width: var(--workspace-rail-width); align-items: center; }
+#appRail .rail-tabs { width: 44px; }
+#appRail .rail-tab-btn { box-sizing: border-box; width: 44px; min-width: 44px; height: 44px; min-height: 44px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+#appRail .rail-header { width: 100%; }
+#appRail .rail-title { line-height: 1; text-align: center; }
+#mapPanelSection .workspace-tab-title-row { align-items: center; }
+#mapPanelSection .workspace-tab-actions .ds-btn { min-height: 44px; }
+
+#layersPanelSection { position: relative; }
+#layersPanelSection .pin-filter-shell { padding-top: var(--space-md); }
+#layersPanelSection .pin-toolbar-row { grid-template-columns: minmax(0,1fr) 44px max-content max-content; }
+#layersPanelSection #pinRowView { width: 44px; min-width: 44px; height: 44px; min-height: 44px; padding: 0; }
+.view-glyph { display: flex; align-items: center; justify-content: center; }
+.row-view-control { position: relative; display: flex; width: 44px; min-width: 44px; height: 44px; align-items: center; justify-content: center; }
+.row-view-control > #pinRowView { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.row-view-control > .density-chevron { position: absolute; right: 2px; bottom: 2px; font-size: 10px; pointer-events: none; }
+.row-view-control:has(:focus-visible) { outline: 2px solid var(--ds-focus,var(--color-primary)); outline-offset: -2px; }
+.mobile-kind-control { display: none; }
+#layerListContent { padding-bottom: calc(44px + 2 * var(--space-md) + var(--focus-clearance)); }
+#layersPanelSection > #createLayerBtn { position: absolute; right: var(--space-md); bottom: var(--space-md); width: 44px; min-width: 44px; height: 44px; min-height: 44px; z-index: 2; background-color: var(--color-panel); border-color: var(--ui-border); }
+#layerList .mobile-layer-disclosure { display: none; }
+#layerList .desktop-layer-disclosure { display: inline-flex; flex: 0 0 24px; align-items: center; justify-content: center; pointer-events: none; }
+#layerList .desktop-layer-disclosure.is-collapsed { transform: rotate(-90deg); }
+
+@media (max-width: 900px) {
+  #workspaceShell, #workspaceShell.is-collapsed { grid-template-columns: 1fr; }
+  #appRail { width: 100%; }
+  #appRail .rail-header { display: none; }
+  #appRail .rail-primary { width: auto; flex: 4; }
+  #appRail .rail-secondary { width: auto; flex: 1; }
+  #appRail .rail-tab-btn { width: 100%; }
+  #layersPanelSection .object-filter-tabs { display: none; }
+  #layersPanelSection .pin-toolbar-row { grid-template-columns: minmax(0,1fr) 44px 44px max-content max-content; gap: var(--space-xs); }
+  #layersPanelSection #pinFilterBtn { position: relative; width: 44px; min-width: 44px; padding: 0; }
+  #layersPanelSection #pinFilterSummary { position: absolute; right: 2px; bottom: 2px; font-size: var(--font-xs,var(--font-sm)); line-height: 1; }
+  /* Keep the text and Clear slots stable; the decorative icon yields mobile
+     space to readable search text and a full-size Clear target. */
+  #layersPanelSection .pin-search-wrap { grid-template-columns: minmax(0,1fr) 44px; padding-inline: var(--space-xs); }
+  #layersPanelSection .pin-search-wrap > .io { display: none; }
+  .mobile-kind-control { position: relative; display: flex; width: 44px; min-width: 44px; height: 44px; align-items: center; justify-content: center; }
+  .mobile-kind-control > select { position: absolute; inset: 0; width: 100%; height: 100%; min-width: 0; opacity: 0; cursor: pointer; }
+  .mobile-kind-control > .kind-chevron { position: absolute; right: 2px; bottom: 2px; font-size: 10px; pointer-events: none; }
+  .mobile-kind-control:has(:focus-visible) { outline: 2px solid var(--ds-focus,var(--color-primary)); outline-offset: -2px; }
+  #layerList .mobile-layer-disclosure { display: inline-flex; }
+  #layerList .desktop-layer-disclosure { display: none; }
+}
+
+/* Touch can retain :hover after release; it must not impersonate selection.
+   Actual mouse input retains the normal DS hover treatment on hybrid devices. */
+@media (hover: none), (pointer: coarse) {
+  :root:not([data-layer-utility-input="mouse"]) #appRail .rail-tab-btn[aria-pressed="false"]:hover { background: transparent; background-image: none; border-color: transparent; box-shadow: none; }
+}

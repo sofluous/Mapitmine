@@ -1,3 +1,4 @@
+import { chooseObjectKind } from "./browser-controls.mjs";
 import assert from "node:assert/strict";
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -106,12 +107,12 @@ try {
       await screenshot("objects", theme);
       assert.equal(await page.locator("#pinResultSummary").textContent(), "3/3", "Hidden/locked objects count toward shown and total");
       assert.equal(await row("reference-pin").isVisible(), true, "Hidden layers remain discoverable");
-      await page.locator('[data-object-filter="drawing"]').click();
+      await chooseObjectKind(page, 'drawing');
       assert.equal(await row("camp").count(), 0);
       assert.equal(await row("route").isVisible(), true);
       assert.equal(await row("default").isVisible(), true, "Filtering retains layer context");
       assert.equal(await page.locator("#pinResultSummary").textContent(), "1/1");
-      await page.locator('[data-object-filter="all"]').click();
+      await chooseObjectKind(page, 'all');
       await page.locator("#objectSearch").fill("Reference pin");
       assert.equal(await row("reference-pin").isVisible(), true);
       assert.equal(await page.locator("#pinResultSummary").textContent(), "1/3");
@@ -161,10 +162,10 @@ try {
       await screenshot("shape-vertices", theme);
       const drawingBefore = await snapshot();
       await page.locator("#drawingName").fill("Uncommitted route");
-      assert.deepEqual(await snapshot(), drawingBefore, "Drawing field changes remain local until Apply");
-      await page.locator("#drawingRevert").click();
+      assert.deepEqual(await snapshot(), drawingBefore, "Typing remains local until field completion");
+      await page.locator("#drawingName").press("Escape");
       assert.equal(await page.locator("#drawingName").inputValue(), "Route");
-      assert.deepEqual(await snapshot(), drawingBefore, "Revert discards local edits without history");
+      assert.deepEqual(await snapshot(), drawingBefore, "Escape discards unfinished input without history");
       await page.locator("#inspectorClose").click();
       await openObjects();
       await row("reference-pin").focus(); await page.keyboard.press("F2");
@@ -192,11 +193,10 @@ try {
     await row("route").focus(); await page.keyboard.press("Enter");
     const beforeShapeCommit = await snapshot();
     await page.locator("#drawingName").fill("Committed route");
-    await page.locator("#drawingApply").scrollIntoViewIfNeeded();
-    await page.locator("#drawingApply").click();
+    await page.locator("#drawingEditor").dispatchEvent("change");
     assert.equal(await page.evaluate(() => drawings[0].name), "Committed route");
     console.log(`Objects/editor acceptance passed at ${width}x${height} in all three themes.`);
-    assert.equal(await page.evaluate(() => undoStack.length), beforeShapeCommit.undo + 1, "Shape Apply creates one transaction");
+    assert.equal(await page.evaluate(() => undoStack.length), beforeShapeCommit.undo + 1, "Shape field completion creates one transaction");
     await page.evaluate(() => undoPinsChange());
     assert.equal(await page.evaluate(() => drawings[0].name), "Route");
     await page.evaluate(() => redoPinsChange());

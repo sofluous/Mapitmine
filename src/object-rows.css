@@ -2,10 +2,7 @@
 #workspacePanel { padding: 0; }
 #layersPanelSection { min-height: 0; }
 #layersPanelSection .workspace-section-body { display: flex; flex-direction: column; min-height: 0; gap: var(--space-sm); padding: 0; overflow: hidden; }
-#layersPanelSection :is(.workspace-tab-header,.pin-filter-shell,.object-filter-tabs) { margin-inline: var(--space-md); }
-#layersPanelSection .workspace-tab-header { padding-top: var(--space-md); }
-.pin-browser-head-actions { display: flex; align-items: center; gap: var(--space-xs); }
-#pinRowView { width: auto; max-width: 112px; min-height: 32px; font-size: var(--font-sm); }
+#layersPanelSection :is(.pin-filter-shell,.object-filter-tabs) { margin-inline: var(--space-md); }
 #layerList { flex: 1 1 auto; min-height: 0; overflow: auto; gap: 0; padding: 0; scroll-padding: var(--focus-clearance); }
 #layersPanelSection .workspace-section-body > #layerList { flex-shrink: 1; }
 #layerListContent { padding: var(--focus-clearance) var(--space-md); }
@@ -44,7 +41,6 @@
 #layersPanelSection .pin-search-wrap { min-width: 0; }
 #layersPanelSection .pin-search-wrap input { width: 100%; min-width: 0; }
 @media (pointer: coarse) {
-  #pinRowView { min-height: 44px; }
   #layerList .object-children { padding-left: 32px; }
   #layerList .object-entry { display: grid; grid-template-columns: minmax(0,1fr) 44px; align-items: center; gap: var(--space-xs); }
   #layerList .pin-controls { position: static; opacity: 1; pointer-events: auto; }

@@ -3,6 +3,7 @@
 
   let installed = false;
   let measurementContext = null;
+  let measureFrame = 0;
   const byId = (id) => document.getElementById(id);
   function element(tag, className, text) {
     const node = document.createElement(tag);
@@ -30,8 +31,14 @@
     if (options.resetPin) {
       byId("pinEditorPanel")?.querySelectorAll(".editor-disclosure").forEach((node) => { node.open = false; });
     }
+    measureCoordinates();
+    if (!measureFrame) measureFrame = requestAnimationFrame(() => { measureFrame = 0; measureCoordinates(); });
+  }
+
+  function measureCoordinates() {
     const context = measurementContext || (measurementContext = document.createElement("canvas").getContext("2d"));
     document.querySelectorAll(".editor-coordinates input, #drawingPoints input").forEach((control) => {
+      if (!control.getClientRects().length) return;
       const label = control.closest("label");
       if (!label) return;
       const length = Math.max(3, String(control.value).length);
@@ -88,14 +95,16 @@
     const tools = shape.querySelector(".vertex-tools");
     tools.before(geometry);
     geometry.append(tools, byId("drawingPoints"));
-    const footer = byId("drawingApply").parentElement;
-    footer.classList.add("editor-footer");
-    const revert = element("button", "ds-btn", "Revert");
-    revert.type = "button";
-    revert.id = "drawingRevert";
-    footer.prepend(revert);
-    // Keep the existing destructive command separate from routine completion.
-    shape.insertBefore(byId("drawingDelete"), footer);
+    const footer = byId("drawingDelete").parentElement;
+    footer.replaceWith(byId("drawingDelete"));
+    byId("drawingDelete").className = "ds-btn ds-btn-icon ds-icon-action";
+    byId("drawingDelete").setAttribute("aria-label", "Delete drawing");
+    byId("drawingDelete").title = "Delete drawing";
+    byId("drawingDelete").innerHTML = '<span class="io iconoir-trash" aria-hidden="true"></span>';
+    shape.addEventListener("toggle", () => refresh(), true);
+    window.addEventListener("resize", () => refresh());
+    document.fonts?.ready.then(() => refresh());
+    document.fonts?.addEventListener("loadingdone", () => refresh());
     [pin, shape].forEach((root) => root.addEventListener("input", () => refresh()));
     refresh();
     return global.MapitMineEditorFields;

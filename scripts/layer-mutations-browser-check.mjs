@@ -43,12 +43,9 @@ try {
     expanded: layers.map((layer) => [layer.id, !getCollapsedOutlineLayers().has(layer.id)]),
   }));
   await page.evaluate(() => setWorkspaceTab("layers"));
-  assert.equal(await page.locator('[data-workspace-panel="objects"] .workspace-tab-header').count(), 1, "Objects has one header");
-  assert.equal(await page.locator('.workspace-tab-header .workspace-tab-title-row .pin-browser-head-actions > #createLayerBtn').count(), 1, "New layer shares the Pins title action row");
+  assert.equal(await page.locator('[data-workspace-panel="objects"] .workspace-tab-header').count(), 0, "Pins has no redundant header");
   const createBounds = await page.locator("#createLayerBtn").boundingBox();
-  const titleBounds = await page.locator('[data-workspace-panel="objects"] .workspace-tab-header .workspace-section-title').boundingBox();
-  assert.ok(createBounds.width >= 44 && createBounds.height >= 44, "New layer retains a 44px target");
-  assert.ok(Math.abs(createBounds.y + createBounds.height / 2 - titleBounds.y - titleBounds.height / 2) <= 1, "New layer aligns with the header title");
+  assert.ok(createBounds.width >= 44 && createBounds.height >= 44, "Floating New layer retains a 44px target");
   assert.equal(await layer("work").locator(".layer-count").textContent(), "(2)", "Layer count includes its pin and drawing");
   const disclosureDocument = await page.evaluate(() => ({ raw: localStorage.getItem("map:A"), history: undoStack.length }));
   await layer("default").locator(".layer-name").click();
@@ -207,11 +204,11 @@ try {
   assert.ok(await page.evaluate(() => getLayer("default")), "Default layer remains protected");
   assert.equal(await page.evaluate(() => reorderLayer("work", "default", "before", "A")), false, "A stale drag cannot reorder a different map");
   await page.evaluate(() => { getLayer("work").label = "A very long layer label that must truncate before the action slots"; renderLayers(); });
-  await layer("default").locator('[data-outline-action="expand"]').click();
+  await layer("default").locator(".layer-name").click();
   assert.equal(await layer("default").getAttribute("aria-expanded"), "false");
-  assert.notEqual(await layer("default").locator(".layer-disclosure").evaluate((icon) => getComputedStyle(icon).transform), "none");
-  await layer("default").locator('[data-outline-action="expand"]').click();
-  assert.equal(await layer("default").locator(".layer-disclosure").evaluate((icon) => getComputedStyle(icon).transform), "none");
+  assert.notEqual(await layer("default").locator(".desktop-layer-disclosure").evaluate((icon) => getComputedStyle(icon).transform), "none");
+  await layer("default").locator(".layer-name").click();
+  assert.equal(await layer("default").locator(".desktop-layer-disclosure").evaluate((icon) => getComputedStyle(icon).transform), "none");
   const output = fileURLToPath(new URL("../_docs/data/", import.meta.url));
   await mkdir(output, { recursive: true });
   for (const theme of ["paper-mint", "steel-night", "amber-terminal"]) {
@@ -219,6 +216,7 @@ try {
     for (const width of [1440, 901, 390, 320]) {
       await page.setViewportSize({ width, height: 900 });
       await page.evaluate(() => { setWorkspaceTab("layers"); workspaceState.select({ kind: "layer", id: "default" }); document.getElementById("toastStack").replaceChildren(); });
+      if (width === 1440) await page.evaluate(() => selectWorkspaceObject({ kind: "layer", id: "default" }));
       await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
       const hud = await page.locator("#hud").boundingBox();
       const inspector = await page.locator("#contextInspector").boundingBox();

@@ -338,6 +338,7 @@
         row.tabIndex = active ? 0 : -1;
         row.setAttribute("aria-current", String(active));
       });
+      global.MapitMineEditorFields?.refresh();
     }
 
     function refreshVertexControls(drawing, canEdit) {
@@ -367,14 +368,15 @@
       if (api.workspace?.get().tool === "vertices") api.workspace.setTool("select");
     }
 
-    async function editVertices() {
+    async function editVertices(enterOnly = false) {
       if (switching) return;
       switching = true;
       const drawing = selected();
       try {
         if (!drawing || !editable(drawing) || !await resolveEdits()) return;
         if (selected() !== drawing || !editable(drawing)) return;
-        if (vertexId) stopVertices();
+        if (vertexId && !enterOnly) stopVertices();
+        else if (vertexId) return;
         else {
           vertexId = drawing.id;
           api.workspace?.setTool("vertices");
@@ -415,14 +417,15 @@
       changeVertices("Insert Vertex", points, index + 1);
     }
 
-    field("drawingVertices").addEventListener("click", editVertices);
+    field("drawingVertices").addEventListener("click", () => editVertices());
     field("drawingVertexInsert").addEventListener("click", () => insertVertex());
-    field("drawingVertexDelete").addEventListener("click", () => {
+    field("drawingVertexDelete").addEventListener("click", deleteVertex);
+    function deleteVertex() {
       if (!canChangeVertices() || selected().type !== "path" || selected().points.length <= 2) return;
       const points = selected().points.map((point) => ({ ...point }));
       points.splice(activeVertex, 1);
       changeVertices("Delete Vertex", points, Math.min(activeVertex, points.length - 1));
-    });
+    }
 
     function readEditor() {
       return {
@@ -594,6 +597,10 @@
         api.toast("Enter valid points and a width between 1 and 12.", "warn");
         return false;
       }
+      if (!hasPendingEdits()) return true;
+      if (name === drawing.name && width === drawing.style?.width && field("drawingColor").value === drawing.style?.color && JSON.stringify(points) === JSON.stringify(drawing.points)) {
+        revertEdits(); return true;
+      }
       commit("Edit Drawing", () => {
         drawing.name = name;
         drawing.points = points;
@@ -602,8 +609,18 @@
       originalEditorValues = JSON.stringify(readEditor());
       return true;
     }
-    field("drawingApply").addEventListener("click", apply);
-    field("drawingRevert")?.addEventListener("click", revertEdits);
+    field("drawingEditor").addEventListener("change", () => {
+      // Opening a guard moves focus: that blur must not commit behind its choices.
+      if (!document.getElementById?.("draftResolutionDialog")?.open && hasPendingEdits()) apply();
+    });
+    field("drawingEditor").addEventListener("keydown", (event) => {
+      if (event.isComposing) return;
+      if (event.key === "Enter" && event.target.matches?.("input")) {
+        event.preventDefault(); if (hasPendingEdits()) apply();
+      } else if (event.key === "Escape" && event.target.matches?.("input")) {
+        event.preventDefault(); event.stopImmediatePropagation(); revertEdits();
+      }
+    });
     async function deleteDrawing() {
       const drawing = selected();
       if (!drawing || !editable(drawing)) return;
@@ -683,7 +700,33 @@
       if (!vertexDrag) return;
       event.stopImmediatePropagation(); event.preventDefault();
     }, true);
+    let shapeTap = null, previousShapeTap = null, ignoreTouchDoubleUntil = 0;
+    canvas.addEventListener("pointerdown", (event) => {
+      if (event.pointerType !== "touch") return;
+      if (event.isPrimary === false || draft || vertexId || !api.canSelect()) { shapeTap = previousShapeTap = null; return; }
+      shapeTap = { id: event.pointerId, x: event.clientX, y: event.clientY, time: Date.now() };
+    }, true);
+    window.addEventListener("pointermove", (event) => {
+      if (shapeTap?.id === event.pointerId && Math.hypot(event.clientX-shapeTap.x, event.clientY-shapeTap.y) > 8) shapeTap = previousShapeTap = null;
+    }, true);
+    window.addEventListener("pointercancel", () => { shapeTap = previousShapeTap = null; }, true);
+    window.addEventListener("blur", () => { shapeTap = previousShapeTap = null; });
+    window.addEventListener("pointerup", (event) => {
+      const tap = shapeTap;
+      if (!tap || tap.id !== event.pointerId) return;
+      shapeTap = null;
+      if (draft || vertexId || Date.now()-tap.time > 350 || !api.canSelect() || api.pinHit?.(event)) { previousShapeTap = null; return; }
+      const point = api.world(event.clientX, event.clientY);
+      const drawing = [...api.drawings()].reverse().find(entry => editable(entry) && hitTest(entry.points, point, 9/api.camera().zoom));
+      if (!drawing) { previousShapeTap = null; return; }
+      const previous = previousShapeTap;
+      previousShapeTap = { drawing, x:event.clientX, y:event.clientY, time:Date.now() };
+      if (!previous || previous.drawing !== drawing || Date.now()-previous.time > 350 || Math.hypot(previous.x-event.clientX,previous.y-event.clientY)>16) return;
+      previousShapeTap = null; ignoreTouchDoubleUntil = Date.now()+500;
+      Promise.resolve(api.inspectDrawing?.(drawing.id)).then((resolved) => { if (resolved !== false && selected() === drawing) editVertices(true); });
+    }, true);
     canvas.addEventListener("dblclick", (event) => {
+      if (Date.now() < ignoreTouchDoubleUntil) { event.stopImmediatePropagation(); event.preventDefault(); return; }
       if (!vertexId || api.workspace?.get().tool === "pan") return;
       event.stopImmediatePropagation(); event.preventDefault();
       const drawing = selected();
@@ -693,7 +736,10 @@
     }, true);
 
     canvas.addEventListener("dblclick", () => {
-      if (!draft && !vertexId && api.canSelect() && selected()) api.inspectDrawing?.(selected().id);
+      if (!draft && !vertexId && api.canSelect() && selected()) {
+        const drawing = selected();
+        Promise.resolve(api.inspectDrawing?.(drawing.id)).then((resolved) => { if (resolved !== false && selected() === drawing) editVertices(true); });
+      }
     }, true);
 
     // Capture drawing gestures before the existing pin and pan handlers.
@@ -868,6 +914,9 @@
       if (event.target.closest?.("input, textarea, select, dialog")) return;
       if (event.target.closest?.('[role="tree"]')) return;
       if (event.isComposing || event.ctrlKey || event.metaKey || event.altKey) return;
+      if (vertexId && (event.key === "Delete" || event.key === "Backspace")) {
+        event.preventDefault(); event.stopImmediatePropagation(); deleteVertex(); return;
+      }
       if (event.key === "Escape" && vertexId) {
         event.preventDefault(); event.stopImmediatePropagation();
         if (vertexDrag) rollbackVertexGesture();

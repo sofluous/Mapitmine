@@ -53,11 +53,11 @@ try {
     await inspector.waitFor({ state: "visible" });
     assert.equal(await page.locator("#contextInspectorTitle").textContent(), "Edit path");
     await page.locator("#drawingName").fill("Pending trail");
+    await page.locator("#drawingName").press("Tab");
+    assert.equal(await page.evaluate(() => drawings[0].name), "Pending trail", "Field completion saves before menu navigation");
     await page.mouse.click(100, 200, { button: "right" });
-    await page.locator('[data-draft-choice="keep"]').click();
-    assert.equal(await menu.isVisible(), false);
-    assert.equal(await page.locator("#drawingName").inputValue(), "Pending trail");
-    await page.locator("#drawingApply").click();
+    assert.equal(await page.locator("#draftResolutionDialog").evaluate(el => el.open), false);
+    await page.keyboard.press("Escape");
     await page.evaluate(() => { drawings[0].name = "Trail"; drawingTools.refresh(); });
     await setup();
   }

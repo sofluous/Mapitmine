@@ -111,7 +111,7 @@ try {
   await chooseVertex(1);
   assert.equal(await page.evaluate(() => shouldWarnBeforeUnload()), true, "Hidden invalid edits still protect navigation");
   const before = await page.evaluate(() => ({ points: JSON.stringify(drawings[0].points), history: undoStack.length }));
-  await page.locator("#drawingApply").click();
+  await page.locator("#drawingEditor").dispatchEvent("change");
   assert.equal(await xInput(0).isVisible(), true, "Invalid hidden coordinate is revealed");
   assert.equal(await xInput(0).evaluate((e) => e === document.activeElement), true);
   assert.deepEqual(await page.evaluate(() => ({ points: JSON.stringify(drawings[0].points), history: undoStack.length })), before);
@@ -119,10 +119,10 @@ try {
   await page.locator("#drawingStyle summary").click();
   await page.locator("#drawingWidth").fill("0");
   await page.locator("#drawingStyle summary").click();
-  await page.locator("#drawingApply").click();
+  await page.locator("#drawingEditor").dispatchEvent("change");
   assert.equal(await page.locator("#drawingStyle").getAttribute("open"), "", "Invalid hidden style field is revealed");
   await page.locator("#drawingWidth").fill("3");
-  await page.locator("#drawingApply").click();
+  await page.locator("#drawingEditor").dispatchEvent("change");
   assert.equal(await page.evaluate(() => drawings[0].style.width), 3);
   assert.equal(await page.evaluate(() => undoStack.length), Math.min(60, before.history + 1));
   assert.equal(await page.evaluate(() => undoStack.at(-1).label), "Edit Drawing");
@@ -134,10 +134,10 @@ try {
     mobileLayout.refresh();
   });
   await settle();
-  for (const control of [xInput(0), page.locator("#drawingApply")]) {
+  for (const control of [xInput(0), page.locator("#drawingDelete")]) {
     await control.scrollIntoViewIfNeeded();
     const bounds = await control.boundingBox(), dock = await page.locator("#mobileDock").boundingBox();
-    assert.ok(bounds.y >= 0 && bounds.y + bounds.height <= dock.y + 1, "Coordinates and Apply stay scroll-reachable above a simulated keyboard");
+    assert.ok(bounds.y >= 0 && bounds.y + bounds.height <= dock.y + 1, "Coordinates and the drawing action stay scroll-reachable above a simulated keyboard");
   }
   await page.evaluate(() => { Object.defineProperty(window, "visualViewport", { configurable: true, value: window.originalInspectorViewport }); mobileLayout.refresh(); });
   await settle();

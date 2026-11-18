@@ -5,6 +5,9 @@
 
   function refreshInputMode(event) {
     const pointer = event?.pointerType;
+    // Layout changes can generate mouse pointerover without mouse activity.
+    // Preserve touch mode until a mouse actually moves or presses a button.
+    if (pointer === "mouse" && event.type === "pointerover") return;
     if (pointer === "mouse" || pointer === "touch" || pointer === "pen") {
       root.document.documentElement.dataset.layerUtilityInput = pointer;
     }

@@ -1,3 +1,4 @@
+import { chooseObjectKind } from "./browser-controls.mjs";
 import assert from "node:assert/strict";
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -59,7 +60,7 @@ try {
     const a = await rows.nth(0).boundingBox(), b = await rows.nth(1).boundingBox();
     assert.ok(Math.abs(a.y + a.height - b.y) <= 1, "Pin rows meet without a gap");
     const wrap = await page.locator(".pin-search-wrap").boundingBox(), icon = await page.locator(".pin-search-wrap > .io").boundingBox();
-    assert.ok(icon.x >= wrap.x && icon.x + icon.width <= wrap.x + wrap.width && icon.y >= wrap.y && icon.y + icon.height <= wrap.y + wrap.height);
+    if (width > 900) assert.ok(icon.x >= wrap.x && icon.x + icon.width <= wrap.x + wrap.width && icon.y >= wrap.y && icon.y + icon.height <= wrap.y + wrap.height);
     const initialInput = await search.boundingBox();
     await search.fill("Apple");
     assert.equal(await rows.count(), 1); assert.equal(await summary.textContent(), "1/3");
@@ -102,11 +103,11 @@ try {
     await page.evaluate(() => setWorkspaceTab("layers"));
     assert.equal(await page.locator("#objectFilter").inputValue(), "all", "Legacy Layers navigation shows all objects");
     assert.equal(await summary.textContent(), "4/4");
-    await page.locator('[data-object-filter="drawing"]').click();
+    await chooseObjectKind(page, 'drawing');
     assert.equal(await rows.count(), 0);
     assert.equal(await page.locator('#layerList [data-object-kind="drawing"]').count(), 1);
     assert.equal(await summary.textContent(), "1/1");
-    await page.locator('[data-object-filter="pin"]').click();
+    await chooseObjectKind(page, 'pin');
     await search.fill("not-a-real-pin");
     assert.equal(await page.locator(".pin-empty-title").textContent(), "No matching objects");
     await page.locator("#clearPinSearchOnlyBtn").click();

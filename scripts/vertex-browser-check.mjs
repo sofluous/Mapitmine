@@ -41,7 +41,7 @@ try {
       drawingTools.refresh(); draw();
     }, id);
     if (!await page.locator("#drawingGeometry").evaluate(el => el.open)) await page.locator("#drawingGeometry > summary").click();
-    await page.locator("#drawingVertices").click();
+    if (await page.evaluate(() => workspaceState.get().tool !== "vertices")) await page.locator("#drawingVertices").click();
     await page.waitForFunction(() => workspaceState.get().tool === "vertices");
   };
   const solidMarker = (x, y, size) => page.evaluate(({ x, y, size }) => {
@@ -162,7 +162,7 @@ try {
   await canvas.dispatchEvent("pointerup", { pointerId: 51, pointerType: "touch" });
   assert.equal((await points())[0].z, before[0].z + 10, "Touch uses the larger screen-space target");
   await page.locator('#drawingPoints input[data-point="0"][data-axis="x"]').fill("-12.5");
-  await page.locator("#drawingApply").click();
+  await page.locator("#drawingEditor").dispatchEvent("change");
   await page.locator(".drawing-points-toggle").click();
   await page.locator('#drawingPoints input[data-point="1"][data-axis="z"]').focus();
   assert.equal(await page.locator('#drawingPoints [data-vertex="1"]').getAttribute("aria-current"), "true", "Coordinate focus follows the active vertex");
@@ -174,7 +174,7 @@ try {
   await page.locator('[data-draft-choice="keep"]').click(); await leaving;
   assert.equal(await page.evaluate(() => workspaceState.get().tool), "vertices");
   await page.locator('#drawingPoints input[data-point="0"][data-axis="x"]').fill("-12.5");
-  await page.locator("#drawingApply").click();
+  await page.locator("#drawingEditor").dispatchEvent("change");
   // High zoom must hit a fractional vertex without rounding it first.
   await page.evaluate(() => { zoom = 8; offsetX = 700; offsetY = 100; draw(); });
   const position = await page.evaluate(() => {

@@ -1,3 +1,4 @@
+import { chooseObjectKind, choosePinView } from "./browser-controls.mjs";
 import assert from 'node:assert/strict';
 import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -48,16 +49,16 @@ try {
         };
       });
       check(/Pins/.test(await page.locator('[data-workspace-tab="objects"]').getAttribute('aria-label')), 'Unified rail is named Pins');
-      assert.equal((await page.locator('[data-workspace-panel="objects"] .workspace-tab-header .workspace-section-title').textContent()).trim(), 'Pins');
+      assert.equal(await page.locator('[data-workspace-panel="objects"]').getAttribute('aria-label'), 'Pins');
       check(/pins/i.test(await tree.getAttribute('aria-label')), 'Tree has a map pins accessible name');
       assert.equal(await view.evaluate(el => el.tagName), 'SELECT');
-      assert.equal(await view.getAttribute('aria-label'), 'Pin row view');
-      assert.deepEqual(await view.locator('option').evaluateAll(options => options.map(option => option.value)), ['detailed', 'summary']);
+      assert.equal(await view.getAttribute('aria-label'), 'Row density');
+      assert.equal(await view.getAttribute('aria-pressed'), null);
       assert.equal(await tree.getAttribute('data-view'), 'detailed');
       assert.equal(await page.locator('#objectSearch').getAttribute('placeholder'), 'Search');
       assert.equal(await page.locator('#objectSearch').getAttribute('aria-label'), 'Search pins and shapes');
       for (const [kind, count, noun] of [['all', '4/4', 'objects'], ['pin', '3/3', 'pins'], ['drawing', '1/1', 'shapes']]) {
-        await page.locator(`[data-object-filter="${kind}"]`).click();
+        await chooseObjectKind(page, kind);
         assert.equal(await summary.textContent(), count);
         const [matched, total] = count.split('/');
         const label = await summary.getAttribute('aria-label');
@@ -78,10 +79,10 @@ try {
         window.refinementRow = document.querySelector('[data-object-kind="pin"][data-object-id="camp"]');
       });
       await view.focus();
-      await view.selectOption('summary');
+      await choosePinView(page, 'summary');
       assert.equal(await tree.getAttribute('data-view'), 'summary');
       await page.screenshot({ path: resolve(fileURLToPath(output), `${theme}-${width}-summary.png`) });
-      check(await view.evaluate(el => document.activeElement === el), 'Native selector retains focus');
+      check(await view.evaluate(el => document.activeElement === el), 'View action retains focus');
       check(await page.evaluate(() => refinementTree === document.getElementById('layerList') && refinementRow === document.querySelector('[data-object-kind="pin"][data-object-id="camp"]')), 'Mode switch preserves tree and row identity');
       assert.equal(await page.locator('#objectSearch').inputValue(), 'Camp');
       assert.equal(await page.locator('#objectFilter').inputValue(), 'pin');
@@ -119,7 +120,7 @@ try {
       await parent.focus(); await page.keyboard.press('ArrowLeft');
       const collapsed = await parent.getAttribute('aria-expanded');
       assert.equal(collapsed, 'false');
-      await view.selectOption('detailed'); await view.selectOption('summary');
+      await choosePinView(page, 'detailed'); await choosePinView(page, 'summary');
       assert.equal(await parent.getAttribute('aria-expanded'), collapsed);
       assert.deepEqual(await snapshot(), before, 'Density/filter/selection/collapse are presentation only');
       assert.deepEqual(await page.evaluate(() => refinementMapWrites), [], 'Presentation changes never call map storage writes');
@@ -161,7 +162,7 @@ try {
       await page.locator('#objectSearch').focus();
       assert.equal(await baseLock.evaluate(el => getComputedStyle(el).opacity), '0', 'Mouse default utilities are quiet away from their row');
       for (const pointerType of ['touch', 'pen', 'mouse']) {
-        await page.evaluate(type => document.dispatchEvent(new PointerEvent('pointerover', { pointerType: type, bubbles: true })), pointerType);
+        await page.evaluate(type => document.dispatchEvent(new PointerEvent(type === 'mouse' ? 'pointermove' : 'pointerover', { pointerType: type, bubbles: true })), pointerType);
         const metrics = await baseLock.evaluate(el => ({ opacity: getComputedStyle(el).opacity, width: el.getBoundingClientRect().width }));
         assert.equal(metrics.opacity, pointerType === 'mouse' ? '0' : '1', 'Actual input mode overrides hardware fallback');
         if (pointerType !== 'mouse') check(metrics.width >= 44, 'Touch and pen expose full-size utilities');

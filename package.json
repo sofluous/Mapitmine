@@ -21,7 +21,7 @@
     "qa:vertices-browser": "node scripts/vertex-browser-check.mjs",
     "qa:mobile-browser": "node scripts/mobile-layout-browser-check.mjs",
     "qa:rulers-browser": "node scripts/coordinate-rulers-browser-check.mjs",
-    "qa:browser": "npm run qa:workspace-browser && npm run qa:pending-browser && npm run qa:outline-browser && npm run qa:layers-browser && npm run qa:unload-browser && npm run qa:vertices-browser && npm run qa:mobile-browser && npm run qa:rulers-browser && npm run qa:touch-browser && npm run qa:inspector-browser && npm run qa:draft-history-browser && npm run qa:menus-browser && npm run qa:pin-list-browser && npm run qa:objects-editor-browser && npm run qa:sample-browser && npm run qa:pin-refinement-browser",
+    "qa:browser": "npm run qa:workspace-browser && npm run qa:pending-browser && npm run qa:outline-browser && npm run qa:layers-browser && npm run qa:unload-browser && npm run qa:vertices-browser && npm run qa:mobile-browser && npm run qa:rulers-browser && npm run qa:touch-browser && npm run qa:inspector-browser && npm run qa:draft-history-browser && npm run qa:menus-browser && npm run qa:pin-list-browser && npm run qa:objects-editor-browser && npm run qa:sample-browser && npm run qa:pin-refinement-browser && npm run qa:chrome-browser && npm run qa:vector-browser && npm run qa:minimap-browser",
     "qa:drawings": "node scripts/drawing-tools-check.mjs",
     "smoke": "node scripts/smoke-check.mjs",
     "smoke:browser": "node scripts/browser-smoke.mjs",
@@ -35,6 +35,9 @@
     "qa:workflow": "node scripts/workflow-interaction-check.mjs",
     "qa:hud": "node scripts/hud-layout-check.mjs && node scripts/mobile-layout-check.mjs && node scripts/coordinate-rulers-check.mjs && node scripts/view-settings-check.mjs",
     "qa:map-cards": "node scripts/map-card-interaction-check.mjs",
-    "qa:pin-refinement-browser": "node scripts/pin-browser-refinement-browser-check.mjs"
+    "qa:pin-refinement-browser": "node scripts/pin-browser-refinement-browser-check.mjs",
+    "qa:chrome-browser": "node scripts/workspace-chrome-browser-check.mjs",
+    "qa:vector-browser": "node scripts/vector-editing-browser-check.mjs",
+    "qa:minimap-browser": "node scripts/minimap-bounds-browser-check.mjs"
   }
 }

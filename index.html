@@ -1318,14 +1318,21 @@
       #minimapContainer[data-position^="bottom"] #minimapCanvas { align-self: end; }
       .minimap-readout {
         display: grid;
+        background: var(--color-panel);
+        box-sizing: border-box;
         gap: 2px;
         min-width: 0;
-        padding: 0;
+        padding: var(--ds-space-1, 2px);
         max-height: 100%;
         min-height: 0;
         overflow: auto;
         scrollbar-width: thin;
       }
+      .minimap-axis { display: grid; gap: 1px; min-width: 0; }
+      .minimap-axis-label { color: var(--color-text-muted); font-size: 8px; line-height: 1.2; white-space: nowrap; }
+      .minimap-axis-label > span { font-weight: 400; }
+      .minimap-readout .label-value { width: max-content; min-width: 100%; white-space: nowrap; overflow-wrap: normal; line-height: 1.2; text-align: right; }
+      .minimap-readout-row { align-content: start; }
       .minimap-readout:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
 
       #minimapContainer[data-detail="minimal"] .minimap-readout {
@@ -1522,6 +1529,7 @@
       #drawingCommands label { display: flex; align-items: center; gap: var(--space-sm); }
       #drawingSetup { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-sm); }
       #drawingCommands select { flex: 1; min-width: 0; }
+      #drawingSetup select { min-height: 44px; }
       #drawingCommands #drawingToolStrip { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
       #drawingFinish { justify-self: end; }
       #drawingCommands [hidden] { display: none; }
@@ -2335,23 +2343,13 @@
     <link rel="stylesheet" href="./src/editor-fields.css" />
     <link rel="stylesheet" href="./src/layer-utilities.css" />
     <link rel="stylesheet" href="./src/scroll-layout.css" />
+    <link rel="stylesheet" href="./src/workspace-chrome.css" />
   </head>
 
   <body>
     <div id="workspaceShell" class="app-panel">
       <aside id="appRail" class="app-panel" aria-label="Primary workspace rail">
         <div class="rail-header">
-          <button
-            id="railCollapseBtn"
-            class="ds-btn ds-btn-icon ds-icon-action"
-            type="button"
-            aria-label="Collapse workspace panel"
-            aria-controls="workspacePanel"
-            aria-expanded="true"
-            title="Collapse workspace panel"
-          >
-            <span class="io iconoir-sidebar-collapse" aria-hidden="true"></span>
-          </button>
           <div class="rail-title">Mapitmine</div>
         </div>
         <div class="rail-tabs rail-primary">
@@ -2448,9 +2446,9 @@
           id="layersPanelSection"
           class="workspace-section"
           data-workspace-panel="objects"
+          role="region" aria-label="Pins"
         >
           <div class="workspace-section-body">
-            <div class="workspace-tab-header"><div class="workspace-tab-title-row"><div class="workspace-section-title">Pins</div><div class="pin-browser-head-actions"><select id="pinRowView" class="ds-select" aria-label="Pin row view"><option value="detailed">Detailed</option><option value="summary">Summary</option></select><button id="createLayerBtn" class="ds-btn ds-btn-icon ds-icon-action" type="button" aria-label="New layer" title="New layer"><span class="io iconoir-plus" aria-hidden="true"></span></button></div></div></div>
             <div class="pin-filter-shell">
               <div class="pin-toolbar">
                 <div class="pin-toolbar-row">
@@ -2473,6 +2471,8 @@
                       <span class="io iconoir-xmark" aria-hidden="true"></span>
                     </button>
                   </div>
+                  <div class="mobile-kind-control" title="Object type: All"><span class="io iconoir-multiple-pages" aria-hidden="true"></span><span class="io iconoir-nav-arrow-down kind-chevron" aria-hidden="true"></span><select id="objectFilter" class="ds-select" aria-label="Object type"><option value="all">All</option><option value="pin">Pins</option><option value="drawing">Shapes</option></select></div>
+                  <div class="row-view-control" title="Row density: Detailed"><span class="view-glyph" aria-hidden="true"></span><span class="io iconoir-nav-arrow-down density-chevron" aria-hidden="true"></span><select id="pinRowView" class="ds-select" aria-label="Row density"><option value="detailed">Detailed</option><option value="summary">Summary</option></select></div>
                   <button
                     id="pinFilterBtn"
                     class="ds-btn ds-btn-icon ds-icon-action"
@@ -2510,7 +2510,6 @@
                 <div id="pinTypeChecklist" class="pin-filter-checklist"></div>
               </div>
             </div>
-            <select id="objectFilter" hidden aria-label="Object type filter"><option value="all">All</option><option value="pin">Pins</option><option value="drawing">Shapes</option></select>
             <div class="object-filter-tabs" role="group" aria-label="Object type"><button class="ds-btn ds-btn-sm" type="button" data-object-filter="all" aria-pressed="true">All</button><button class="ds-btn ds-btn-sm" type="button" data-object-filter="pin" aria-pressed="false">Pins</button><button class="ds-btn ds-btn-sm" type="button" data-object-filter="drawing" aria-pressed="false">Shapes</button></div>
             <div id="layerList" class="layer-list" role="tree" aria-label="Map pins and shapes"></div>
             <section id="objectInspector" class="control-section ds-stack" hidden>
@@ -2558,23 +2557,19 @@
                 </details>
                 <div class="toolbar-actions">
                   <button type="button" id="drawingDelete" class="ds-btn ds-btn-sm ds-btn-danger">Delete</button>
-                  <button type="button" id="drawingApply" class="ds-btn ds-btn-sm ds-btn-primary">Apply</button>
                 </div>
               </div>
             </section>
           </div>
+          <button id="createLayerBtn" class="ds-btn ds-btn-icon ds-icon-action" type="button" aria-label="New layer" title="New layer"><span class="io iconoir-plus" aria-hidden="true"></span></button>
         </div>
 
         <div
           id="mapViewPanelSection"
           class="workspace-section"
           data-workspace-panel="map-view"
+          role="region" aria-label="Map View"
         >
-          <div class="workspace-section-head">
-            <div class="workspace-section-title">
-              Map View
-            </div>
-          </div>
           <div class="workspace-section-body">
             <section class="control-section ds-stack">
               <div class="control-section-head">
@@ -2921,12 +2916,8 @@
           id="settings"
           class="workspace-section"
           data-workspace-panel="settings"
+          role="region" aria-label="Settings"
         >
-          <div class="workspace-section-head">
-            <div class="workspace-section-title">
-              Settings
-            </div>
-          </div>
           <div class="workspace-section-body">
             <section class="control-section ds-stack">
               <div class="control-section-head">
@@ -2961,21 +2952,45 @@
       data-detail="standard"
     >
       <canvas id="minimapCanvas" width="134" height="134"></canvas>
-      <div class="minimap-readout" role="region" tabindex="0" aria-label="Minimap bounds">
+      <div class="minimap-readout" role="region" tabindex="0" aria-label="Minimap bounds" title="Each axis lists minimum then maximum. Scroll to inspect long bounds.">
         <div class="minimap-readout-row" data-minimap-readout="view">
           <span class="label-header">View</span>
-          <span class="label-value">X <span id="viewMinX"></span>..<span id="viewMaxX"></span></span>
-          <span class="label-value">Z <span id="viewMinZ"></span>..<span id="viewMaxZ"></span></span>
+          <div class="minimap-axis" role="group" aria-label="View X bounds, minimum to maximum">
+            <span class="minimap-axis-label">X <span>min &rarr; max</span></span>
+            <span class="label-value" id="viewMinX" title="Minimum"></span>
+            <span class="label-value" id="viewMaxX" title="Maximum"></span>
+          </div>
+          <div class="minimap-axis" role="group" aria-label="View Z bounds, minimum to maximum">
+            <span class="minimap-axis-label">Z <span>min &rarr; max</span></span>
+            <span class="label-value" id="viewMinZ" title="Minimum"></span>
+            <span class="label-value" id="viewMaxZ" title="Maximum"></span>
+          </div>
         </div>
         <div class="minimap-readout-row" data-minimap-readout="crop">
           <span class="label-header">Crop</span>
-          <span class="label-value">X <span id="cropMinX"></span>..<span id="cropMaxX"></span></span>
-          <span class="label-value">Z <span id="cropMinZ"></span>..<span id="cropMaxZ"></span></span>
+          <div class="minimap-axis" role="group" aria-label="Crop X bounds, minimum to maximum">
+            <span class="minimap-axis-label">X <span>min &rarr; max</span></span>
+            <span class="label-value" id="cropMinX" title="Minimum"></span>
+            <span class="label-value" id="cropMaxX" title="Maximum"></span>
+          </div>
+          <div class="minimap-axis" role="group" aria-label="Crop Z bounds, minimum to maximum">
+            <span class="minimap-axis-label">Z <span>min &rarr; max</span></span>
+            <span class="label-value" id="cropMinZ" title="Minimum"></span>
+            <span class="label-value" id="cropMaxZ" title="Maximum"></span>
+          </div>
         </div>
         <div class="minimap-readout-row" data-minimap-readout="world">
           <span class="label-header">World</span>
-          <span class="label-value">X <span id="worldMinX"></span>..<span id="worldMaxX"></span></span>
-          <span class="label-value">Z <span id="worldMinZ"></span>..<span id="worldMaxZ"></span></span>
+          <div class="minimap-axis" role="group" aria-label="World X bounds, minimum to maximum">
+            <span class="minimap-axis-label">X <span>min &rarr; max</span></span>
+            <span class="label-value" id="worldMinX" title="Minimum"></span>
+            <span class="label-value" id="worldMaxX" title="Maximum"></span>
+          </div>
+          <div class="minimap-axis" role="group" aria-label="World Z bounds, minimum to maximum">
+            <span class="minimap-axis-label">Z <span>min &rarr; max</span></span>
+            <span class="label-value" id="worldMinZ" title="Minimum"></span>
+            <span class="label-value" id="worldMaxZ" title="Maximum"></span>
+          </div>
         </div>
       </div>
     </div>
@@ -4067,6 +4082,10 @@
         const filter = document.getElementById("objectFilter");
         filter.value = ["all", "pin", "drawing"].includes(value) ? value : "all";
         document.querySelectorAll("[data-object-filter]").forEach(button => button.setAttribute("aria-pressed", String(button.dataset.objectFilter === filter.value)));
+        const kindControl = filter.closest(".mobile-kind-control");
+        kindControl.dataset.kind = filter.value;
+        kindControl.title = `Object type: ${filter.selectedOptions[0].textContent}`;
+        kindControl.querySelector(".io").className = `io ${filter.value === "pin" ? "iconoir-map-pin" : filter.value === "drawing" ? "iconoir-edit-pencil" : "iconoir-multiple-pages"}`;
         filteredCollapsedObjectLayers.clear();
         if (render) renderObjectBrowser();
       }
@@ -4276,7 +4295,11 @@
             branch.focus({ preventScroll: true });
             activateLayerRow(layer.id);
           });
-          row.append(expand, copy, actions);
+          expand.classList.add("mobile-layer-disclosure");
+          const indicator = document.createElement("span");
+          indicator.className = `desktop-layer-disclosure io iconoir-nav-arrow-down${collapsed.has(layer.id) ? " is-collapsed" : ""}`;
+          indicator.setAttribute("aria-hidden", "true");
+          row.append(expand, indicator, copy, actions);
           branch.appendChild(row);
           container.appendChild(branch);
           const children = document.createElement("div");
@@ -5558,7 +5581,6 @@
 
       function initWorkspaceRail() {
         const tabs = document.querySelectorAll("[data-workspace-tab]");
-        const collapseBtn = document.getElementById("railCollapseBtn");
 
         tabs.forEach((btn) => {
           btn.addEventListener("click", () => {
@@ -5574,12 +5596,6 @@
           });
         });
 
-        if (collapseBtn) {
-          collapseBtn.addEventListener("click", () => {
-            const shell = getWorkspaceShell();
-            setWorkspaceCollapsed(!shell?.classList.contains("is-collapsed"));
-          });
-        }
 
         let initialTab = "maps";
         let initialCollapsed = isMobileLayout();
@@ -5631,8 +5647,6 @@
 
       function syncPanelToggleStates() {
         const crosshairBtn = document.getElementById("toggleCrosshair");
-        const collapseBtn = document.getElementById("railCollapseBtn");
-        const collapseIcon = collapseBtn?.querySelector(".io");
         const shell = getWorkspaceShell();
         const collapsed = !!shell?.classList.contains("is-collapsed");
 
@@ -5643,20 +5657,9 @@
           const selected = !collapsed && button.dataset.workspaceTab === activeTab;
           button.setAttribute("aria-pressed", String(selected));
           button.classList.toggle("is-active", selected);
+          button.setAttribute("aria-expanded", String(selected));
+          button.setAttribute("aria-controls", "workspacePanel");
         });
-        if (collapseBtn) {
-          collapseBtn.setAttribute("aria-expanded", String(!collapsed));
-          const label = collapsed
-            ? "Expand workspace panel"
-            : "Collapse workspace panel";
-          collapseBtn.setAttribute("aria-label", label);
-          collapseBtn.setAttribute("title", label);
-        }
-        if (collapseIcon) {
-          collapseIcon.className = collapsed
-            ? "io iconoir-sidebar-expand"
-            : "io iconoir-sidebar-collapse";
-        }
       }
 
       function isMobileLayout() {
@@ -5978,8 +5981,9 @@
         refreshHistoryButtons();
       }
 
-      function applyHistoryState(snapshot) {
+      function applyHistoryState(snapshot, previousVertexContext = null) {
         if (!snapshot) return;
+        const vertexContext = snapshot.scope === "active-map" && snapshot.currentMapName === currentMapName ? previousVertexContext : null;
         isApplyingHistory = true;
         try {
           const scope =
@@ -6037,6 +6041,7 @@
           hoveredPinIndex = null;
           const reference = snapshot.selection || (pins[selectedPinIndex] ? { kind: "pin", id: pins[selectedPinIndex].uid } : null);
           workspaceState.select(reference);
+          if (vertexContext?.kind === "drawing" && reference?.kind === "drawing" && vertexContext.id === reference.id) drawingTools?.editVertices(true);
           renderLayers();
           markDirty();
           draw();
@@ -6048,6 +6053,7 @@
       async function undoPinsChange() {
         if (drawingTools?.draftHistoryState().active) { drawingTools.undoDraftPoint(); return; }
         if (undoStack.length === 0) return;
+        const vertexContext = workspaceState.get().tool === "vertices" ? workspaceState.get().selection : null;
         if (!await resolvePendingWorkspaceChanges() || undoStack.length === 0) return;
         const entry = undoStack.pop();
         const scope = entry.scope || entry.snapshot?.scope || "library";
@@ -6056,7 +6062,7 @@
           scope,
           snapshot: captureHistoryState(scope),
         });
-        applyHistoryState(entry.snapshot);
+        applyHistoryState(entry.snapshot, vertexContext);
         refreshHistoryButtons();
         showToast(`Undo: ${entry.label}`);
       }
@@ -6064,6 +6070,7 @@
       async function redoPinsChange() {
         if (drawingTools?.draftHistoryState().active) { drawingTools.redoDraftPoint(); return; }
         if (redoStack.length === 0) return;
+        const vertexContext = workspaceState.get().tool === "vertices" ? workspaceState.get().selection : null;
         if (!await resolvePendingWorkspaceChanges() || redoStack.length === 0) return;
         const entry = redoStack.pop();
         const scope = entry.scope || entry.snapshot?.scope || "library";
@@ -6072,7 +6079,7 @@
           scope,
           snapshot: captureHistoryState(scope),
         });
-        applyHistoryState(entry.snapshot);
+        applyHistoryState(entry.snapshot, vertexContext);
         refreshHistoryButtons();
         showToast(`Redo: ${entry.label}`);
       }

@@ -63,7 +63,7 @@ try {
   assert.equal(await warn(), false);
   await page.locator("#drawingName").fill("Applied line");
   assert.equal(await warn(), true);
-  await page.locator("#drawingApply").click();
+  await page.locator("#drawingEditor").dispatchEvent("change");
   assert.equal(await warn(), false);
   await page.evaluate(() => { pins[0].label = "Not persisted"; });
   assert.equal(await warn(), true);

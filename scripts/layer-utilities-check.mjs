@@ -55,6 +55,11 @@ for (const [, handler, options] of registrations) {
   assert.equal(document.documentElement.dataset.layerUtilityInput, 'touch');
 }
 assert.throws(() => api.create({ kind: 'delete', activate() {} }), /kind/);
+api.refreshInputMode({ pointerType: 'touch', type: 'pointerdown' });
+api.refreshInputMode({ pointerType: 'mouse', type: 'pointerover' });
+assert.equal(document.documentElement.dataset.layerUtilityInput, 'touch', 'Passive mouse hit-testing cannot replace touch mode');
+api.refreshInputMode({ pointerType: 'mouse', type: 'pointermove' });
+assert.equal(document.documentElement.dataset.layerUtilityInput, 'mouse', 'Real mouse movement restores mouse utilities');
 assert.throws(() => api.create({ kind: 'lock', active: 'false', activate() {} }), /boolean/);
 assert.throws(() => api.create({ kind: 'lock' }), /callback/);
 const css = readFileSync(new URL('../src/layer-utilities.css', import.meta.url), 'utf8');

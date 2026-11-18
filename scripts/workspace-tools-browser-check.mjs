@@ -1,3 +1,4 @@
+import { chooseObjectKind } from "./browser-controls.mjs";
 import assert from "node:assert/strict";
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -79,7 +80,6 @@ try {
   await page.locator("#mapCanvas").dispatchEvent("click", { clientX: 680, clientY: 520 });
   assert.deepEqual((await state()).selection, selected, "Post-touch-pan clicks preserve drawing selection");
   await page.keyboard.press("Escape");
-  await choice("discard").click();
   await page.waitForFunction(() => workspaceState.get().selection === null);
   assert.equal((await state()).selection, null, "Escape deselects after panning");
   const cameraBeforePinEdit = await page.evaluate(() => ({ x: offsetX, y: offsetY, zoom }));
@@ -170,11 +170,11 @@ try {
   await tool("select").click();
   await page.evaluate(async () => { await selectWorkspaceObject({ kind: "drawing", id: drawings[0].id }); });
   await page.locator("#drawingName").fill("Guarded drawing");
-  await page.locator("#mapCanvas").click({ position: { x: 80, y: 200 } });
-  await choice("keep").click();
+  const pendingNavigation = page.evaluate(() => selectWorkspaceObject(null));
+  await choice("keep").click(); await pendingNavigation;
   assert.equal((await state()).selection.kind, "drawing", "Canvas navigation respects pending properties");
-  await tool("pan").click();
-  await choice("keep").click();
+  const pendingTool = page.evaluate(() => requestWorkspaceTool("pan"));
+  await choice("keep").click(); await pendingTool;
   assert.equal(await page.locator("#drawingName").inputValue(), "Guarded drawing");
   const outlineSwitch = page.evaluate(() => selectWorkspaceObject({ kind: "pin", id: "pin-qa" }));
   await choice("finish").click();
@@ -197,12 +197,13 @@ try {
     await page.evaluate((value) => MapItTheme.setTheme(value), theme);
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: 900 });
-      const collapse = page.locator("#railCollapseBtn");
+      const collapse = page.locator('[data-workspace-tab="settings"]');
+      assert.equal(await page.locator("#railCollapseBtn").count(), 0);
       const selectedTabs = page.locator('[data-workspace-tab][aria-pressed="true"]');
       await page.locator('[data-workspace-tab="settings"]').click();
       assert.equal(await selectedTabs.count(), 1, "Only the visible workspace tab is selected");
       assert.equal(await collapse.getAttribute("aria-expanded"), "true");
-      assert.equal(await collapse.getAttribute("aria-pressed"), null, "Disclosure is not a pressed toggle");
+      assert.equal(await collapse.getAttribute("aria-pressed"), "true", "Open tab is selected");
       await collapse.focus();
       await page.keyboard.press("Enter");
       assert.equal(await selectedTabs.count(), 0, "Closed panel has no selected tab");
@@ -292,7 +293,7 @@ try {
   assert.equal(await page.evaluate(() => pinLabelTrace.at(-1)), 1, "Leaving keyboard focus restores map labels");
   await page.evaluate(() => restorePinTrace());
   await page.evaluate(() => setWorkspaceTab("objects", { openPanel: true }));
-  await page.locator('[data-object-filter="all"]').click();
+  await chooseObjectKind(page, 'all');
   const layerRow = page.locator(".layer-row").first();
   const visibility = layerRow.locator('[data-outline-action="visibility"]');
   const lock = layerRow.locator('[data-outline-action="lock"]');
